@@ -53,7 +53,7 @@ def diferencia_a_str(dif_seg):
 st.sidebar.title("🏁 Menú de Navegación")
 opcion = st.sidebar.selectbox(
     "Selecciona una sección:",
-    ["Records", "Comparativa de Tiempos", "Estadísticas"]
+    ["Records", "Comparativa de Tiempos"]
 )
 
 # -------------------------------------------------------------
@@ -363,47 +363,3 @@ elif opcion == "Comparativa de Tiempos":
 # -------------------------------------------------------------
 # 3. ESTADÍSTICAS
 # -------------------------------------------------------------
-elif opcion == "Estadísticas":
-    st.title("📊 Estadísticas Generales de Carrera")
-    st.write("Récords de vuelta y rendimiento general.")
-
-    try:
-        df_carrera = pd.read_excel(ARCHIVO_EXCEL, sheet_name='Carrera', header=None, engine='openpyxl')
-        
-        record_vuelta = float('inf')
-        piloto_record = "-"
-        vuelta_num = 0
-        
-        col_idx = 0
-        max_cols = df_carrera.shape[1]
-        
-        while col_idx < max_cols:
-            piloto = df_carrera.iloc[0, col_idx]
-            if pd.notna(piloto) and str(piloto).strip() != "":
-                piloto_nombre = str(piloto).strip()
-                
-                for r in range(2, len(df_carrera)):
-                    nro_vuelta = df_carrera.iloc[r, col_idx]
-                    t_vuelta = df_carrera.iloc[r, col_idx + 1]
-                    
-                    if pd.notna(nro_vuelta) and pd.notna(t_vuelta):
-                        t_seg = tiempo_a_segundos(t_vuelta)
-                        if t_seg is not None and t_seg > 20:
-                            if t_seg < record_vuelta:
-                                record_vuelta = t_seg
-                                piloto_record = piloto_nombre
-                                vuelta_num = int(nro_vuelta)
-            col_idx += 3
-
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown(f"""
-            <div style="background-color: #161925; padding: 20px; border-radius: 10px; border: 1px solid #30363d;">
-                <h4 style="color: #9fa6b2; margin:0;">⚡ Récord de Vuelta (VR)</h4>
-                <h2 style="color: #00e676; margin: 10px 0 0 0;">{segundos_a_tiempo(record_vuelta)}</h2>
-                <p style="color: #ffffff; margin: 5px 0 0 0;">Piloto: <b>{piloto_record}</b> (Vuelta {vuelta_num})</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-    except Exception as e:
-        st.error(f"❌ Error al calcular estadísticas: {e}")
