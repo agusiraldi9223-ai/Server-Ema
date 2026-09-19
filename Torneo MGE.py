@@ -180,7 +180,7 @@ else:
         st.session_state["admin_autenticado"] = False
         st.rerun()
 
-    st.sidebar.subheader("📂 Subir Nuevos Archivos")
+    st.sidebar.subheader("📁 Subir Nuevos Archivos")
     archivos_subidos = st.sidebar.file_uploader(
         "Sube archivos JSON (Clasificacion, Sprint, Carrera, Vueltas)",
         type=["json"],
@@ -189,7 +189,8 @@ else:
 
     if archivos_subidos:
         for archivo in archivos_subidos:
-            if "vueltas" in archivo.name.lower():
+            nombre_lower = archivo.name.lower()
+            if "vueltas" in nombre_lower:
                 ruta_archivo = os.path.join(CARPETA_VUELTAS, archivo.name)
             else:
                 ruta_archivo = os.path.join(CARPETA_DATOS, archivo.name)
@@ -197,7 +198,7 @@ else:
             with open(ruta_archivo, "wb") as f:
                 f.write(archivo.getbuffer())
                 
-        st.sidebar.success("¡Archivos guardados!")
+        st.sidebar.success("¡Archivos guardados correctamente!")
         st.rerun()
 
 archivos_datos = [os.path.join(CARPETA_DATOS, f) for f in os.listdir(CARPETA_DATOS) if f.endswith(".json")]
