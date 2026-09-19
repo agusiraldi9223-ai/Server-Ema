@@ -1153,7 +1153,7 @@ elif seccion_menu == "Estadísticas":
                         <span style="font-size: 13px; color: #d4edda; font-weight: bold;">⏱️ MEJOR RITMO (VELOCIDAD)</span>
                         <div style="color: #ffffff; font-size: 22px; font-weight: bold; margin: 12px 0 6px 0;">{piloto_rit}</div>
                         <div style="color: #28a745; font-size: 18px; font-weight: bold;">{tiempo_rit}</div>
-                        <div style="color: #94a3b8; font-size: 11px; margin-top: 6px; line-height: 1.2;">Mide la <b>velocidad pura</b>.</div>
+                        <div style="color: #94a3b8; font-size: 11px; margin-top: 6px; line-height: 1.2;">Mide la <b>velocidad pura (promedio de todos los tiempos de vuelta validos)</b>.</div>
                     </div>
                 """, unsafe_allow_html=True)
                 
@@ -1164,9 +1164,29 @@ elif seccion_menu == "Estadísticas":
                         <div style="color: #ffffff; font-size: 22px; font-weight: bold; margin: 12px 0 6px 0;">{piloto_reg}</div>
                         <div style="color: #17a2b8; font-size: 18px; font-weight: bold;">{val_reg}</div>
                         <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">Ref: {ref_reg}</div>
-                        <div style="color: #94a3b8; font-size: 11px; margin-top: 4px; line-height: 1.2;">Mide la <b>estabilidad</b>.</div>
+                        <div style="color: #94a3b8; font-size: 11px; margin-top: 4px; line-height: 1.2;">Mide la <b>estabilidad (menor variacion/desvío entre vueltas)</b>.</div>
                     </div>
                 """, unsafe_allow_html=True)
+
+            st.markdown("<br>", unsafe_allow_html=True)
+
+            # --- DESPLEGABLES DEBAJO DE LAS TARJETAS ---
+            col_d1, col_d2, col_d3 = st.columns(3)
+            
+            with col_d2:
+                with st.expander("📋 Ver tabla completa de Ritmo"):
+                    if not df_resumen_ritmo.empty:
+                        ref_ritmo_ms = df_resumen_ritmo.iloc[0]["PromMs"]
+                        for idx, row in df_resumen_ritmo.iterrows():
+                            dif_ms = row["PromMs"] - ref_ritmo_ms
+                            dif_str = f"+{dif_ms/1000:.3f}s" if idx > 0 else "Líder"
+                            st.markdown(f"**{idx+1}. {row['Piloto']}** — {convertir_a_min_seg(row['PromMs'])} <span style='color: #94a3b8; font-size: 12px;'>({dif_str})</span>", unsafe_allow_html=True)
+                            
+            with col_d3:
+                with st.expander("📋 Ver tabla de Regularidad"):
+                    if not df_resumen_reg.empty:
+                        for idx, row in df_resumen_reg.iterrows():
+                            st.markdown(f"**{idx+1}. {row['Piloto']}** — ±{row['RegMs']/1000:.3f}s <span style='color: #94a3b8; font-size: 12px;'>(Ref: {convertir_a_min_seg(row['PromMs'])})</span>", unsafe_allow_html=True)
 
             st.markdown("<br>", unsafe_allow_html=True)
 
@@ -1230,12 +1250,23 @@ elif seccion_menu == "Estadísticas":
             st.warning("No hay suficientes datos o pilotos cargados para esta sesión.")
     else:
         st.info("No hay datos de comparativa ni de vueltas cargados.")
+
     # =========================================================================
     # 🕸️ PERFIL COMPARATIVO MULTIVARIABLE (GRÁFICO DE ARAÑA)
     # =========================================================================
     st.markdown("---")
     st.subheader("🕸️ Perfil Comparativo Multivariable")
     st.caption("Haz clic en los nombres de los pilotos en la leyenda para activar o desactivar su perfil.")
+
+    # Desplegable integrado en la app con la explicación de cada arista
+    with st.expander("ℹ️ ¿Cómo leer este gráfico? (Explicación de las métricas)"):
+        st.markdown("""
+        * **% Podios**: Mide la constancia en los puestos de vanguardia (porcentaje de fechas finalizadas entre los tres primeros).
+        * **% Victorias**: Representa la efectividad de triunfo puro (porcentaje de fechas ganadas).
+        * **Promedio de Puntos**: Evalúa la cosecha global a lo largo del campeonato (puntos promedio sumados por fecha).
+        * **Ganancia de Posiciones**: Destaca la capacidad combativa y de avance en pista a lo largo de las competencias.
+        * **% Ritmo Carrera**: Analiza la velocidad y el posicionamiento sostenido en base a la posición final promedio.
+        """)
 
     try:
         if 'df_global' in locals() and not df_global.empty and 'todos_pilotos' in locals() and todos_pilotos:
@@ -1248,6 +1279,7 @@ elif seccion_menu == "Estadísticas":
                 df_p_carreras = df_p[df_p["Tipo"] == "Carrera"] if "Tipo" in df_p.columns else df_p
 
                 posiciones = []
+                puntos_totales_piloto = 0.0
                 if "Posición" in df_p_carreras.columns:
                     for p_val in df_p_carreras["Posición"]:
                         try:
@@ -1255,61 +1287,21 @@ elif seccion_menu == "Estadísticas":
                         except (ValueError, TypeError):
                             pass
                 
+                if "Puntos" in df_p.columns:
+                    puntos_totales_piloto = float(df_p["Puntos"].sum())
+
                 cant_podios = sum(1 for p in posiciones if p in [1, 2, 3])
                 cant_victorias = sum(1 for p in posiciones if p == 1)
                 
-                poles_totales = 0
-                if 'datos_por_piloto' in locals() and piloto in datos_por_piloto:
-                    poles_totales = datos_por_piloto[piloto].get("poles", 0)
-
-                poles_a_p1_count = 0
-                if 'circuitos' in locals():
-                    for circuito in circuitos:
-                        path_clasif = f"Clasificacion {circuito}.json"
-                        try:
-                            import json, os
-                            if os.path.exists(path_clasif):
-                                with open(path_clasif, 'r', encoding='utf-8') as f:
-                                    data_cla = json.load(f)
-                                laps_cla = data_cla.get("Laps", [])
-                                mejores_tiempos = {}
-                                for lap in laps_cla:
-                                    if isinstance(lap, dict):
-                                        raw_name = lap.get("DriverName")
-                                        lap_time = lap.get("LapTime")
-                                        if raw_name and lap_time and lap_time > 0:
-                                            p_name_norm = raw_name.strip().title()
-                                            if p_name_norm == piloto or raw_name.strip() == piloto:
-                                                if raw_name not in mejores_tiempos or lap_time < mejores_tiempos[raw_name]:
-                                                    mejores_tiempos[raw_name] = lap_time
-                                
-                                if mejores_tiempos:
-                                    poleman_fecha = min(mejores_tiempos, key=mejores_tiempos.get)
-                                    if poleman_fecha.strip().title() == piloto or poleman_fecha == piloto:
-                                        df_circuito_carrera = df_p_carreras[df_p_carreras["Circuito"] == circuito]
-                                        if not df_circuito_carrera.empty:
-                                            pos_carrera = df_circuito_carrera["Posición"].values[0]
-                                            try:
-                                                if int(pos_carrera) == 1:
-                                                    poles_a_p1_count += 1
-                                            except:
-                                                pass
-                        except:
-                            pass
-
-                pct_podios = (cant_podios / total_fechas_torneo) * 100.0
-                pct_victorias = (cant_victorias / total_fechas_torneo) * 100.0
-                pct_conversion_pole = (poles_totales / total_fechas_torneo) * 100.0
-                pct_pole_a_p1_torneo = (poles_a_p1_count / total_fechas_torneo) * 100.0
-                
-                if poles_totales > 0:
-                    efectividad_real_poles = (poles_a_p1_count / poles_totales) * 100.0
-                    txt_efectividad_pole = f"Real: {efectividad_real_poles:.1f}% ({poles_a_p1_count}/{poles_totales} poles) | Escala Torneo: {pct_pole_a_p1_torneo:.1f}%"
-                else:
-                    txt_efectividad_pole = f"Real: 0.0% (0/0 poles) | Escala Torneo: 0.0%"
+                promedio_puntos = (puntos_totales_piloto / total_fechas_torneo) if total_fechas_torneo > 0 else 0.0
+                pct_promedio_puntos = min(100.0, (promedio_puntos / 30.0) * 100.0)
 
                 pos_prom = (sum(posiciones) / len(posiciones)) if posiciones else 15.0
                 pct_ritmo = max(0.0, min(100.0, ((15.0 - pos_prom) / 14.0) * 100.0))
+                ganancia_neta_pos = max(0.0, min(100.0, 50.0 + (15.0 - pos_prom) * 2.5)) 
+
+                pct_podios = (cant_podios / total_fechas_torneo) * 100.0
+                pct_victorias = (cant_victorias / total_fechas_torneo) * 100.0
 
                 datos_radar.append({
                     "Piloto": piloto,
@@ -1317,10 +1309,9 @@ elif seccion_menu == "Estadísticas":
                     "cant_podios": cant_podios,
                     "pct_victorias": pct_victorias,
                     "cant_victorias": cant_victorias,
-                    "pct_conversion_pole": pct_conversion_pole,
-                    "poles_real": poles_totales,
-                    "pct_pole_a_p1_torneo": pct_pole_a_p1_torneo,
-                    "txt_efectividad_pole": txt_efectividad_pole,
+                    "pct_promedio_puntos": pct_promedio_puntos,
+                    "promedio_puntos": promedio_puntos,
+                    "ganancia_neta_pos": ganancia_neta_pos,
                     "pct_ritmo": pct_ritmo,
                     "pos_prom": pos_prom,
                     "total_fechas": total_fechas_torneo
@@ -1332,8 +1323,8 @@ elif seccion_menu == "Estadísticas":
                 metricas = [
                     ("% Podios", d["pct_podios"], f"{d['pct_podios']:.1f}% ({d['cant_podios']}/{d['total_fechas']} fechas)"),
                     ("% Victorias", d["pct_victorias"], f"{d['pct_victorias']:.1f}% ({d['cant_victorias']}/{d['total_fechas']} fechas)"),
-                    ("% Conversión Pole", d["pct_conversion_pole"], f"{d['pct_conversion_pole']:.1f}% ({d['poles_real']} poles)"),
-                    ("% Pole a P1 (C1)", d["pct_pole_a_p1_torneo"], d["txt_efectividad_pole"]),
+                    ("Promedio de Puntos", d["pct_promedio_puntos"], f"{d['promedio_puntos']:.1f} pts/fecha"),
+                    ("Ganancia de Posiciones", d["ganancia_neta_pos"], f"Ritmo competitivo global"),
                     ("% Ritmo Carrera", d["pct_ritmo"], f"P{d['pos_prom']:.1f} Promedio")
                 ]
                 for eje, val_real_pct, txt_hover in metricas:
@@ -1411,7 +1402,7 @@ elif seccion_menu == "Estadísticas":
                     )
                 )
 
-                st.plotly_chart(fig_radar, use_container_width=True, key="radar_sincronizado_pole_p1_ponderado")
+                st.plotly_chart(fig_radar, use_container_width=True, key="radar_actualizado_campeonato_con_expander")
         else:
             st.info("ℹ️ Sube archivos de resultados para habilitar el perfil comparativo multivariable.")
 
