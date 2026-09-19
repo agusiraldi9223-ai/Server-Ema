@@ -230,7 +230,12 @@ if archivos_vueltas_json:
     df_global = pd.read_json(ruta_vueltas_activo)
 else:
     df_global = pd.DataFrame()
-
+st.write("--- DEBUGGING ---")
+st.write("Ruta absoluta buscada:", CARPETA_DATOS)
+st.write("¿Existe la carpeta?:", os.path.exists(CARPETA_DATOS))
+st.write("Archivos encontrados en datos:", os.listdir(CARPETA_DATOS) if os.path.exists(CARPETA_DATOS) else "Carpeta no existe")
+st.write("Archivos encontrados en vueltas:", os.listdir(CARPETA_VUELTAS) if os.path.exists(CARPETA_VUELTAS) else "Carpeta no existe")
+st.write("-----------------")
 archivos_json = [f for f in os.listdir(CARPETA_DATOS) if f.endswith(".json")]
 
 if archivos_json:
