@@ -260,16 +260,16 @@ if archivos_json:
         archivo_carrera = None
         
         for ruta in rutas:
-            nombre_lower = os.path.basename(ruta).lower()
-            if any(k in nombre_lower for k in ["clasificacion", "clasificación", "quali", "q_"]):
+            nombre_archivo_lower = os.path.basename(ruta).lower()
+            
+            # Detección precisa adaptada a tus nombres de archivos actuales
+            if "clasificacion" in nombre_archivo_lower or "clasificación" in nombre_archivo_lower or "quali" in nombre_archivo_lower:
                 archivo_quali = ruta
-            elif "sprint" in nombre_lower:
+            elif "sprint" in nombre_archivo_lower:
                 archivo_sprint = ruta
-            elif any(k in nombre_lower for k in ["carrera", "race", "r_"]):
-                archivo_carrera = ruta
             else:
-                if not archivo_carrera:
-                    archivo_carrera = ruta
+                # Todo lo que no sea quali o sprint (como 'Balcarce.json' o 'San Luis.json') se asigna a carrera
+                archivo_carrera = ruta
 
         if circuito not in datos_comparativa_tiempos:
             datos_comparativa_tiempos[circuito] = {}
