@@ -119,6 +119,7 @@ CARPETA_VUELTAS = os.path.join(BASE_DIR, "resultados_json", "Vueltas")
 for c in [CARPETA_DATOS, CARPETA_VUELTAS]:
     if not os.path.exists(c):
         os.makedirs(c)
+
 def convertir_ms_a_minutos(ms):
     if not ms or ms <= 0:
         return "-"
@@ -230,12 +231,14 @@ if archivos_vueltas_json:
     df_global = pd.read_json(ruta_vueltas_activo)
 else:
     df_global = pd.DataFrame()
+
 st.write("--- DEBUGGING ---")
 st.write("Ruta absoluta buscada:", CARPETA_DATOS)
 st.write("¿Existe la carpeta?:", os.path.exists(CARPETA_DATOS))
 st.write("Archivos encontrados en datos:", os.listdir(CARPETA_DATOS) if os.path.exists(CARPETA_DATOS) else "Carpeta no existe")
 st.write("Archivos encontrados en vueltas:", os.listdir(CARPETA_VUELTAS) if os.path.exists(CARPETA_VUELTAS) else "Carpeta no existe")
 st.write("-----------------")
+
 archivos_json = [f for f in os.listdir(CARPETA_DATOS) if f.endswith(".json")]
 
 if archivos_json:
@@ -245,6 +248,7 @@ if archivos_json:
         if circuito not in circuitos:
             circuitos[circuito] = []
         circuitos[circuito].append(os.path.join(CARPETA_DATOS, arj))
+        
     todos_los_resultados = []
     datos_comparativa_tiempos = {}
     datos_h2h_sesiones = {}
