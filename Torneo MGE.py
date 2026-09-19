@@ -514,6 +514,11 @@ if archivos_vueltas_dir:
             except Exception as e:
                 st.sidebar.error(f"Error al leer archivo de vueltas: {e}")
 
+# --- CONVERSIÓN A DATAFRAME GLOBAL (ESTO ERA LO QUE FALTABA) ---
+if datos_vueltas_detalle:
+    df_vueltas_global = pd.DataFrame(datos_vueltas_detalle)
+else:
+    df_vueltas_global = pd.DataFrame(columns=["Circuito", "Piloto", "Vuelta", "TiempoMs", "Tipo"])
 # --- VISTA: RESUMEN GENERAL ---
 if seccion_menu == "Resumen General":
     with st.container():
