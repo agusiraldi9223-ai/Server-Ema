@@ -1,8 +1,8 @@
-import streamlit as st
-import json
-import pandas as pd
-import re
 import os
+import json
+import re
+import streamlit as st
+import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
@@ -155,36 +155,60 @@ def obtener_modelo_legible(raw_model, nombre_piloto=""):
         return 'BMW'
     return CAR_MODEL_MAPPING.get(raw_model, 'BMW')
 
+# ==========================================
+# 3. PANEL DE ADMINISTRACIÓN Y CARGA PROTEGIDA
+# ==========================================
 st.sidebar.divider()
-st.sidebar.subheader("📂 Archivos de Eventos y Vueltas")
-archivos_subidos = st.sidebar.file_uploader(
-    "Sube archivos JSON (Clasificacion, Sprint, Carrera, Vueltas)",
-    type=["json"],
-    accept_multiple_files=True
-)
+st.sidebar.subheader("🔒 Panel de Administración")
 
-if archivos_subidos:
-    for archivo in archivos_subidos:
-        if "vueltas" in archivo.name.lower():
-            ruta_archivo = os.path.join(CARPETA_VUELTAS, archivo.name)
+if "admin_autenticado" not in st.session_state:
+    st.session_state["admin_autenticado"] = False
+
+if not st.session_state["admin_autenticado"]:
+    password_input = st.sidebar.text_input("Contraseña de Admin", type="password")
+    if st.sidebar.button("Ingresar"):
+        clave_correcta = st.secrets.get("ADMIN_PASSWORD", "1234")
+        if password_input == clave_correcta:
+            st.session_state["admin_autenticado"] = True
+            st.sidebar.success("¡Acceso concedido!")
+            st.rerun()
         else:
-            ruta_archivo = os.path.join(CARPETA_DATOS, archivo.name)
-            
-        with open(ruta_archivo, "wb") as f:
-            f.write(archivo.getbuffer())
-            
-    st.sidebar.success("¡Archivos guardados!")
-    st.rerun()
+            st.sidebar.error("Contraseña incorrecta")
+else:
+    st.sidebar.success("Modo Administrador Activo")
+    if st.sidebar.button("Cerrar Sesión"):
+        st.session_state["admin_autenticado"] = False
+        st.rerun()
+
+    st.sidebar.subheader("📂 Subir Nuevos Archivos")
+    archivos_subidos = st.sidebar.file_uploader(
+        "Sube archivos JSON (Clasificacion, Sprint, Carrera, Vueltas)",
+        type=["json"],
+        accept_multiple_files=True
+    )
+
+    if archivos_subidos:
+        for archivo in archivos_subidos:
+            if "vueltas" in archivo.name.lower():
+                ruta_archivo = os.path.join(CARPETA_VUELTAS, archivo.name)
+            else:
+                ruta_archivo = os.path.join(CARPETA_DATOS, archivo.name)
+                
+            with open(ruta_archivo, "wb") as f:
+                f.write(archivo.getbuffer())
+                
+        st.sidebar.success("¡Archivos guardados!")
+        st.rerun()
 
 archivos_datos = [os.path.join(CARPETA_DATOS, f) for f in os.listdir(CARPETA_DATOS) if f.endswith(".json")]
 archivos_v = [os.path.join(CARPETA_VUELTAS, f) for f in os.listdir(CARPETA_VUELTAS) if f.endswith(".json")]
 
 archivos_existentes = [os.path.basename(f) for f in archivos_datos + archivos_v]
 
-if archivos_existentes:
+if st.session_state["admin_autenticado"] and archivos_existentes:
     st.sidebar.markdown("---")
     st.sidebar.subheader("🗑️ Eliminar Archivos Previos")
-    archivo_a_borrar = st.sidebar.selectbox("Selecciona archivo a borrar:", archivos_existentes)
+    archivo_a_borrar = st.sidebar.selectbox("Selecciona archivo a borrar:", archivos_existentes, key="borrar_file")
     if st.sidebar.button("Eliminar archivo seleccionado"):
         ruta_a_borrar_datos = os.path.join(CARPETA_DATOS, archivo_a_borrar)
         ruta_a_borrar_vueltas = os.path.join(CARPETA_VUELTAS, archivo_a_borrar)
@@ -477,8 +501,6 @@ if archivos_vueltas_dir:
                                 })
             except Exception as e:
                 st.sidebar.error(f"Error al leer archivo de vueltas: {e}")
-
-df_vueltas_global = pd.DataFrame(datos_vueltas_detalle)
 
 # --- VISTA: RESUMEN GENERAL ---
 if seccion_menu == "Resumen General":
