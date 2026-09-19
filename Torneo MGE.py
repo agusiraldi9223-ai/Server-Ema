@@ -110,13 +110,15 @@ if st.sidebar.button("📈 Estadísticas", use_container_width=True):
 
 seccion_menu = st.session_state['pagina_activa']
 
-CARPETA_DATOS = "resultados_json"
-CARPETA_VUELTAS = os.path.join(CARPETA_DATOS, "Vueltas")
+# Obtiene la ruta absoluta de la carpeta donde se encuentra este archivo de script
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+CARPETA_DATOS = os.path.join(BASE_DIR, "resultados_json")
+CARPETA_VUELTAS = os.path.join(BASE_DIR, "resultados_json", "Vueltas")
 
 for c in [CARPETA_DATOS, CARPETA_VUELTAS]:
     if not os.path.exists(c):
         os.makedirs(c)
-
 def convertir_ms_a_minutos(ms):
     if not ms or ms <= 0:
         return "-"
