@@ -234,6 +234,7 @@ else:
 
 
 archivos_json = [f for f in os.listdir(CARPETA_DATOS) if f.endswith(".json")]
+archivos_json.sort(key=lambda x: os.path.getmtime(os.path.join(CARPETA_DATOS, x)))
 
 if archivos_json:
     circuitos = {}
@@ -424,7 +425,7 @@ if archivos_json:
     else:
         df_global = pd.DataFrame(columns=["Fecha", "Circuito", "Piloto", "Auto", "Vueltas", "_Tiempo_ms", "Posición", "Puntos", "Tipo"])
 
-    fechas_reales = sorted(list(circuitos.keys()))
+    fechas_reales = list(circuitos.keys())
     todos_pilotos = sorted(list(pilotos_detectados))
 
     lastre_por_piloto_por_fecha = {}
