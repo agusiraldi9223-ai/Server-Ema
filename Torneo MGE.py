@@ -227,12 +227,8 @@ if st.session_state["admin_autenticado"] and archivos_existentes:
         st.sidebar.success(f"Eliminado: {archivo_a_borrar}")
         st.rerun()
 
-archivos_vueltas_json = [f for f in os.listdir(CARPETA_VUELTAS) if f.endswith(".json")]
-if archivos_vueltas_json:
-    ruta_vueltas_activo = os.path.join(CARPETA_VUELTAS, archivos_vueltas_json[0])
-    df_global = pd.read_json(ruta_vueltas_activo)
-else:
-    df_global = pd.DataFrame()
+# Inicializamos df_global vacío o con las columnas correctas por defecto
+df_global = pd.DataFrame(columns=["Fecha", "Circuito", "Piloto", "Auto", "Vueltas", "_Tiempo_ms", "Posición", "Puntos", "Tipo"])
 
 
 archivos_json = [f for f in os.listdir(CARPETA_DATOS) if f.endswith(".json")]
