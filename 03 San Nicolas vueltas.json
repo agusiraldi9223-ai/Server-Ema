@@ -1,5 +1,945 @@
 [
     {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 1,
+        "TiempoMs": 163035
+    },
+    {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 2,
+        "TiempoMs": 88928
+    },
+    {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 3,
+        "TiempoMs": 84810
+    },
+    {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 4,
+        "TiempoMs": 84707
+    },
+    {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 5,
+        "TiempoMs": 84544
+    },
+    {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 6,
+        "TiempoMs": 84835
+    },
+    {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 7,
+        "TiempoMs": 84128
+    },
+    {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 8,
+        "TiempoMs": 84436
+    },
+    {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 9,
+        "TiempoMs": 84453
+    },
+    {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 10,
+        "TiempoMs": 84343
+    },
+    {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 11,
+        "TiempoMs": 84183
+    },
+    {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 12,
+        "TiempoMs": 84604
+    },
+    {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 13,
+        "TiempoMs": 84421
+    },
+    {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 14,
+        "TiempoMs": 84407
+    },
+    {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 15,
+        "TiempoMs": 85817
+    },
+    {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 16,
+        "TiempoMs": 84369
+    },
+    {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 17,
+        "TiempoMs": 86174
+    },
+    {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 18,
+        "TiempoMs": 84783
+    },
+    {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 19,
+        "TiempoMs": 84987
+    },
+    {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 20,
+        "TiempoMs": 84068
+    },
+    {
+        "Piloto": "agus_iraldi92",
+        "Vuelta": 21,
+        "TiempoMs": 84589
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 1,
+        "TiempoMs": 164589
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 2,
+        "TiempoMs": 90792
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 3,
+        "TiempoMs": 84640
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 4,
+        "TiempoMs": 84623
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 5,
+        "TiempoMs": 85138
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 6,
+        "TiempoMs": 84219
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 7,
+        "TiempoMs": 84762
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 8,
+        "TiempoMs": 84568
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 9,
+        "TiempoMs": 84664
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 10,
+        "TiempoMs": 84065
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 11,
+        "TiempoMs": 84000
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 12,
+        "TiempoMs": 84001
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 13,
+        "TiempoMs": 84173
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 14,
+        "TiempoMs": 84967
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 15,
+        "TiempoMs": 83930
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 16,
+        "TiempoMs": 83923
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 17,
+        "TiempoMs": 84578
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 18,
+        "TiempoMs": 84701
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 19,
+        "TiempoMs": 86079
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 20,
+        "TiempoMs": 83969
+    },
+    {
+        "Piloto": "Emanuel Grasso",
+        "Vuelta": 21,
+        "TiempoMs": 84504
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 1,
+        "TiempoMs": 163612
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 2,
+        "TiempoMs": 95064
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 3,
+        "TiempoMs": 84879
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 4,
+        "TiempoMs": 85477
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 5,
+        "TiempoMs": 84421
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 6,
+        "TiempoMs": 84722
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 7,
+        "TiempoMs": 85061
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 8,
+        "TiempoMs": 84458
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 9,
+        "TiempoMs": 84490
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 10,
+        "TiempoMs": 84844
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 11,
+        "TiempoMs": 84898
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 12,
+        "TiempoMs": 84588
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 13,
+        "TiempoMs": 85018
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 14,
+        "TiempoMs": 86243
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 15,
+        "TiempoMs": 84548
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 16,
+        "TiempoMs": 85277
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 17,
+        "TiempoMs": 85395
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 18,
+        "TiempoMs": 84860
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 19,
+        "TiempoMs": 84499
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 20,
+        "TiempoMs": 85056
+    },
+    {
+        "Piloto": "Exequiel Martinez",
+        "Vuelta": 21,
+        "TiempoMs": 84600
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 1,
+        "TiempoMs": 164799
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 2,
+        "TiempoMs": 90121
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 3,
+        "TiempoMs": 84583
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 4,
+        "TiempoMs": 84569
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 5,
+        "TiempoMs": 84076
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 6,
+        "TiempoMs": 84399
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 7,
+        "TiempoMs": 83916
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 8,
+        "TiempoMs": 84334
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 9,
+        "TiempoMs": 83975
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 10,
+        "TiempoMs": 84350
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 11,
+        "TiempoMs": 84098
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 12,
+        "TiempoMs": 84008
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 13,
+        "TiempoMs": 84458
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 14,
+        "TiempoMs": 84431
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 15,
+        "TiempoMs": 85196
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 16,
+        "TiempoMs": 84310
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 17,
+        "TiempoMs": 99721
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 18,
+        "TiempoMs": 85073
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 19,
+        "TiempoMs": 84297
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 20,
+        "TiempoMs": 84460
+    },
+    {
+        "Piloto": "Federico Oris",
+        "Vuelta": 21,
+        "TiempoMs": 84066
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 1,
+        "TiempoMs": 164573
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 2,
+        "TiempoMs": 93976
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 3,
+        "TiempoMs": 87261
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 4,
+        "TiempoMs": 86507
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 5,
+        "TiempoMs": 85890
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 6,
+        "TiempoMs": 85833
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 7,
+        "TiempoMs": 86539
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 8,
+        "TiempoMs": 85875
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 9,
+        "TiempoMs": 85275
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 10,
+        "TiempoMs": 85306
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 11,
+        "TiempoMs": 85677
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 12,
+        "TiempoMs": 85801
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 13,
+        "TiempoMs": 86320
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 14,
+        "TiempoMs": 85901
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 15,
+        "TiempoMs": 85363
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 16,
+        "TiempoMs": 86410
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 17,
+        "TiempoMs": 85748
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 18,
+        "TiempoMs": 86385
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 19,
+        "TiempoMs": 85504
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 20,
+        "TiempoMs": 86239
+    },
+    {
+        "Piloto": "Alan245",
+        "Vuelta": 21,
+        "TiempoMs": 86572
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 1,
+        "TiempoMs": 164273
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 2,
+        "TiempoMs": 107724
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 3,
+        "TiempoMs": 85274
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 4,
+        "TiempoMs": 86245
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 5,
+        "TiempoMs": 84876
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 6,
+        "TiempoMs": 84879
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 7,
+        "TiempoMs": 84969
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 8,
+        "TiempoMs": 85284
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 9,
+        "TiempoMs": 85706
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 10,
+        "TiempoMs": 85260
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 11,
+        "TiempoMs": 85014
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 12,
+        "TiempoMs": 85481
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 13,
+        "TiempoMs": 86006
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 14,
+        "TiempoMs": 86556
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 15,
+        "TiempoMs": 85149
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 16,
+        "TiempoMs": 86525
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 17,
+        "TiempoMs": 85656
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 18,
+        "TiempoMs": 85144
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 19,
+        "TiempoMs": 85137
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 20,
+        "TiempoMs": 85248
+    },
+    {
+        "Piloto": "Lucas Horisberger",
+        "Vuelta": 21,
+        "TiempoMs": 85527
+    },
+    {
+        "Piloto": "rubdri",
+        "Vuelta": 1,
+        "TiempoMs": 166843
+    },
+    {
+        "Piloto": "rubdri",
+        "Vuelta": 2,
+        "TiempoMs": 111416
+    },
+    {
+        "Piloto": "rubdri",
+        "Vuelta": 3,
+        "TiempoMs": 89138
+    },
+    {
+        "Piloto": "rubdri",
+        "Vuelta": 4,
+        "TiempoMs": 89706
+    },
+    {
+        "Piloto": "rubdri",
+        "Vuelta": 5,
+        "TiempoMs": 89963
+    },
+    {
+        "Piloto": "rubdri",
+        "Vuelta": 6,
+        "TiempoMs": 90875
+    },
+    {
+        "Piloto": "rubdri",
+        "Vuelta": 7,
+        "TiempoMs": 90889
+    },
+    {
+        "Piloto": "rubdri",
+        "Vuelta": 8,
+        "TiempoMs": 88903
+    },
+    {
+        "Piloto": "rubdri",
+        "Vuelta": 9,
+        "TiempoMs": 87445
+    },
+    {
+        "Piloto": "rubdri",
+        "Vuelta": 10,
+        "TiempoMs": 93372
+    },
+    {
+        "Piloto": "rubdri",
+        "Vuelta": 11,
+        "TiempoMs": 90337
+    },
+    {
+        "Piloto": "rubdri",
+        "Vuelta": 12,
+        "TiempoMs": 99802
+    },
+    {
+        "Piloto": "rubdri",
+        "Vuelta": 13,
+        "TiempoMs": 95667
+    },
+    {
+        "Piloto": "rubdri",
+        "Vuelta": 14,
+        "TiempoMs": 90756
+    },
+    {
+        "Piloto": "rubdri",
+        "Vuelta": 15,
+        "TiempoMs": 90062
+    },
+    {
+        "Piloto": "rubdri",
+        "Vuelta": 16,
+        "TiempoMs": 91524
+    },
+    {
+        "Piloto": "rubdri",
+        "Vuelta": 17,
+        "TiempoMs": 89000
+    },
+    {
+        "Piloto": "rubdri",
+        "Vuelta": 18,
+        "TiempoMs": 88832
+    },
+    {
+        "Piloto": "rubdri",
+        "Vuelta": 19,
+        "TiempoMs": 87951
+    },
+    {
+        "Piloto": "rubdri",
+        "Vuelta": 20,
+        "TiempoMs": 101992
+    },
+    {
+        "Piloto": "lucas echegaray",
+        "Vuelta": 1,
+        "TiempoMs": 113369
+    },
+    {
+        "Piloto": "lucas echegaray",
+        "Vuelta": 2,
+        "TiempoMs": 96788
+    },
+    {
+        "Piloto": "lucas echegaray",
+        "Vuelta": 3,
+        "TiempoMs": 87482
+    },
+    {
+        "Piloto": "lucas echegaray",
+        "Vuelta": 4,
+        "TiempoMs": 99174
+    },
+    {
+        "Piloto": "lucas echegaray",
+        "Vuelta": 5,
+        "TiempoMs": 99031
+    },
+    {
+        "Piloto": "lucas echegaray",
+        "Vuelta": 6,
+        "TiempoMs": 88691
+    },
+    {
+        "Piloto": "lucas echegaray",
+        "Vuelta": 7,
+        "TiempoMs": 85763
+    },
+    {
+        "Piloto": "lucas echegaray",
+        "Vuelta": 8,
+        "TiempoMs": 142432
+    },
+    {
+        "Piloto": "lucas echegaray",
+        "Vuelta": 9,
+        "TiempoMs": 88071
+    },
+    {
+        "Piloto": "lucas echegaray",
+        "Vuelta": 10,
+        "TiempoMs": 87245
+    },
+    {
+        "Piloto": "lucas echegaray",
+        "Vuelta": 11,
+        "TiempoMs": 91429
+    },
+    {
+        "Piloto": "lucas echegaray",
+        "Vuelta": 12,
+        "TiempoMs": 86279
+    },
+    {
+        "Piloto": "lucas echegaray",
+        "Vuelta": 13,
+        "TiempoMs": 142157
+    },
+    {
+        "Piloto": "lucas echegaray",
+        "Vuelta": 14,
+        "TiempoMs": 89597
+    },
+    {
+        "Piloto": "lucas echegaray",
+        "Vuelta": 15,
+        "TiempoMs": 87294
+    },
+    {
+        "Piloto": "lucas echegaray",
+        "Vuelta": 16,
+        "TiempoMs": 88334
+    },
+    {
+        "Piloto": "lucas echegaray",
+        "Vuelta": 17,
+        "TiempoMs": 87199
+    },
+    {
+        "Piloto": "lucas echegaray",
+        "Vuelta": 18,
+        "TiempoMs": 101890
+    },
+    {
+        "Piloto": "lucas echegaray",
+        "Vuelta": 19,
+        "TiempoMs": 88570
+    },
+    {
+        "Piloto": "Ivan Lasserre",
+        "Vuelta": 1,
+        "TiempoMs": 165482
+    },
+    {
+        "Piloto": "Ivan Lasserre",
+        "Vuelta": 2,
+        "TiempoMs": 106846
+    },
+    {
+        "Piloto": "Ivan Lasserre",
+        "Vuelta": 3,
+        "TiempoMs": 89925
+    },
+    {
+        "Piloto": "Ivan Lasserre",
+        "Vuelta": 4,
+        "TiempoMs": 88217
+    },
+    {
+        "Piloto": "Ivan Lasserre",
+        "Vuelta": 5,
+        "TiempoMs": 89921
+    },
+    {
+        "Piloto": "Ivan Lasserre",
+        "Vuelta": 6,
+        "TiempoMs": 102206
+    },
+    {
+        "Piloto": "Ivan Lasserre",
+        "Vuelta": 7,
+        "TiempoMs": 90696
+    },
+    {
+        "Piloto": "Ivan Lasserre",
+        "Vuelta": 8,
+        "TiempoMs": 94473
+    },
+    {
+        "Piloto": "Ivan Lasserre",
+        "Vuelta": 9,
+        "TiempoMs": 741226
+    },
+    {
+        "Piloto": "Ivan Lasserre",
+        "Vuelta": 10,
+        "TiempoMs": 87387
+    },
+    {
+        "Piloto": "Ivan Lasserre",
+        "Vuelta": 11,
+        "TiempoMs": 88096
+    },
+    {
+        "Piloto": "Ivan Lasserre",
+        "Vuelta": 12,
+        "TiempoMs": 87476
+    },
+    {
+        "Piloto": "Ivan Lasserre",
+        "Vuelta": 13,
+        "TiempoMs": 88815
+    },
+    {
+        "Piloto": "juanchii",
+        "Vuelta": 1,
+        "TiempoMs": 163653
+    },
+    {
+        "Piloto": "juanchii",
+        "Vuelta": 2,
+        "TiempoMs": 98779
+    },
+    {
+        "Piloto": "juanchii",
+        "Vuelta": 3,
+        "TiempoMs": 85614
+    },
+    {
+        "Piloto": "juanchii",
+        "Vuelta": 4,
+        "TiempoMs": 98009
+    },
+    {
+        "Piloto": "juanchii",
+        "Vuelta": 5,
+        "TiempoMs": 85691
+    },
+    {
+        "Piloto": "juanchii",
+        "Vuelta": 6,
+        "TiempoMs": 93076
+    },
+    {
+        "Piloto": "juanchii",
+        "Vuelta": 7,
+        "TiempoMs": 135928
+    },
+    {
+        "Piloto": "juanchii",
+        "Vuelta": 8,
+        "TiempoMs": 93651
+    },
+    {
+        "Piloto": "juanchii",
+        "Vuelta": 9,
+        "TiempoMs": 85576
+    },
+    {
+        "Piloto": "juanchii",
+        "Vuelta": 10,
+        "TiempoMs": 86725
+    },
+    {
         "Piloto": "Gaspar Celeste",
         "Vuelta": 1,
         "TiempoMs": 163097
