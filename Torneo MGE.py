@@ -113,12 +113,12 @@ seccion_menu = st.session_state['pagina_activa']
 # Obtiene la ruta absoluta de la carpeta donde se encuentra este archivo de script
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-CARPETA_DATOS = os.path.join(BASE_DIR, "resultados_json")
-CARPETA_VUELTAS = os.path.join(BASE_DIR, "resultados_json", "Vueltas")
+# Apunta directamente a la raíz de tu proyecto donde ya subiste los archivos
+CARPETA_DATOS = BASE_DIR
+CARPETA_VUELTAS = os.path.join(BASE_DIR, "Vueltas") # O dejar CARPETA_DATOS si están todos juntos
 
-for c in [CARPETA_DATOS, CARPETA_VUELTAS]:
-    if not os.path.exists(c):
-        os.makedirs(c)
+if not os.path.exists(CARPETA_VUELTAS):
+    os.makedirs(CARPETA_VUELTAS)
 
 def convertir_ms_a_minutos(ms):
     if not ms or ms <= 0:
