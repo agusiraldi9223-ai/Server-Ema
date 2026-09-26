@@ -115,7 +115,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Apunta directamente a la raíz de tu proyecto donde ya subiste los archivos
 CARPETA_DATOS = BASE_DIR
-CARPETA_VUELTAS = os.path.join(BASE_DIR, "Vueltas") # O dejar CARPETA_DATOS si están todos juntos
+CARPETA_VUELTAS = BASE_DIR # O dejar CARPETA_DATOS si están todos juntos
 
 if not os.path.exists(CARPETA_VUELTAS):
     os.makedirs(CARPETA_VUELTAS)
