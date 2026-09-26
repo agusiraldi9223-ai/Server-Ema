@@ -131,6 +131,8 @@ def convertir_ms_a_minutos(ms):
 
 def limpiar_nombre_circuito(nombre_archivo):
     nombre = nombre_archivo.rsplit('.', 1)[0]
+    # Remueve números iniciales y espacios/guiones (ej: "01", "02 - ")
+    nombre = re.sub(r'^\d+[\s\-_]*', '', nombre)
     nombre = nombre.replace("_", " ").replace("-", " ")
     palabras_a_remover = ["clasificacion", "clasificación", "quali", "sprint", "carrera", "race", "vueltas"]
     for palabra in palabras_a_remover:
@@ -234,7 +236,7 @@ else:
 
 
 archivos_json = [f for f in os.listdir(CARPETA_DATOS) if f.endswith(".json")]
-archivos_json.sort(key=lambda x: os.path.getmtime(os.path.join(CARPETA_DATOS, x)))
+archivos_json.sort()
 
 if archivos_json:
     circuitos = {}
