@@ -936,8 +936,6 @@ if seccion_menu == "Resumen General":
                 st.plotly_chart(fig_clasif_ev, use_container_width=True)
             else:
                 st.info("No hay datos disponibles para mostrar en el gráfico de clasificación.")
-import copy
-
 # --- VISTA: COMPARATIVA DE TIEMPOS ---
 elif seccion_menu == "Comparativa de Tiempos":
     st.subheader("📊 Comparativa Global de Tiempos por Evento")
