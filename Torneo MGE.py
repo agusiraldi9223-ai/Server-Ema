@@ -940,27 +940,26 @@ if seccion_menu == "Resumen General":
 elif seccion_menu == "Comparativa de Tiempos":
     st.subheader("📊 Comparativa Global de Tiempos por Evento")
     if datos_comparativa_tiempos:
-        # Menú desplegable con "Campeonato Completo" y los circuitos disponibles
+        # Menú desplegable con "Campeonato Completo" y los circuitos
         opciones_circuitos = ["Campeonato Completo"] + list(datos_comparativa_tiempos.keys())
         circuito_sel = st.selectbox("Seleccionar Circuito / Evento:", opciones_circuitos)
         
-        # Diccionario para almacenar los datos a mostrar en las 3 columnas
         eventos_data = {"Clasificación": [], "Sprint": [], "Carrera": []}
         
         if circuito_sel == "Campeonato Completo":
-            # Recorremos todos los circuitos y acumulamos los datos para Clasificación, Sprint y Carrera
+            # Acumulamos y combinamos los registros de todas las fechas cargadas
             for circ, sesiones in datos_comparativa_tiempos.items():
                 for tipo in ["Clasificación", "Sprint", "Carrera"]:
                     if tipo in sesiones:
                         for reg in sesiones[tipo]:
-                            # Creamos una copia exacta del registro para evitar alterar el original
                             reg_copia = copy.deepcopy(reg)
+                            # Opcional: Si quieres identificar a qué circuito pertenece cada registro en el global
+                            reg_copia['Pos'] = f"{reg['Pos']} ({circ})"
                             eventos_data[tipo].append(reg_copia)
         else:
-            # Si es un circuito individual, copiamos exactamente sus datos de forma independiente
             eventos_data = copy.deepcopy(datos_comparativa_tiempos.get(circuito_sel, {"Clasificación": [], "Sprint": [], "Carrera": []}))
             
-        # Mantenemos las 3 columnas idénticas para ambas vistas
+        # Mantenemos las 3 columnas idénticas
         cols = st.columns(3)
         tipos_sesion = ["Clasificación", "Sprint", "Carrera"]
         for i, tipo in enumerate(tipos_sesion):
