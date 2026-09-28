@@ -938,24 +938,125 @@ if seccion_menu == "Resumen General":
                 st.info("No hay datos disponibles para mostrar en el gráfico de clasificación.")
 # --- VISTA: COMPARATIVA DE TIEMPOS ---
 elif seccion_menu == "Comparativa de Tiempos":
-        st.subheader("📊 Comparativa Global de Tiempos por Evento")
-        if datos_comparativa_tiempos:
-            circuito_sel = st.selectbox("Seleccionar Circuito / Evento:", list(datos_comparativa_tiempos.keys()))
-            eventos_data = datos_comparativa_tiempos[circuito_sel]
-            
-            cols = st.columns(3)
-            tipos_sesion = ["Clasificación", "Sprint", "Carrera"]
-            for i, tipo in enumerate(tipos_sesion):
-                with cols[i]:
-                    st.markdown(f"### 📄 {tipo}")
-                    registros = eventos_data.get(tipo, [])
-                    if registros:
-                        for reg in registros:
-                            st.info(f"**{reg['Pos']}**\n\n⏱️ `{reg['Tiempo']}` | 🕒 {reg['Dif']}")
+    st.markdown("## ⏱️ Diferencia de Ritmo y Poles (Histórico vs Fecha)")
+    st.markdown("Análisis estadístico milimétrico basado en los tiempos de clasificación.")
+    
+    # ==========================================
+    # PARTE 1: RESUMEN GLOBAL / HISTÓRICO DE POLES (NUEVO)
+    # ==========================================
+    if datos_comparativa_tiempos:
+        opciones_periodo = ["Campeonato Completo"] + list(datos_comparativa_tiempos.keys())
+        periodo_sel = st.selectbox("Seleccionar Período a Analizar (Poles):", opciones_periodo)
+        st.markdown("---")
+        
+        st.markdown("### 📈 Resumen de Ritmo en Clasificación (Poles)")
+        
+        stats_poles = {}
+        circuitos_a_procesar = list(datos_comparativa_tiempos.keys()) if periodo_sel == "Campeonato Completo" else [periodo_sel]
+        
+        for circ in circuitos_a_procesar:
+            sesiones = datos_comparativa_tiempos.get(circ, {})
+            if "Clasificación" in sesiones:
+                items_q = sesiones["Clasificación"]
+                lider_tiempo_ms = None
+                
+                for idx, reg in enumerate(items_q):
+                    match_piloto = re.search(r'[—\-]\s*(.+)$', reg['Pos'])
+                    if match_piloto:
+                        p_nombre = match_piloto.group(1).strip()
                     else:
-                        st.info(f"No hay datos de {tipo} cargados.")
+                        continue
+                    
+                    t_str = reg['Tiempo']
+                    try:
+                        partes_min = t_str.split(':')
+                        minutos = int(partes_min[0])
+                        partes_seg = partes_min[1].split(',')
+                        segundos = int(partes_seg[0])
+                        milisegundos = int(partes_seg[1])
+                        t_ms = (minutos * 60 * 1000) + (segundos * 1000) + milisegundos
+                    except:
+                        t_ms = None
+                    
+                    if t_ms and t_ms > 0:
+                        if idx == 0:
+                            lider_tiempo_ms = t_ms
+                        
+                        if p_nombre not in stats_poles:
+                            stats_poles[p_nombre] = {"suma_dif_ms": 0, "poles": 0, "mejor_tiempo": t_ms}
+                        
+                        dif_ms = t_ms - lider_tiempo_ms
+                        stats_poles[p_nombre]["suma_dif_ms"] += dif_ms
+                        if idx == 0:
+                            stats_poles[p_nombre]["poles"] += 1
+                        if t_ms < stats_poles[p_nombre]["mejor_tiempo"]:
+                            stats_poles[p_nombre]["mejor_tiempo"] = t_ms
+
+        if stats_poles:
+            cant_fechas = len(circuitos_a_procesar)
+            lista_ranking_poles = []
+            for p, data in stats_poles.items():
+                promedio_dif = data["suma_dif_ms"] / max(1, cant_fechas)
+                lista_ranking_poles.append({
+                    "Piloto": p,
+                    "PromedioDif": promedio_dif,
+                    "MejorTiempo": data["mejor_tiempo"],
+                    "Poles": data["poles"]
+                })
+            
+            lista_ranking_poles = sorted(lista_ranking_poles, key=lambda x: x["PromedioDif"])
+            lider_promedio = lista_ranking_poles[0]["PromedioDif"]
+            
+            titulo_etiqueta = "Promedio histórico" if periodo_sel == "Campeonato Completo" else f"Fecha: {periodo_sel}"
+            st.markdown(f"#### 📄 Clasificación (Poles - {titulo_etiqueta})")
+            
+            for idx, item in enumerate(lista_ranking_poles):
+                pos_num = idx + 1
+                p_nombre = item["Piloto"]
+                t_formato = convertir_ms_a_minutos(int(item["MejorTiempo"]))
+                
+                if pos_num == 1:
+                    dif_txt = "Líder"
+                else:
+                    dif_ms_relativo = item["PromedioDif"] - lider_promedio
+                    dif_txt = f"+{dif_ms_relativo/1000:.3f}s"
+                
+                st.markdown(f"""
+                    <div style="background-color: #1a2233; border: 1px solid #2d3b55; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #ffffff; font-weight: bold; font-size: 16px;">#{pos_num} — {p_nombre}</span>
+                            <span style="color: {'#00ff7f' if pos_num == 1 else '#ffaa00'}; font-weight: bold; font-size: 14px;">{dif_txt}</span>
+                        </div>
+                        <div style="color: #9ca3af; font-size: 13px; margin-top: 4px;">
+                            ⏱️ <code>{t_formato}</code> ({titulo_etiqueta})
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
         else:
-            st.info("Sube archivos de Clasificación, Sprint o Carrera para ver la comparativa.")
+            st.info("Aún no hay suficientes datos para generar el resumen.")
+
+        st.markdown("---")
+        
+        # ==========================================
+        # PARTE 2: TUS 3 COLUMNAS ORIGINALES POR CIRCUITO
+        # ==========================================
+        st.subheader("📊 Comparativa Global de Tiempos por Evento")
+        circuito_sel = st.selectbox("Seleccionar Circuito / Evento:", list(datos_comparativa_tiempos.keys()))
+        eventos_data = datos_comparativa_tiempos[circuito_sel]
+        
+        cols = st.columns(3)
+        tipos_sesion = ["Clasificación", "Sprint", "Carrera"]
+        for i, tipo in enumerate(tipos_sesion):
+            with cols[i]:
+                st.markdown(f"### 📄 {tipo}")
+                registros = eventos_data.get(tipo, [])
+                if registros:
+                    for reg in registros:
+                        st.info(f"**{reg['Pos']}**\n\n⏱️ `{reg['Tiempo']}` | 🕒 {reg['Dif']}")
+                else:
+                    st.info(f"No hay datos de {tipo} cargados.")
+    else:
+        st.info("Sube archivos de Clasificación, Sprint o Carrera para ver la comparativa.")
 
 
     # --- VISTA: LASTRE ---
