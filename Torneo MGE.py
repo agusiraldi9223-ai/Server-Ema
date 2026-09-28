@@ -540,11 +540,14 @@ if seccion_menu == "Resumen General":
             if "Auto" in df_global.columns:
                 df_global["Auto"] = df_global["Auto"].apply(limpiar_modelo)
                 
+                # Filtramos para que solo busque el auto en Carreras y Sprints (evitando las filas de Pole/VR que dicen BMW)
+                df_sesiones_reales = df_global[df_global["Tipo"].isin(["Carrera", "Sprint"])]
+                
                 def obtener_ultimo_auto(series):
                     validos = [val for val in series if val != "-" and pd.notna(val)]
                     return validos[-1] if validos else "-"
 
-                df_autos = df_global.groupby("Piloto")["Auto"].agg(obtener_ultimo_auto).reset_index()
+                df_autos = df_sesiones_reales.groupby("Piloto")["Auto"].agg(obtener_ultimo_auto).reset_index()
             else:
                 df_autos = pd.DataFrame({"Piloto": df_global["Piloto"].unique(), "Auto": "-"})
 
