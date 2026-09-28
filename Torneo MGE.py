@@ -5,7 +5,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.io as pio
-
+import copy
 # --- 1. CONFIGURACIÓN Y ESTILOS MODERNOS (F1/Motorsport TV Style) ---
 st.set_page_config(page_title="Campeonato TC", layout="wide")
 
