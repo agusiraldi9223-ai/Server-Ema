@@ -936,9 +936,47 @@ if seccion_menu == "Resumen General":
                 st.plotly_chart(fig_clasif_ev, use_container_width=True)
             else:
                 st.info("No hay datos disponibles para mostrar en el gráfico de clasificación.")
-File "/mount/src/server-ema/Torneo MGE.py", line 942
-  elif seccion_menu == "Comparativa de Tiempos":
-  ^
+import copy
+
+# --- VISTA: COMPARATIVA DE TIEMPOS ---
+elif seccion_menu == "Comparativa de Tiempos":
+    st.subheader("📊 Comparativa Global de Tiempos por Evento")
+    if datos_comparativa_tiempos:
+        # Menú desplegable con "Campeonato Completo" y los circuitos disponibles
+        opciones_circuitos = ["Campeonato Completo"] + list(datos_comparativa_tiempos.keys())
+        circuito_sel = st.selectbox("Seleccionar Circuito / Evento:", opciones_circuitos)
+        
+        # Diccionario para almacenar los datos a mostrar en las 3 columnas
+        eventos_data = {"Clasificación": [], "Sprint": [], "Carrera": []}
+        
+        if circuito_sel == "Campeonato Completo":
+            # Recorremos todos los circuitos y acumulamos los datos para Clasificación, Sprint y Carrera
+            for circ, sesiones in datos_comparativa_tiempos.items():
+                for tipo in ["Clasificación", "Sprint", "Carrera"]:
+                    if tipo in sesiones:
+                        for reg in sesiones[tipo]:
+                            # Creamos una copia exacta del registro para evitar alterar el original
+                            reg_copia = copy.deepcopy(reg)
+                            eventos_data[tipo].append(reg_copia)
+        else:
+            # Si es un circuito individual, copiamos exactamente sus datos de forma independiente
+            eventos_data = copy.deepcopy(datos_comparativa_tiempos.get(circuito_sel, {"Clasificación": [], "Sprint": [], "Carrera": []}))
+            
+        # Mantenemos las 3 columnas idénticas para ambas vistas
+        cols = st.columns(3)
+        tipos_sesion = ["Clasificación", "Sprint", "Carrera"]
+        for i, tipo in enumerate(tipos_sesion):
+            with cols[i]:
+                st.markdown(f"### 📄 {tipo}")
+                registros = eventos_data.get(tipo, [])
+                if registros:
+                    for reg in registros:
+                        st.info(f"**{reg['Pos']}**\n\n⏱️ `{reg['Tiempo']}` | 🕒 {reg['Dif']}")
+                else:
+                    st.info(f"No hay datos de {tipo} cargados.")
+    else:
+        st.info("Sube archivos de Clasificación, Sprint o Carrera para ver la comparativa.")
+
 
     # --- VISTA: LASTRE ---
 elif seccion_menu == "Lastre":
