@@ -936,19 +936,20 @@ if seccion_menu == "Resumen General":
                 st.plotly_chart(fig_clasif_ev, use_container_width=True)
             else:
                 st.info("No hay datos disponibles para mostrar en el gráfico de clasificación.")
+
 # --- VISTA: COMPARATIVA DE TIEMPOS ---
 elif seccion_menu == "Comparativa de Tiempos":
     st.subheader("📊 Comparativa Global de Tiempos por Evento")
-    if datos_comparativa_tiempos:
+    if datos_comparativa_tiempros if 'datos_comparativa_tiempros' in locals() else datos_comparativa_tiempos:
         opciones_circuitos = ["Campeonato Completo"] + list(datos_comparativa_tiempos.keys())
         circuito_sel = st.selectbox("Seleccionar Circuito / Evento:", opciones_circuitos)
         
         eventos_data = {"Clasificación": [], "Sprint": [], "Carrera": []}
         
         if circuito_sel == "Campeonato Completo":
-            st.markdown("### 📈 Resumen Global (Brecha Relativa y Promedio de Ritmo)")
+            st.markdown("### 📈 Resumen Global (Brecha Relativa y Acumulado del Campeonato)")
             
-            # Procesamos Clasificación por Brecha Relativa Porcentual
+            # 1. Procesamiento avanzado para Clasificación (Brecha Relativa Porcentual)
             stats_clasif = {}
             vuelta_base_ms = None
             
@@ -976,7 +977,7 @@ elif seccion_menu == "Comparativa de Tiempos":
                             if idx == 0:
                                 lider_ms = t_ms
                                 if vuelta_base_ms is None:
-                                    vuelta_base_ms = t_ms # Tomamos una referencia base del campeonato
+                                    vuelta_base_ms = t_ms
                             
                             porcentaje_lider = (t_ms / lider_ms) * 100
                             
@@ -988,7 +989,6 @@ elif seccion_menu == "Comparativa de Tiempos":
                             if t_ms < stats_clasif[p_nombre]["mejor_t"]:
                                 stats_clasif[p_nombre]["mejor_t"] = t_ms
 
-            # Generamos los registros procesados para Clasificación en Campeonato Completo
             if stats_clasif and vuelta_base_ms:
                 ranking_clasif_global = []
                 for p, data in stats_clasif.items():
@@ -1021,29 +1021,19 @@ elif seccion_menu == "Comparativa de Tiempos":
                         "Dif": dif_txt
                     })
 
-            # Lógica equivalente de consolidación para Sprint y Carrera en Campeonato Completo
+            # 2. Acumulación limpia para Sprint y Carrera (mostrando resultados con detalle de circuito)
             for tipo in ["Sprint", "Carrera"]:
-                stats_tipo = {}
                 for circ, sesiones in datos_comparativa_tiempos.items():
                     if tipo in sesiones:
                         for reg in sesiones[tipo]:
-                            match_piloto = re.search(r'[—\-]\s*(.+)$', reg['Pos'])
-                            p_nombre = match_piloto.group(1).strip() if match_piloto else reg['Pos']
-                            if p_nombre not in stats_tipo:
-                                stats_tipo[p_nombre] = {"apariciones": 0}
-                            stats_tipo[p_nombre]["apariciones"] += 1
-                
-                # Ordenamos o listamos de forma consolidada para el campeonato
-                for p in stats_tipo.keys():
-                    eventos_data[tipo].append({
-                        "Pos": f"Piloto: {p}",
-                        "Tiempo": "Promedio Gral.",
-                        "Dif": f"{stats_tipo[p]['apariciones']} fechas disputadas"
-                    })
+                            reg_copia = copy.deepcopy(reg)
+                            # Añadimos el nombre del circuito para diferenciar de qué fecha es cada resultado
+                            reg_copia['Pos'] = f"{reg['Pos']} ({circ})"
+                            eventos_data[tipo].append(reg_copia)
         else:
             eventos_data = copy.deepcopy(datos_comparativa_tiempos.get(circuito_sel, {"Clasificación": [], "Sprint": [], "Carrera": []}))
             
-        # Mostramos las 3 columnas idénticas
+        # Mantenemos las 3 columnas idénticas
         cols = st.columns(3)
         tipos_sesion = ["Clasificación", "Sprint", "Carrera"]
         for i, tipo in enumerate(tipos_sesion):
