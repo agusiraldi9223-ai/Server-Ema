@@ -941,17 +941,14 @@ elif seccion_menu == "Comparativa de Tiempos":
     st.markdown("## ⏱️ Diferencia de Ritmo y Poles (Histórico vs Fecha)")
     st.markdown("Análisis estadístico milimétrico basado en los tiempos de clasificación.")
     
-    # 1. Selector de Período a Analizar (Igual a la foto 3)
+    # 1. Selector de Período a Analizar (Resumen Global / Histórico)
     opciones_periodo = ["Campeonato Completo"] + list(datos_comparativa_tiempos.keys())
     periodo_sel = st.selectbox("Seleccionar Período a Analizar:", opciones_periodo)
     st.markdown("---")
     
     st.markdown("### 📈 Resumen de Ritmo en Clasificación (Poles)")
     
-    # Diccionario para acumular o filtrar según la selección
     stats_poles = {}
-    
-    # Si elige Campeonato Completo, juntamos todo; si elige un circuito, filtramos solo ese
     circuitos_a_procesar = list(datos_comparativa_tiempos.keys()) if periodo_sel == "Campeonato Completo" else [periodo_sel]
     
     for circ in circuitos_a_procesar:
@@ -1034,6 +1031,28 @@ elif seccion_menu == "Comparativa de Tiempos":
             """, unsafe_allow_html=True)
     else:
         st.info("Aún no hay suficientes datos para generar el resumen.")
+
+    st.markdown("---")
+
+    # 2. COMPARATIVA DETALLADA POR EVENTO INDIVIDUAL (CON LAS 3 COLUMNAS: Clasificación, Sprint y Carrera)
+    st.subheader("📊 Comparativa Global de Tiempos por Evento")
+    if datos_comparativa_tiempos:
+        circuito_sel = st.selectbox("Seleccionar Circuito / Evento para Detalle:", list(datos_comparativa_tiempos.keys()))
+        eventos_data = datos_comparativa_tiempos[circuito_sel]
+        
+        cols = st.columns(3)
+        tipos_sesion = ["Clasificación", "Sprint", "Carrera"]
+        for i, tipo in enumerate(tipos_sesion):
+            with cols[i]:
+                st.markdown(f"### 📄 {tipo}")
+                registros = eventos_data.get(tipo, [])
+                if registros:
+                    for reg in registros:
+                        st.info(f"**{reg['Pos']}**\n\n⏱️ `{reg['Tiempo']}` | 🕒 {reg['Dif']}")
+                else:
+                    st.info(f"No hay datos de {tipo} cargados.")
+    else:
+        st.info("Sube archivos de Clasificación, Sprint o Carrera para ver la comparativa.")
 
 
     # --- VISTA: LASTRE ---
