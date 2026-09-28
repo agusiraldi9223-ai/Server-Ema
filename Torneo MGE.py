@@ -537,11 +537,11 @@ if seccion_menu == "Resumen General":
                 else:
                     return nombre_modelo
 
-if "Auto" in df_global.columns:
+            if "Auto" in df_global.columns:
             df_global["Auto"] = df_global["Auto"].apply(limpiar_modelo)
             # Cambiamos .mode() por el último auto registrado para que no tome valores erróneos previos
             df_autos = df_global.groupby("Piloto")["Auto"].agg(lambda x: x.iloc[-1] if not x.empty else "-").reset_index()
-        else:
+            else:
             df_autos = pd.DataFrame({"Piloto": df_global["Piloto"].unique(), "Auto": "-"})
 
             tabla_campeonato = df_global.groupby("Piloto")["Puntos"].sum().reset_index()
