@@ -1004,28 +1004,31 @@ elif seccion_menu == "Comparativa de Tiempos":
             titulo_etiqueta = "Promedio histórico" if periodo_sel == "Campeonato Completo" else f"Fecha: {periodo_sel}"
             st.markdown(f"#### 📄 Clasificación (Poles - {titulo_etiqueta})")
             
-            for idx, item in enumerate(lista_ranking_poles):
-                pos_num = idx + 1
-                p_nombre = item["Piloto"]
-                t_formato = convertir_ms_a_minutos(int(item["MejorTiempo"]))
-                
-                if pos_num == 1:
-                    dif_txt = "Líder"
-                else:
-                    dif_ms_relativo = item["PromedioMs"] - lider_promedio_ms
-                    dif_txt = f"+{dif_ms_relativo/1000:.3f}s"
-                
-                st.markdown(f"""
-                    <div style="background-color: #1a2233; border: 1px solid #2d3b55; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: #ffffff; font-weight: bold; font-size: 16px;">#{pos_num} — {p_nombre}</span>
-                            <span style="color: {'#00ff7f' if pos_num == 1 else '#ffaa00'}; font-weight: bold; font-size: 14px;">{dif_txt}</span>
+            # Usamos un contenedor con ancho limitado para que las tarjetas no se estiren de más
+            col_izq, col_centro, col_der = st.columns([1, 2, 1])
+            with col_centro:
+                for idx, item in enumerate(lista_ranking_poles):
+                    pos_num = idx + 1
+                    p_nombre = item["Piloto"]
+                    t_formato = convertir_ms_a_minutos(int(item["MejorTiempo"]))
+                    
+                    if pos_num == 1:
+                        dif_txt = "Líder"
+                    else:
+                        dif_ms_relativo = item["PromedioMs"] - lider_promedio_ms
+                        dif_txt = f"+{dif_ms_relativo/1000:.3f}s"
+                    
+                    st.markdown(f"""
+                        <div style="background-color: #1a2233; border: 1px solid #2d3b55; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: #ffffff; font-weight: bold; font-size: 16px;">#{pos_num} — {p_nombre}</span>
+                                <span style="color: {'#00ff7f' if pos_num == 1 else '#ffaa00'}; font-weight: bold; font-size: 14px;">{dif_txt}</span>
+                            </div>
+                            <div style="color: #9ca3af; font-size: 13px; margin-top: 4px;">
+                                ⏱️ <code>{t_formato}</code> ({titulo_etiqueta})
+                            </div>
                         </div>
-                        <div style="color: #9ca3af; font-size: 13px; margin-top: 4px;">
-                            ⏱️ <code>{t_formato}</code> ({titulo_etiqueta})
-                        </div>
-                    </div>
-                """, unsafe_allow_html=True)
+                    """, unsafe_allow_html=True)
         else:
             st.info("Aún no hay suficientes datos para generar el resumen.")
 
