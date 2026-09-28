@@ -944,17 +944,35 @@ elif seccion_menu == "Comparativa de Tiempos":
         opciones_circuitos = ["Campeonato Completo"] + list(datos_comparativa_tiempos.keys())
         circuito_sel = st.selectbox("Seleccionar Circuito / Evento:", opciones_circuitos)
         
-        # Si selecciona Campeonato Completo, unimos los datos de todos los circuitos por tipo de sesión
+        # Diccionario para almacenar los datos a mostrar en las 3 columnas
+        eventos_data = {"Clasificación": [], "Sprint": [], "Carrera": []}
+        
         if circuito_sel == "Campeonato Completo":
-            eventos_data = {"Clasificación": [], "Sprint": [], "Carrera": []}
+            # Lógica para unificar/acumular el campeonato completo de forma independiente
+            acumulador_sesiones = {"Clasificación": {}, "Sprint": {}, "Carrera": {}}
+            
             for circ, sesiones in datos_comparativa_tiempos.items():
                 for tipo in ["Clasificación", "Sprint", "Carrera"]:
                     if tipo in sesiones:
-                        eventos_data[tipo].extend(sesiones[tipo])
-        else:
-            eventos_data = datos_comparativa_tiempos[circuito_sel]
+                        for reg in sesiones[tipo]:
+                            match_piloto = re.search(r'[—\-]\s*(.+)$', reg['Pos'])
+                            if match_piloto:
+                                p_nombre = match_piloto.group(1).strip()
+                            else:
+                                p_nombre = reg['Pos']
+                            
+                            # Usamos el piloto como clave para acumular o conservar su mejor registro global
+                            if p_nombre not in acumulador_sesiones[tipo]:
+                                acumulador_sesiones[tipo][p_nombre] = reg
             
-        # Mantenemos las 3 columnas idénticas a la foto 2
+            # Convertimos el acumulado de vuelta en listas ordenadas para las columnas
+            for tipo in ["Clasificación", "Sprint", "Carrera"]:
+                eventos_data[tipo] = list(acumulador_sesiones[tipo].values())
+        else:
+            # Si es un circuito individual, copiamos exactamente sus datos sin tocar el resto
+            eventos_data = datos_comparativa_tiempos.get(circuito_sel, {"Clasificación": [], "Sprint": [], "Carrera": []})
+            
+        # Mantenemos las 3 columnas idénticas a las vistas individuales
         cols = st.columns(3)
         tipos_sesion = ["Clasificación", "Sprint", "Carrera"]
         for i, tipo in enumerate(tipos_sesion):
