@@ -936,11 +936,13 @@ if seccion_menu == "Resumen General":
                 st.plotly_chart(fig_clasif_ev, use_container_width=True)
             else:
                 st.info("No hay datos disponibles para mostrar en el gráfico de clasificación.")
+import copy
+
 # --- VISTA: COMPARATIVA DE TIEMPOS ---
 elif seccion_menu == "Comparativa de Tiempos":
     st.subheader("📊 Comparativa Global de Tiempos por Evento")
     if datos_comparativa_tiempos:
-        # Menú desplegable con "Campeonato Completo" y los circuitos
+        # Menú desplegable con "Campeonato Completo" y los circuitos disponibles
         opciones_circuitos = ["Campeonato Completo"] + list(datos_comparativa_tiempos.keys())
         circuito_sel = st.selectbox("Seleccionar Circuito / Evento:", opciones_circuitos)
         
@@ -948,31 +950,19 @@ elif seccion_menu == "Comparativa de Tiempos":
         eventos_data = {"Clasificación": [], "Sprint": [], "Carrera": []}
         
         if circuito_sel == "Campeonato Completo":
-            # Lógica para unificar/acumular el campeonato completo de forma independiente
-            acumulador_sesiones = {"Clasificación": {}, "Sprint": {}, "Carrera": {}}
-            
+            # Recorremos todos los circuitos y acumulamos los datos para Clasificación, Sprint y Carrera
             for circ, sesiones in datos_comparativa_tiempos.items():
                 for tipo in ["Clasificación", "Sprint", "Carrera"]:
                     if tipo in sesiones:
                         for reg in sesiones[tipo]:
-                            match_piloto = re.search(r'[—\-]\s*(.+)$', reg['Pos'])
-                            if match_piloto:
-                                p_nombre = match_piloto.group(1).strip()
-                            else:
-                                p_nombre = reg['Pos']
-                            
-                            # Usamos el piloto como clave para acumular o conservar su mejor registro global
-                            if p_nombre not in acumulador_sesiones[tipo]:
-                                acumulador_sesiones[tipo][p_nombre] = reg
-            
-            # Convertimos el acumulado de vuelta en listas ordenadas para las columnas
-            for tipo in ["Clasificación", "Sprint", "Carrera"]:
-                eventos_data[tipo] = list(acumulador_sesiones[tipo].values())
+                            # Creamos una copia exacta del registro para evitar alterar el original
+                            reg_copia = copy.deepcopy(reg)
+                            eventos_data[tipo].append(reg_copia)
         else:
-            # Si es un circuito individual, copiamos exactamente sus datos sin tocar el resto
-            eventos_data = datos_comparativa_tiempos.get(circuito_sel, {"Clasificación": [], "Sprint": [], "Carrera": []})
+            # Si es un circuito individual, copiamos exactamente sus datos de forma independiente
+            eventos_data = copy.deepcopy(datos_comparativa_tiempos.get(circuito_sel, {"Clasificación": [], "Sprint": [], "Carrera": []}))
             
-        # Mantenemos las 3 columnas idénticas a las vistas individuales
+        # Mantenemos las 3 columnas idénticas para ambas vistas
         cols = st.columns(3)
         tipos_sesion = ["Clasificación", "Sprint", "Carrera"]
         for i, tipo in enumerate(tipos_sesion):
