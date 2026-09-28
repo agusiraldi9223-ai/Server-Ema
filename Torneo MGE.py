@@ -539,7 +539,12 @@ if seccion_menu == "Resumen General":
 
             if "Auto" in df_global.columns:
                 df_global["Auto"] = df_global["Auto"].apply(limpiar_modelo)
-                df_autos = df_global.groupby("Piloto")["Auto"].agg(lambda x: x.iloc[-1] if not x.empty else "-").reset_index()
+                
+                def obtener_ultimo_auto(series):
+                    validos = [val for val in series if val != "-" and pd.notna(val)]
+                    return validos[-1] if validos else "-"
+
+                df_autos = df_global.groupby("Piloto")["Auto"].agg(obtener_ultimo_auto).reset_index()
             else:
                 df_autos = pd.DataFrame({"Piloto": df_global["Piloto"].unique(), "Auto": "-"})
 
