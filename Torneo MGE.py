@@ -941,10 +941,8 @@ elif seccion_menu == "Comparativa de Tiempos":
     st.markdown("## ⏱️ Diferencia de Ritmo y Poles (Histórico vs Fecha)")
     st.markdown("Análisis estadístico milimétrico basado en los tiempos de clasificación.")
     
-    # ==========================================
-    # PARTE 1: RESUMEN GLOBAL / HISTÓRICO DE POLES (NUEVO)
-    # ==========================================
     if datos_comparativa_tiempos:
+        # 1. Selector de Período para el Resumen Superior
         opciones_periodo = ["Campeonato Completo"] + list(datos_comparativa_tiempos.keys())
         periodo_sel = st.selectbox("Seleccionar Período a Analizar (Poles):", opciones_periodo)
         st.markdown("---")
@@ -983,29 +981,25 @@ elif seccion_menu == "Comparativa de Tiempos":
                             lider_tiempo_ms = t_ms
                         
                         if p_nombre not in stats_poles:
-                            stats_poles[p_nombre] = {"suma_dif_ms": 0, "poles": 0, "mejor_tiempo": t_ms}
+                            stats_poles[p_nombre] = {"suma_ms": 0, "apariciones": 0, "mejor_tiempo": t_ms}
                         
-                        dif_ms = t_ms - lider_tiempo_ms
-                        stats_poles[p_nombre]["suma_dif_ms"] += dif_ms
-                        if idx == 0:
-                            stats_poles[p_nombre]["poles"] += 1
+                        stats_poles[p_nombre]["suma_ms"] += t_ms
+                        stats_poles[p_nombre]["apariciones"] += 1
                         if t_ms < stats_poles[p_nombre]["mejor_tiempo"]:
                             stats_poles[p_nombre]["mejor_tiempo"] = t_ms
 
         if stats_poles:
-            cant_fechas = len(circuitos_a_procesar)
             lista_ranking_poles = []
             for p, data in stats_poles.items():
-                promedio_dif = data["suma_dif_ms"] / max(1, cant_fechas)
+                promedio_ms = data["suma_ms"] / data["apariciones"]
                 lista_ranking_poles.append({
                     "Piloto": p,
-                    "PromedioDif": promedio_dif,
-                    "MejorTiempo": data["mejor_tiempo"],
-                    "Poles": data["poles"]
+                    "PromedioMs": promedio_ms,
+                    "MejorTiempo": data["mejor_tiempo"]
                 })
             
-            lista_ranking_poles = sorted(lista_ranking_poles, key=lambda x: x["PromedioDif"])
-            lider_promedio = lista_ranking_poles[0]["PromedioDif"]
+            lista_ranking_poles = sorted(lista_ranking_poles, key=lambda x: x["PromedioMs"])
+            lider_promedio_ms = lista_ranking_poles[0]["PromedioMs"]
             
             titulo_etiqueta = "Promedio histórico" if periodo_sel == "Campeonato Completo" else f"Fecha: {periodo_sel}"
             st.markdown(f"#### 📄 Clasificación (Poles - {titulo_etiqueta})")
@@ -1018,7 +1012,7 @@ elif seccion_menu == "Comparativa de Tiempos":
                 if pos_num == 1:
                     dif_txt = "Líder"
                 else:
-                    dif_ms_relativo = item["PromedioDif"] - lider_promedio
+                    dif_ms_relativo = item["PromedioMs"] - lider_promedio_ms
                     dif_txt = f"+{dif_ms_relativo/1000:.3f}s"
                 
                 st.markdown(f"""
@@ -1038,7 +1032,7 @@ elif seccion_menu == "Comparativa de Tiempos":
         st.markdown("---")
         
         # ==========================================
-        # PARTE 2: TUS 3 COLUMNAS ORIGINALES POR CIRCUITO
+        # 2. TUS 3 COLUMNAS ORIGINALES POR CIRCUITO
         # ==========================================
         st.subheader("📊 Comparativa Global de Tiempos por Evento")
         circuito_sel = st.selectbox("Seleccionar Circuito / Evento:", list(datos_comparativa_tiempos.keys()))
