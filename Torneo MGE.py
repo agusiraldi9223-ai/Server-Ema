@@ -1034,7 +1034,7 @@ elif seccion_menu == "Comparativa de Tiempos":
 
     st.markdown("---")
 
-    # 2. COMPARATIVA DETALLADA POR EVENTO INDIVIDUAL (CON LAS 3 COLUMNAS: Clasificación, Sprint y Carrera)
+    # 2. COMPARATIVA DETALLADA POR EVENTO INDIVIDUAL (LAS 3 COLUMNAS)
     st.subheader("📊 Comparativa Global de Tiempos por Evento")
     if datos_comparativa_tiempos:
         circuito_sel = st.selectbox("Seleccionar Circuito / Evento para Detalle:", list(datos_comparativa_tiempos.keys()))
