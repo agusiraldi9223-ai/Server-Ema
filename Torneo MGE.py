@@ -940,16 +940,16 @@ if seccion_menu == "Resumen General":
 # --- VISTA: COMPARATIVA DE TIEMPOS ---
 elif seccion_menu == "Comparativa de Tiempos":
     st.subheader("📊 Comparativa Global de Tiempos por Evento")
-    if datos_comparativa_tiempros if 'datos_comparativa_tiempros' in locals() else datos_comparativa_tiempos:
+    if datos_comparativa_tiempos:
         opciones_circuitos = ["Campeonato Completo"] + list(datos_comparativa_tiempos.keys())
         circuito_sel = st.selectbox("Seleccionar Circuito / Evento:", opciones_circuitos)
         
         eventos_data = {"Clasificación": [], "Sprint": [], "Carrera": []}
         
         if circuito_sel == "Campeonato Completo":
-            st.markdown("### 📈 Resumen Global (Brecha Relativa y Acumulado del Campeonato)")
+            st.markdown("### 📈 Resumen Global (Brecha Relativa y Promedio de Campeonato)")
             
-            # 1. Procesamiento avanzado para Clasificación (Brecha Relativa Porcentual)
+            # 1. Procesamiento para Clasificación (Brecha Relativa Porcentual)
             stats_clasif = {}
             vuelta_base_ms = None
             
@@ -1021,15 +1021,44 @@ elif seccion_menu == "Comparativa de Tiempos":
                         "Dif": dif_txt
                     })
 
-            # 2. Acumulación limpia para Sprint y Carrera (mostrando resultados con detalle de circuito)
-            for tipo in ["Sprint", "Carrera"]:
-                for circ, sesiones in datos_comparativa_tiempos.items():
-                    if tipo in sesiones:
-                        for reg in sesiones[tipo]:
-                            reg_copia = copy.deepcopy(reg)
-                            # Añadimos el nombre del circuito para diferenciar de qué fecha es cada resultado
-                            reg_copia['Pos'] = f"{reg['Pos']} ({circ})"
-                            eventos_data[tipo].append(reg_copia)
+            # 2. Procesamiento para Carrera (Promedio de rendimiento y posición global)
+            stats_carrera = {}
+            for circ, sesiones in datos_comparativa_tiempos.items():
+                if "Carrera" in sesiones:
+                    for idx, reg in enumerate(sesiones["Carrera"]):
+                        match_piloto = re.search(r'[—\-]\s*(.+)$', reg['Pos'])
+                        p_nombre = match_piloto.group(1).strip() if match_piloto else reg['Pos']
+                        
+                        posicion_num = idx + 1 # La posición en la carrera de esa fecha
+                        if p_nombre not in stats_carrera:
+                            stats_carrera[p_nombre] = {"suma_pos": 0, "apariciones": 0}
+                        
+                        stats_carrera[p_nombre]["suma_pos"] += posicion_num
+                        stats_carrera[p_nombre]["apariciones"] += 1
+
+            if stats_carrera:
+                ranking_carrera_global = []
+                for p, data in stats_carrera.items():
+                    promedio_pos = data["suma_pos"] / data["apariciones"]
+                    ranking_carrera_global.append({
+                        "Piloto": p,
+                        "PromedioPos": promedio_pos,
+                        "Apariciones": data["apariciones"]
+                    })
+                
+                # Ordenamos por mejor posición promedio en carrera
+                ranking_carrera_global = sorted(ranking_carrera_global, key=lambda x: x["PromedioPos"])
+                
+                for idx, item in enumerate(ranking_carrera_global):
+                    pos_num = idx + 1
+                    p_nombre = item["Piloto"]
+                    prom_pos_redondeado = round(item["PromedioPos"], 1)
+                    
+                    eventos_data["Carrera"].append({
+                        "Pos": f"#{pos_num} — {p_nombre}",
+                        "Tiempo": f"Prom. Pos: {prom_pos_redondeado}",
+                        "Dif": f"{item['Apariciones']} fechas disputadas"
+                    })
         else:
             eventos_data = copy.deepcopy(datos_comparativa_tiempos.get(circuito_sel, {"Clasificación": [], "Sprint": [], "Carrera": []}))
             
