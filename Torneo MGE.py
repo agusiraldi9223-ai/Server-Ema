@@ -551,6 +551,18 @@ if seccion_menu == "Resumen General":
             else:
                 df_autos = pd.DataFrame({"Piloto": df_global["Piloto"].unique(), "Auto": "-"})
 
+            # --- CORRECCIÓN DIRECTA DE RESPALDO ---
+            correccion_definitiva = {
+                "Gaspar Celeste": "Challenger",
+                # Agrega aquí otros pilotos si notas que alguno muestra un auto erróneo:
+                # "Nombre Apellido": "Modelo Correcto",
+            }
+            if "Piloto" in df_autos.columns and "Auto" in df_autos.columns:
+                df_autos["Auto"] = df_autos.apply(
+                    lambda row: correccion_definitiva.get(row["Piloto"], row["Auto"]), axis=1
+                )
+            # -------------------------------------
+
             tabla_campeonato = df_global.groupby("Piloto")["Puntos"].sum().reset_index()
             tabla_campeonato = pd.merge(tabla_campeonato, df_autos, on="Piloto", how="left")
             tabla_campeonato = tabla_campeonato.sort_values(by="Puntos", ascending=False).reset_index(drop=True)
