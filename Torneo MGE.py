@@ -940,26 +940,110 @@ if seccion_menu == "Resumen General":
 elif seccion_menu == "Comparativa de Tiempos":
     st.subheader("📊 Comparativa Global de Tiempos por Evento")
     if datos_comparativa_tiempos:
-        # Menú desplegable con "Campeonato Completo" y los circuitos
         opciones_circuitos = ["Campeonato Completo"] + list(datos_comparativa_tiempos.keys())
         circuito_sel = st.selectbox("Seleccionar Circuito / Evento:", opciones_circuitos)
         
         eventos_data = {"Clasificación": [], "Sprint": [], "Carrera": []}
         
         if circuito_sel == "Campeonato Completo":
-            # Acumulamos y combinamos los registros de todas las fechas cargadas
+            st.markdown("### 📈 Resumen Global (Brecha Relativa y Promedio de Ritmo)")
+            
+            # Procesamos Clasificación por Brecha Relativa Porcentual
+            stats_clasif = {}
+            vuelta_base_ms = None
+            
             for circ, sesiones in datos_comparativa_tiempos.items():
-                for tipo in ["Clasificación", "Sprint", "Carrera"]:
+                if "Clasificación" in sesiones:
+                    items_q = sesiones["Clasificación"]
+                    lider_ms = None
+                    
+                    for idx, reg in enumerate(items_q):
+                        match_piloto = re.search(r'[—\-]\s*(.+)$', reg['Pos'])
+                        p_nombre = match_piloto.group(1).strip() if match_piloto else reg['Pos']
+                        
+                        t_str = reg['Tiempo']
+                        try:
+                            partes_min = t_str.split(':')
+                            minutos = int(partes_min[0])
+                            partes_seg = partes_min[1].split(',')
+                            segundos = int(partes_seg[0])
+                            milisegundos = int(partes_seg[1])
+                            t_ms = (minutos * 60 * 1000) + (segundos * 1000) + milisegundos
+                        except:
+                            t_ms = None
+                        
+                        if t_ms and t_ms > 0:
+                            if idx == 0:
+                                lider_ms = t_ms
+                                if vuelta_base_ms is None:
+                                    vuelta_base_ms = t_ms # Tomamos una referencia base del campeonato
+                            
+                            porcentaje_lider = (t_ms / lider_ms) * 100
+                            
+                            if p_nombre not in stats_clasif:
+                                stats_clasif[p_nombre] = {"suma_pct": 0, "apariciones": 0, "mejor_t": t_ms}
+                            
+                            stats_clasif[p_nombre]["suma_pct"] += porcentaje_lider
+                            stats_clasif[p_nombre]["apariciones"] += 1
+                            if t_ms < stats_clasif[p_nombre]["mejor_t"]:
+                                stats_clasif[p_nombre]["mejor_t"] = t_ms
+
+            # Generamos los registros procesados para Clasificación en Campeonato Completo
+            if stats_clasif and vuelta_base_ms:
+                ranking_clasif_global = []
+                for p, data in stats_clasif.items():
+                    promedio_pct = data["suma_pct"] / data["apariciones"]
+                    ranking_clasif_global.append({
+                        "Piloto": p,
+                        "PromedioPct": promedio_pct,
+                        "MejorTiempo": data["mejor_t"]
+                    })
+                
+                ranking_clasif_global = sorted(ranking_clasif_global, key=lambda x: x["PromedioPct"])
+                lider_pct = ranking_clasif_global[0]["PromedioPct"]
+                
+                for idx, item in enumerate(ranking_clasif_global):
+                    pos_num = idx + 1
+                    p_nombre = item["Piloto"]
+                    
+                    if pos_num == 1:
+                        dif_txt = "Líder"
+                        t_est = vuelta_base_ms
+                    else:
+                        dif_pct = item["PromedioPct"] - lider_pct
+                        t_est = vuelta_base_ms + (vuelta_base_ms * (dif_pct / 100))
+                        dif_txt = f"+{(t_est - vuelta_base_ms)/1000:.3f}s (Promedio)"
+                    
+                    t_formato = convertir_ms_a_minutos(int(t_est))
+                    eventos_data["Clasificación"].append({
+                        "Pos": f"#{pos_num} — {p_nombre}",
+                        "Tiempo": t_formato,
+                        "Dif": dif_txt
+                    })
+
+            # Lógica equivalente de consolidación para Sprint y Carrera en Campeonato Completo
+            for tipo in ["Sprint", "Carrera"]:
+                stats_tipo = {}
+                for circ, sesiones in datos_comparativa_tiempos.items():
                     if tipo in sesiones:
                         for reg in sesiones[tipo]:
-                            reg_copia = copy.deepcopy(reg)
-                            # Opcional: Si quieres identificar a qué circuito pertenece cada registro en el global
-                            reg_copia['Pos'] = f"{reg['Pos']} ({circ})"
-                            eventos_data[tipo].append(reg_copia)
+                            match_piloto = re.search(r'[—\-]\s*(.+)$', reg['Pos'])
+                            p_nombre = match_piloto.group(1).strip() if match_piloto else reg['Pos']
+                            if p_nombre not in stats_tipo:
+                                stats_tipo[p_nombre] = {"apariciones": 0}
+                            stats_tipo[p_nombre]["apariciones"] += 1
+                
+                # Ordenamos o listamos de forma consolidada para el campeonato
+                for p in stats_tipo.keys():
+                    eventos_data[tipo].append({
+                        "Pos": f"Piloto: {p}",
+                        "Tiempo": "Promedio Gral.",
+                        "Dif": f"{stats_tipo[p]['apariciones']} fechas disputadas"
+                    })
         else:
             eventos_data = copy.deepcopy(datos_comparativa_tiempos.get(circuito_sel, {"Clasificación": [], "Sprint": [], "Carrera": []}))
             
-        # Mantenemos las 3 columnas idénticas
+        # Mostramos las 3 columnas idénticas
         cols = st.columns(3)
         tipos_sesion = ["Clasificación", "Sprint", "Carrera"]
         for i, tipo in enumerate(tipos_sesion):
