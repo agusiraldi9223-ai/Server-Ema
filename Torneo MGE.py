@@ -515,8 +515,6 @@ else:
 # --- VISTA: RESUMEN GENERAL ---
 if seccion_menu == "Resumen General":
     with st.container():
-        st.subheader("🏆 Resumen del Campeonato General")
-        
         if not df_global.empty:
             # --- UNIFICACIÓN DE NOMBRES ALTERNATIVOS ---
             mapeo_nombres = {
@@ -572,7 +570,33 @@ if seccion_menu == "Resumen General":
                 )
             # -------------------------------------
 
-            tabla_campeonato = df_global.groupby("Piloto")["Puntos"].sum().reset_index()
+            # --- ENCABEZADO Y BOTÓN DE DESCARTE ---
+            col_tit, col_btn = st.columns([0.6, 0.4])
+            with col_tit:
+                st.subheader("🏆 Resumen del Campeonato General")
+            with col_btn:
+                aplicar_descarte = st.toggle("🔄 Descontar Peor Fecha")
+
+            # Determinamos la columna de fecha disponible
+            col_fecha = "Fecha" if "Fecha" in df_global.columns else "Circuito"
+
+            if aplicar_descarte:
+                # Agrupamos por Piloto y Fecha/Circuito para sumar los puntos de cada ronda individualmente
+                puntos_por_ronda = df_global.groupby(["Piloto", col_fecha])["Puntos"].sum().reset_index()
+                
+                # Obtenemos la peor ronda de cada piloto
+                peor_ronda = puntos_por_ronda.groupby("Piloto")["Puntos"].min().reset_index()
+                peor_ronda.rename(columns={"Puntos": "Puntos_Min"}, inplace=True)
+                
+                # Sumamos el total bruto y le restamos el puntaje mínimo de su peor fecha
+                tabla_campeonato = puntos_por_ronda.groupby("Piloto")["Puntos"].sum().reset_index()
+                tabla_campeonato = pd.merge(tabla_campeonato, peor_ronda, on="Piloto")
+                tabla_campeonato["Puntos"] = tabla_campeonato["Puntos"] - tabla_campeonato["Puntos_Min"]
+                tabla_campeonato = tabla_campeonato[["Piloto", "Puntos"]]
+            else:
+                # Tabla estándar sin descartes
+                tabla_campeonato = df_global.groupby("Piloto")["Puntos"].sum().reset_index()
+
             tabla_campeonato = pd.merge(tabla_campeonato, df_autos, on="Piloto", how="left")
             tabla_campeonato = tabla_campeonato.sort_values(by="Puntos", ascending=False).reset_index(drop=True)
             tabla_campeonato["Lastre Acumulado"] = tabla_campeonato["Piloto"].map(lambda p: f"{lastre_actual_sim.get(p, 0)} Kg")
@@ -603,7 +627,7 @@ if seccion_menu == "Resumen General":
         else:
             st.info("Sube archivos de resultados para ver el campeonato.")
 
-# --- EVOLUCIÓN DEL CAMPEONATO EN VIVO (PUNTOS) ---
+    # --- EVOLUCIÓN DEL CAMPEONATO EN VIVO (PUNTOS) ---
     if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
         st.markdown("---")
         with st.container():
@@ -719,7 +743,7 @@ if seccion_menu == "Resumen General":
                         tickmode="array",
                         tickvals=tickvals_x,
                         ticktext=ticktext_x,
-                        range=[-0.1, 10.2], # Fuerza a que inicie pegado al borde izquierdo
+                        range=[-0.1, 10.2], 
                         showgrid=True,
                         gridcolor='rgba(255, 255, 255, 0.08)'
                     ),
