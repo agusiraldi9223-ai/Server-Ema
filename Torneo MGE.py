@@ -629,7 +629,7 @@ if seccion_menu == "Resumen General":
     if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
         st.markdown("---")
         with st.container():
-            st.subheader("📈 Evolución del Campeonato en Vivo")
+            st.subheader("📈 Evolución del Campeonato")
             
             datos_evolucion_limpios = []
             max_puntaje_detectado = 50.0
