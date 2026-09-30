@@ -561,21 +561,25 @@ if seccion_menu == "Resumen General":
                     lambda row: correccion_definitiva.get(row["Piloto"], row["Auto"]), axis=1
                 )
 
-            # --- ENCABEZADO Y BOTONERA TIPO PÍLDORA (ESTILO TABS) ---
-            col_tit, col_btn = st.columns([0.45, 0.55])
+            # --- ESTADO PARA EL BOTÓN DE DESCARTE ---
+            if "descontar_peor" not in st.session_state:
+                st.session_state.descontar_peor = False
+
+            # --- ENCABEZADO Y BOTÓN ÚNICO ---
+            col_tit, col_space, col_btn = st.columns([0.5, 0.25, 0.25])
             with col_tit:
                 st.subheader("🏆 Resumen del Campeonato General")
-            with col_btn:
-                # Botonera interactiva donde el seleccionado queda pintado
-                modo_puntos = st.pills(
-                    "Modo de Puntuación",
-                    ["Puntaje Completo", "🔄 Descontar Peor Fecha"],
-                    default="Puntaje Completo",
-                    label_visibility="collapsed"
-                )
             
-            aplicar_descarte = (modo_puntos == "🔄 Descontar Peor Fecha")
+            with col_btn:
+                # Usamos type="primary" para que quede pintado cuando esté activo, y "secondary" cuando no
+                tipo_btn = "primary" if st.session_state.descontar_peor else "secondary"
+                label_btn = "🔄 Descontar Peor Fecha" if st.session_state.descontar_peor else "📉 Descontar Peor Fecha"
+                
+                if st.button(label_btn, type=tipo_btn, use_container_width=True):
+                    st.session_state.descontar_peor = not st.session_state.descontar_peor
+                    st.rerun()
 
+            aplicar_descarte = st.session_state.descontar_peor
             col_fecha = "Fecha" if "Fecha" in df_global.columns else "Circuito"
 
             if aplicar_descarte:
