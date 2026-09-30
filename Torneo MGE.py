@@ -518,6 +518,15 @@ if seccion_menu == "Resumen General":
         st.subheader("🏆 Resumen del Campeonato General")
         
         if not df_global.empty:
+            # --- UNIFICACIÓN DE NOMBRES ALTERNATIVOS ---
+            mapeo_nombres = {
+                "Fede Oris": "Federico Oris",
+                # Si en el futuro detectas otro piloto con nombres distintos, los agregas así:
+                # "Apodo": "Nombre Oficial",
+            }
+            df_global["Piloto"] = df_global["Piloto"].replace(mapeo_nombres)
+            # ------------------------------------------
+
             def limpiar_modelo(nombre_modelo):
                 if not isinstance(nombre_modelo, str):
                     return "-"
