@@ -571,7 +571,6 @@ if seccion_menu == "Resumen General":
                 st.subheader("🏆 Resumen del Campeonato General")
             
             with col_btn:
-                # Usamos type="primary" para que quede pintado cuando esté activo, y "secondary" cuando no
                 tipo_btn = "primary" if st.session_state.descontar_peor else "secondary"
                 label_btn = "🔄 Descontar Peor Fecha" if st.session_state.descontar_peor else "📉 Descontar Peor Fecha"
                 
@@ -582,6 +581,7 @@ if seccion_menu == "Resumen General":
             aplicar_descarte = st.session_state.descontar_peor
             col_fecha = "Fecha" if "Fecha" in df_global.columns else "Circuito"
 
+            # --- TABLA CAMPEONATO ---
             if aplicar_descarte:
                 puntos_por_ronda = df_global.groupby(["Piloto", col_fecha])["Puntos"].sum().reset_index()
                 peor_ronda = puntos_por_ronda.groupby("Piloto")["Puntos"].min().reset_index()
@@ -625,17 +625,46 @@ if seccion_menu == "Resumen General":
         else:
             st.info("Sube archivos de resultados para ver el campeonato.")
 
-    # --- EVOLUCIÓN DEL CAMPEONATO EN VIVO (ESTABLE) ---
+    # --- EVOLUCIÓN DEL CAMPEONATO EN VIVO (CON SOPORTE DE DESCARTE) ---
     if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
         st.markdown("---")
         with st.container():
             st.subheader("📈 Evolución del Campeonato en Vivo")
             
             datos_evolucion_limpios = []
-            puntos_acumulados_carrera = {p: 0.0 for p in todos_pilotos}
             max_puntaje_detectado = 50.0
-
             mapa_autos_df = df_global.groupby("Piloto")["Auto"].agg(lambda x: x.iloc[0] if not x.empty else "-").to_dict() if "Auto" in df_global.columns else {}
+
+            # Pre-cálculo de puntos por fecha para cada piloto
+            puntos_por_piloto_fecha = {}
+            resultados_info = {}
+            
+            for f_idx, f_real in enumerate(fechas_reales):
+                num_fecha = f_idx + 1
+                df_f = df_global[df_global["Fecha"] == f_real] if "Fecha" in df_global.columns else pd.DataFrame()
+                
+                for piloto in todos_pilotos:
+                    df_piloto_f = df_f[df_f["Piloto"] == piloto] if not df_f.empty else pd.DataFrame()
+                    if not df_piloto_f.empty:
+                        puntos_fecha = float(df_piloto_f["Puntos"].sum())
+                        res_carrera = df_piloto_f[df_piloto_f["Tipo"] == "Carrera"]
+                        resultado_txt = f"P{int(res_carrera['Posición'].values[0])}" if not res_carrera.empty else "Puntos extra"
+                    else:
+                        puntos_fecha = 0.0
+                        resultado_txt = "-"
+                    
+                    puntos_por_piloto_fecha.setdefault(piloto, {})[num_fecha] = puntos_fecha
+                    resultados_info.setdefault(piloto, {})[num_fecha] = resultado_txt
+
+            # Si aplica descarte, identificamos la fecha con menor puntaje acumulado o puntaje en la fecha para cada piloto hasta el momento
+            peores_fechas_por_piloto = {}
+            if aplicar_descarte and len(fechas_reales) > 1:
+                for piloto in todos_pilotos:
+                    pts_fechas = puntos_por_piloto_fecha.get(piloto, {})
+                    if pts_fechas:
+                        # Encuentra la fecha con menor puntaje de las disputadas
+                        peor_f = min(pts_fechas, key=pts_fechas.get)
+                        peores_fechas_por_piloto[piloto] = peor_f
 
             # 1. Punto de partida en 0
             for p in todos_pilotos:
@@ -653,29 +682,28 @@ if seccion_menu == "Resumen General":
                 })
 
             cantidad_fechas_disputadas = len(fechas_reales)
+            puntos_acumulados_carrera = {p: 0.0 for p in todos_pilotos}
 
-            # 2. Recorremos las fechas reales
+            # 2. Recorremos acumulando de forma dinámica según el estado del botón
             for idx, f_real in enumerate(fechas_reales):
                 num_fecha = idx + 1
                 nombre_fecha_eje_x = f"Fecha {num_fecha}"
-                df_f = df_global[df_global["Fecha"] == f_real] if "Fecha" in df_global.columns else pd.DataFrame()
                 
+                # Para calcular el acumulado exacto descontando la peor fecha hasta este punto:
                 for piloto in todos_pilotos:
-                    df_piloto_f = df_f[df_f["Piloto"] == piloto] if not df_f.empty else pd.DataFrame()
-                    if not df_piloto_f.empty:
-                        puntos_fecha = float(df_piloto_f["Puntos"].sum())
-                        res_carrera = df_piloto_f[df_piloto_f["Tipo"] == "Carrera"]
-                        resultado_txt = f"P{int(res_carrera['Posición'].values[0])}" if not res_carrera.empty else "Puntos extra"
+                    pts_hasta_aqui = [puntos_por_piloto_fecha.get(piloto, {}).get(f_n, 0.0) for f_n in range(1, num_fecha + 1)]
+                    
+                    if aplicar_descarte and len(pts_hasta_aqui) > 1:
+                        # Descontamos la mínima de las fechas disputadas hasta el momento
+                        min_val = min(pts_hasta_aqui)
+                        total_actual = sum(pts_hasta_aqui) - min_val
                     else:
-                        puntos_fecha = 0.0
-                        resultado_txt = "-"
-                    
-                    puntos_acumulados_carrera[piloto] += puntos_fecha
-                    total_actual = puntos_acumulados_carrera[piloto]
-                    
+                        total_actual = sum(pts_hasta_aqui)
+
                     if total_actual > max_puntaje_detectado:
                         max_puntaje_detectado = total_actual
                     
+                    resultado_txt = resultados_info.get(piloto, {}).get(num_fecha, "-")
                     lastre_val = lastre_por_piloto_por_fecha.get(num_fecha, {}).get(piloto, 0) if 'lastre_por_piloto_por_fecha' in locals() else 0
                     auto_p = mapa_autos_df.get(piloto, "-")
                     
