@@ -561,16 +561,16 @@ if seccion_menu == "Resumen General":
                     lambda row: correccion_definitiva.get(row["Piloto"], row["Auto"]), axis=1
                 )
 
-            # --- ENCABEZADO Y SELECTOR LIMPIO (RADIO HORIZONTAL) ---
-            col_tit, col_btn = st.columns([0.5, 0.5])
+            # --- ENCABEZADO Y BOTONERA TIPO PÍLDORA (ESTILO TABS) ---
+            col_tit, col_btn = st.columns([0.45, 0.55])
             with col_tit:
                 st.subheader("🏆 Resumen del Campeonato General")
             with col_btn:
-                # Selector en formato de opciones limpias (Píldoras horizontales)
-                modo_puntos = st.radio(
+                # Botonera interactiva donde el seleccionado queda pintado
+                modo_puntos = st.pills(
                     "Modo de Puntuación",
                     ["Puntaje Completo", "🔄 Descontar Peor Fecha"],
-                    horizontal=True,
+                    default="Puntaje Completo",
                     label_visibility="collapsed"
                 )
             
