@@ -561,22 +561,16 @@ if seccion_menu == "Resumen General":
                     lambda row: correccion_definitiva.get(row["Piloto"], row["Auto"]), axis=1
                 )
 
-            # --- ENCABEZADO Y BOTÓN DE DESCARTE (MODERNIZADO) ---
-            st.markdown("""
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h2 style="color: #ffffff; margin: 0; font-size: 26px;">🏆 Resumen del Campeonato General</h2>
-                </div>
-            """, unsafe_allow_html=True)
-
-            col_espacio, col_toggle = st.columns([0.65, 0.35])
-            with col_toggle:
-                aplicar_descarte = st.toggle("🔄 Descontar Peor Fecha en Tabla y Gráfico")
+            # --- ENCABEZADO Y BOTÓN DE DESCARTE (EN TU FORMATO ORIGINAL) ---
+            col_tit, col_btn = st.columns([0.6, 0.4])
+            with col_tit:
+                st.subheader("🏆 Resumen del Campeonato General")
+            with col_btn:
+                aplicar_descarte = st.toggle("🔄 Descontar Peor Fecha")
 
             col_fecha = "Fecha" if "Fecha" in df_global.columns else "Circuito"
 
-            # --- CÁLCULO DE PUNTOS CON O SIN DESCARTE ---
             if aplicar_descarte:
-                # Agrupamos por ronda para calcular descartes
                 puntos_por_ronda = df_global.groupby(["Piloto", col_fecha])["Puntos"].sum().reset_index()
                 peor_ronda = puntos_por_ronda.groupby("Piloto")["Puntos"].min().reset_index()
                 peor_ronda.rename(columns={"Puntos": "Puntos_Min"}, inplace=True)
@@ -593,26 +587,25 @@ if seccion_menu == "Resumen General":
             tabla_campeonato["Lastre Acumulado"] = tabla_campeonato["Piloto"].map(lambda p: f"{lastre_actual_sim.get(p, 0)} Kg")
             tabla_campeonato.insert(0, "Pos", range(1, len(tabla_campeonato) + 1))
             
-            # --- TABLA HTML MODERNA Y MÁS GRANDE ---
-            html_table = '<div style="overflow-x: auto; background: linear-gradient(145deg, #0f172a, #1e1b4b); padding: 24px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);">'
-            html_table += '<table style="width: 100%; border-collapse: collapse; color: #f8fafc; font-family: sans-serif; font-size: 15px;">'
-            html_table += '<thead><tr style="border-bottom: 2px solid rgba(255, 255, 255, 0.15); text-align: left; background-color: rgba(255, 255, 255, 0.03);">'
-            html_table += '<th style="padding: 16px; font-weight: 700; letter-spacing: 0.5px;">Pos</th>'
-            html_table += '<th style="padding: 16px; font-weight: 700; letter-spacing: 0.5px;">Piloto</th>'
-            html_table += '<th style="padding: 16px; font-weight: 700; letter-spacing: 0.5px;">Modelo</th>'
-            html_table += '<th style="padding: 16px; font-weight: 700; letter-spacing: 0.5px;">Puntos</th>'
-            html_table += '<th style="padding: 16px; font-weight: 700; letter-spacing: 0.5px;">Lastre Acumulado</th>'
+            # --- TU TABLA HTML ORIGINAL ---
+            html_table = '<div style="overflow-x: auto; background-color: #111827; padding: 20px; border-radius: 12px; border: 1px solid #1f2937;">'
+            html_table += '<table style="width: 100%; border-collapse: collapse; color: #ffffff; font-family: sans-serif; font-size: 14px;">'
+            html_table += '<thead><tr style="border-bottom: 2px solid #374151; text-align: left; background-color: #1f2937;">'
+            html_table += '<th style="padding: 12px; font-weight: 600;">Pos</th>'
+            html_table += '<th style="padding: 12px; font-weight: 600;">Piloto</th>'
+            html_table += '<th style="padding: 12px; font-weight: 600;">Modelo</th>'
+            html_table += '<th style="padding: 12px; font-weight: 600;">Puntos</th>'
+            html_table += '<th style="padding: 12px; font-weight: 600;">Lastre Acumulado</th>'
             html_table += '</tr></thead><tbody>'
             
             for idx, row in tabla_campeonato.iterrows():
-                bg_color = "rgba(255, 255, 255, 0.01)" if idx % 2 == 0 else "rgba(255, 255, 255, 0.04)"
-                pos_style = "color: #38bdf8; font-weight: 800;" if idx < 3 else "color: #94a3b8;"
-                html_table += f'<tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); background-color: {bg_color}; transition: background 0.2s;">'
-                html_table += f'<td style="padding: 16px; {pos_style}">#{row["Pos"]}</td>'
-                html_table += f'<td style="padding: 16px; font-weight: 600; color: #ffffff;">{row["Piloto"]}</td>'
-                html_table += f'<td style="padding: 16px; color: #cbd5e1;">{row["Auto"]}</td>'
-                html_table += f'<td style="padding: 16px; font-weight: 800; color: #60a5fa; font-size: 16px;">{row["Puntos"]}</td>'
-                html_table += f'<td style="padding: 16px; color: #f472b6; font-weight: 600;">{row["Lastre Acumulado"]}</td>'
+                bg_color = "#111827" if idx % 2 == 0 else "#1a2332"
+                html_table += f'<tr style="border-bottom: 1px solid #1f2937; background-color: {bg_color};">'
+                html_table += f'<td style="padding: 12px;">#{row["Pos"]}</td>'
+                html_table += f'<td style="padding: 12px; font-weight: 500;">{row["Piloto"]}</td>'
+                html_table += f'<td style="padding: 12px; color: #94a3b8;">{row["Auto"]}</td>'
+                html_table += f'<td style="padding: 12px; font-weight: bold; color: #3b82f6;">{row["Puntos"]}</td>'
+                html_table += f'<td style="padding: 12px;">{row["Lastre Acumulado"]}</td>'
                 html_table += '</tr>'
             
             html_table += '</tbody></table></div>'
@@ -620,40 +613,36 @@ if seccion_menu == "Resumen General":
         else:
             st.info("Sube archivos de resultados para ver el campeonato.")
 
-    # --- EVOLUCIÓN DEL CAMPEONATO EN VIVO (ACTUALIZADO CON DESCARTE Y DISEÑO MODERNO) ---
+    # --- EVOLUCIÓN DEL CAMPEONATO EN VIVO (CORREGIDO Y ESTABLE) ---
     if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
-        st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("---")
         with st.container():
-            st.markdown('<h2 style="color: #ffffff; font-size: 24px; margin-bottom: 20px;">📈 Evolución del Campeonato en Vivo</h2>', unsafe_allow_html=True)
+            st.subheader("📈 Evolución del Campeonato en Vivo")
             
             datos_evolucion_limpios = []
             puntos_acumulados_carrera = {p: 0.0 for p in todos_pilotos}
             max_puntaje_detectado = 50.0
-            mapa_autos_df = df_global.groupby("Piloto")["Auto"].agg(lambda x: x.iloc[0] if not x.empty else "-").to_dict() if "Auto" in df_global.columns else {}
 
-            # Si se aplica descarte, calculamos cuál fue la peor fecha por piloto para restarla en la evolución
-            peores_fechas_por_piloto = {}
-            if aplicar_descarte and 'Fecha' in df_global.columns:
-                df_por_fecha_piloto = df_global.groupby(["Piloto", "Fecha"])["Puntos"].sum().reset_index()
-                for piloto_item in todos_pilotos:
-                    df_p_f = df_por_fecha_piloto[df_por_fecha_piloto["Piloto"] == piloto_item]
-                    if not df_p_f.empty and len(df_p_f) > 1:
-                        peor_fila = df_p_f.loc[df_p_f["Puntos"].idxmin()]
-                        peores_fechas_por_piloto[piloto_item] = (peor_fila["Fecha"], peor_fila["Puntos"])
+            mapa_autos_df = df_global.groupby("Piloto")["Auto"].agg(lambda x: x.iloc[0] if not x.empty else "-").to_dict() if "Auto" in df_global.columns else {}
 
             # 1. Punto de partida en 0
             for p in todos_pilotos:
                 auto_p = mapa_autos_df.get(p, "-")
                 datos_evolucion_limpios.append({
-                    "Piloto": p, "FechaNum": 0, "Gran Premio": "0. Inicio",
-                    "Puntos Acumulados": 0.0, "Circuito": "Inicio", "Resultado": "-", 
-                    "LastreInicial": "0 Kg", "Auto": auto_p, "TextoPuntos": ""
+                    "Piloto": p, 
+                    "FechaNum": 0, 
+                    "Gran Premio": "0. Inicio",
+                    "Puntos Acumulados": 0.0,
+                    "Circuito": "Inicio", 
+                    "Resultado": "-", 
+                    "LastreInicial": "0 Kg", 
+                    "Auto": auto_p,
+                    "TextoPuntos": ""
                 })
 
             cantidad_fechas_disputadas = len(fechas_reales)
 
-            # 2. Fechas disputadas
+            # 2. Recorremos las fechas reales
             for idx, f_real in enumerate(fechas_reales):
                 num_fecha = idx + 1
                 nombre_fecha_eje_x = f"Fecha {num_fecha}"
@@ -672,15 +661,6 @@ if seccion_menu == "Resumen General":
                     puntos_acumulados_carrera[piloto] += puntos_fecha
                     total_actual = puntos_acumulados_carrera[piloto]
                     
-                    # Si aplica descarte, ajustamos el acumulado si estamos en la última fecha o posterior
-                    total_grafico = total_actual
-                    if aplicar_descarte and piloto in peores_fechas_por_piloto:
-                        peor_f_nombre, peor_f_puntos = peores_fechas_por_piloto[piloto]
-                        # Si la fecha actual es igual o posterior a la peor fecha, descontamos
-                        if f_real == peor_f_nombre or num_fecha == cantidad_fechas_disputadas:
-                            # Restamos el punto mínimo una vez completado el campeonato parcial
-                            pass 
-                    
                     if total_actual > max_puntaje_detectado:
                         max_puntaje_detectado = total_actual
                     
@@ -688,75 +668,83 @@ if seccion_menu == "Resumen General":
                     auto_p = mapa_autos_df.get(piloto, "-")
                     
                     datos_evolucion_limpios.append({
-                        "Piloto": piloto, "FechaNum": num_fecha, "Gran Premio": nombre_fecha_eje_x, 
-                        "Puntos Acumulados": total_actual, "Circuito": f_real, "Resultado": resultado_txt, 
-                        "LastreInicial": f"{lastre_val} Kg", "Auto": auto_p,
+                        "Piloto": piloto, 
+                        "FechaNum": num_fecha,
+                        "Gran Premio": nombre_fecha_eje_x, 
+                        "Puntos Acumulados": total_actual,
+                        "Circuito": f_real, 
+                        "Resultado": resultado_txt, 
+                        "LastreInicial": f"{lastre_val} Kg",
+                        "Auto": auto_p,
                         "TextoPuntos": str(int(total_actual)) if total_actual > 0 else ""
                     })
 
-            # Aplicar descarte real restando la peor fecha al total acumulado final si está activo
-            if aplicar_descarte and peores_fechas_por_piloto:
-                for row_d in datos_evolucion_limpios:
-                    p_item = row_d["Piloto"]
-                    if p_item in peores_fechas_por_piloto and row_d["FechaNum"] == cantidad_fechas_disputadas:
-                        _, p_min = peores_fechas_por_piloto[p_item]
-                        if row_d["Puntos Acumulados"] is not None:
-                            row_d["Puntos Acumulados"] -= p_min
-                            row_d["TextoPuntos"] = str(int(row_d["Puntos Acumulados"]))
-
-            # 3. Fechas futuras (hasta la 10)
+            # 3. Rellenar fechas futuras
             for i in range(cantidad_fechas_disputadas + 1, 11):
                 nombre_fecha_eje_x = f"Fecha {i}"
                 for piloto in todos_pilotos:
                     auto_p = mapa_autos_df.get(piloto, "-")
                     datos_evolucion_limpios.append({
-                        "Piloto": piloto, "FechaNum": i, "Gran Premio": nombre_fecha_eje_x, 
-                        "Puntos Acumulados": None, "Circuito": "Pendiente", "Resultado": "-", 
-                        "LastreInicial": "0 Kg", "Auto": auto_p, "TextoPuntos": ""
+                        "Piloto": piloto, 
+                        "FechaNum": i,
+                        "Gran Premio": nombre_fecha_eje_x, 
+                        "Puntos Acumulados": None, 
+                        "Circuito": "Pendiente", 
+                        "Resultado": "-", 
+                        "LastreInicial": "0 Kg", 
+                        "Auto": auto_p,
+                        "TextoPuntos": ""
                     })
 
             df_melted_evolucion = pd.DataFrame(datos_evolucion_limpios)
+            
             tickvals_x = list(range(0, 11))
             ticktext_x = ["0. Inicio"] + [f"Fecha {i}" for i in range(1, 11)]
             
             if not df_melted_evolucion.empty:
                 fig_evolucion = px.line(
                     df_melted_evolucion, x="FechaNum", y="Puntos Acumulados", color="Piloto",
-                    template="plotly_dark", markers=True, text="TextoPuntos",
+                    template="plotly_dark", markers=True, 
+                    text="TextoPuntos",
                     custom_data=["Circuito", "Resultado", "LastreInicial", "Piloto", "Auto"]
                 )
                 
                 fig_evolucion.update_traces(
                     mode="lines+markers+text",
                     textposition="top center",
-                    textfont=dict(size=11, color="white", family="sans-serif"),
-                    line=dict(width=2.5), 
-                    marker=dict(size=7),
+                    textfont=dict(size=10, color="white"),
+                    line=dict(width=1.0), 
+                    marker=dict(size=5),
                     hovertemplate="<br><b>Piloto:</b> %{customdata[3]}<br>🚗 <b>Modelo:</b> %{customdata[4]}<br>📍 <b>Circuito:</b> %{customdata[0]}<br>🏁 <b>Resultado:</b> %{customdata[1]}<br>⚖️ <b>Lastre:</b> %{customdata[2]} <br>🏆 <b>Puntos Acumulados:</b> %{y} pts<extra></extra>"
                 )
                 
                 fig_evolucion.update_layout(
                     hovermode="closest", 
-                    plot_bgcolor="#0f172a", 
-                    paper_bgcolor="#0f172a", 
-                    margin=dict(l=20, r=150, t=40, b=30), 
-                    height=550,
+                    plot_bgcolor="#111827", 
+                    paper_bgcolor="#111827", 
+                    margin=dict(l=20, r=140, t=30, b=20), 
+                    height=500,
                     xaxis=dict(
-                        tickmode="array", tickvals=tickvals_x, ticktext=ticktext_x,
-                        range=[-0.2, 10.3], showgrid=True, gridcolor='rgba(255, 255, 255, 0.05)',
-                        tickfont=dict(size=12, color="#94a3b8")
+                        tickmode="array",
+                        tickvals=tickvals_x,
+                        ticktext=ticktext_x,
+                        range=[-0.1, 10.2], 
+                        showgrid=True,
+                        gridcolor='rgba(255, 255, 255, 0.08)'
                     ),
                     yaxis=dict(
-                        range=[0, max(50, int(max_puntaje_detectado * 1.2))], autorange=False,
-                        showgrid=True, gridcolor='rgba(255, 255, 255, 0.05)',
-                        tickfont=dict(size=12, color="#94a3b8")
+                        range=[0, max(50, int(max_puntaje_detectado * 1.15))], 
+                        autorange=False,
+                        showgrid=True,
+                        gridcolor='rgba(255, 255, 255, 0.08)'
                     ),
                     legend=dict(
                         title=dict(text="<b>Pilotos</b>", font=dict(size=13, color="white")),
-                        font=dict(size=11, color="cbd5e1"),
-                        bgcolor="rgba(15, 23, 42, 0.9)",
-                        bordercolor="rgba(255, 255, 255, 0.1)",
-                        borderwidth=1, x=1.02, y=1, xanchor="left", yanchor="top"
+                        font=dict(size=12, color="white"),
+                        bgcolor="rgba(17, 24, 39, 0.8)",
+                        bordercolor="rgba(255, 255, 255, 0.2)",
+                        borderwidth=1,
+                        x=1.02, y=1, xanchor="left", yanchor="top"
                     )
                 )
                 st.plotly_chart(fig_evolucion, use_container_width=True)
