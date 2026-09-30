@@ -625,17 +625,17 @@ if seccion_menu == "Resumen General":
         else:
             st.info("Sube archivos de resultados para ver el campeonato.")
 
-    # --- EVOLUCIÓN DEL CAMPEONATO EN VIVO (CON SOPORTE DE DESCARTE) ---
+    # --- EVOLUCIÓN DEL CAMPEONATO EN VIVO (CORREGIDO PARA AFECTAR A TODOS) ---
     if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
         st.markdown("---")
         with st.container():
-            st.subheader("📈 Evolución del Campeonato")
+            st.subheader("📈 Evolución del Campeonato en Vivo")
             
             datos_evolucion_limpios = []
             max_puntaje_detectado = 50.0
             mapa_autos_df = df_global.groupby("Piloto")["Auto"].agg(lambda x: x.iloc[0] if not x.empty else "-").to_dict() if "Auto" in df_global.columns else {}
 
-            # Pre-cálculo de puntos por fecha para cada piloto
+            # Recopilar todos los puntos fecha por fecha para cada piloto
             puntos_por_piloto_fecha = {}
             resultados_info = {}
             
@@ -656,17 +656,7 @@ if seccion_menu == "Resumen General":
                     puntos_por_piloto_fecha.setdefault(piloto, {})[num_fecha] = puntos_fecha
                     resultados_info.setdefault(piloto, {})[num_fecha] = resultado_txt
 
-            # Si aplica descarte, identificamos la fecha con menor puntaje acumulado o puntaje en la fecha para cada piloto hasta el momento
-            peores_fechas_por_piloto = {}
-            if aplicar_descarte and len(fechas_reales) > 1:
-                for piloto in todos_pilotos:
-                    pts_fechas = puntos_por_piloto_fecha.get(piloto, {})
-                    if pts_fechas:
-                        # Encuentra la fecha con menor puntaje de las disputadas
-                        peor_f = min(pts_fechas, key=pts_fechas.get)
-                        peores_fechas_por_piloto[piloto] = peor_f
-
-            # 1. Punto de partida en 0
+            # 1. Punto de partida en 0 para todos
             for p in todos_pilotos:
                 auto_p = mapa_autos_df.get(p, "-")
                 datos_evolucion_limpios.append({
@@ -682,21 +672,19 @@ if seccion_menu == "Resumen General":
                 })
 
             cantidad_fechas_disputadas = len(fechas_reales)
-            puntos_acumulados_carrera = {p: 0.0 for p in todos_pilotos}
 
-            # 2. Recorremos acumulando de forma dinámica según el estado del botón
+            # 2. Recorremos acumulando correctamente según el estado del botón para cada piloto
             for idx, f_real in enumerate(fechas_reales):
                 num_fecha = idx + 1
                 nombre_fecha_eje_x = f"Fecha {num_fecha}"
                 
-                # Para calcular el acumulado exacto descontando la peor fecha hasta este punto:
                 for piloto in todos_pilotos:
+                    # Obtenemos la lista de puntos de este piloto desde la fecha 1 hasta la actual
                     pts_hasta_aqui = [puntos_por_piloto_fecha.get(piloto, {}).get(f_n, 0.0) for f_n in range(1, num_fecha + 1)]
                     
                     if aplicar_descarte and len(pts_hasta_aqui) > 1:
-                        # Descontamos la mínima de las fechas disputadas hasta el momento
-                        min_val = min(pts_hasta_aqui)
-                        total_actual = sum(pts_hasta_aqui) - min_val
+                        # Si hay más de una fecha disputada, se descuenta la menor de las acumuladas hasta el momento
+                        total_actual = sum(pts_hasta_aqui) - min(pts_hasta_aqui)
                     else:
                         total_actual = sum(pts_hasta_aqui)
 
