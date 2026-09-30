@@ -561,12 +561,20 @@ if seccion_menu == "Resumen General":
                     lambda row: correccion_definitiva.get(row["Piloto"], row["Auto"]), axis=1
                 )
 
-            # --- ENCABEZADO Y BOTÓN DE DESCARTE (EN TU FORMATO ORIGINAL) ---
-            col_tit, col_btn = st.columns([0.6, 0.4])
+            # --- ENCABEZADO Y SELECTOR MEJORADO ---
+            col_tit, col_btn = st.columns([0.55, 0.45])
             with col_tit:
                 st.subheader("🏆 Resumen del Campeonato General")
             with col_btn:
+                # Contenedor con estilo para que el selector luzca integrado y moderno
+                st.markdown(
+                    """
+                    <div style="background-color: #1f2937; padding: 6px 14px; border-radius: 10px; border: 1px solid #374151; display: flex; align-items: center; justify-content: flex-end; margin-top: 5px;">
+                    """, 
+                    unsafe_allow_html=True
+                )
                 aplicar_descarte = st.toggle("🔄 Descontar Peor Fecha")
+                st.markdown("</div>", unsafe_allow_html=True)
 
             col_fecha = "Fecha" if "Fecha" in df_global.columns else "Circuito"
 
@@ -587,7 +595,7 @@ if seccion_menu == "Resumen General":
             tabla_campeonato["Lastre Acumulado"] = tabla_campeonato["Piloto"].map(lambda p: f"{lastre_actual_sim.get(p, 0)} Kg")
             tabla_campeonato.insert(0, "Pos", range(1, len(tabla_campeonato) + 1))
             
-            # --- TU TABLA HTML ORIGINAL ---
+            # --- TABLA HTML ORIGINAL ---
             html_table = '<div style="overflow-x: auto; background-color: #111827; padding: 20px; border-radius: 12px; border: 1px solid #1f2937;">'
             html_table += '<table style="width: 100%; border-collapse: collapse; color: #ffffff; font-family: sans-serif; font-size: 14px;">'
             html_table += '<thead><tr style="border-bottom: 2px solid #374151; text-align: left; background-color: #1f2937;">'
@@ -613,7 +621,7 @@ if seccion_menu == "Resumen General":
         else:
             st.info("Sube archivos de resultados para ver el campeonato.")
 
-    # --- EVOLUCIÓN DEL CAMPEONATO EN VIVO (CORREGIDO Y ESTABLE) ---
+    # --- EVOLUCIÓN DEL CAMPEONATO EN VIVO (ESTABLE) ---
     if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
         st.markdown("---")
         with st.container():
