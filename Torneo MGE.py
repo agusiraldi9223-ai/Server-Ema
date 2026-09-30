@@ -625,7 +625,7 @@ if seccion_menu == "Resumen General":
         else:
             st.info("Sube archivos de resultados para ver el campeonato.")
 
-    # --- EVOLUCIÓN DEL CAMPEONATO (CORREGIDO PARA TODOS LOS PILOTOS) ---
+    # --- EVOLUCIÓN DEL CAMPEONATO (CORREGIDA PARA ACUMULAR Y DESCARTAR CON CONSISTENCIA) ---
     if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
         st.markdown("---")
         with st.container():
@@ -672,7 +672,7 @@ if seccion_menu == "Resumen General":
 
             cantidad_fechas_disputadas = len(fechas_reales)
 
-            # 2. Recorremos acumulando correctamente fecha por fecha para cada piloto
+            # 2. Recorremos acumulando de forma robusta
             for idx, f_real in enumerate(fechas_reales):
                 num_fecha = idx + 1
                 nombre_fecha_eje_x = f"Fecha {num_fecha}"
@@ -680,9 +680,13 @@ if seccion_menu == "Resumen General":
                 for piloto in todos_pilotos:
                     pts_hasta_aqui = [puntos_por_piloto_fecha.get(piloto, {}).get(f_n, 0.0) for f_n in range(1, num_fecha + 1)]
                     
-                    # Solo aplicamos descarte si hay 2 o más fechas acumuladas (evita romper la primera fecha)
-                    if aplicar_descarte and len(pts_hasta_aqui) >= 2:
-                        total_actual = sum(pts_hasta_aqui) - min(pts_hasta_aqui)
+                    # Lógica consistente con la tabla: solo descuenta si hay más de 3 fechas disputadas en total, 
+                    # o si se prefiere descontar la peor fecha absoluta de las disputadas hasta el momento cuando hay >= 3 fechas.
+                    # Aquí aplicamos el descuento exacto si el botón está activo y hay al menos 3 fechas disputadas en el campeonato general 
+                    # (o 2 si el reglamento lo permite, restando el mínimo de las fechas acumuladas).
+                    if aplicar_descarte and len(fechas_reales) >= 3 and len(pts_hasta_aqui) >= 3:
+                        min_val = min(pts_hasta_aqui)
+                        total_actual = sum(pts_hasta_aqui) - min_val
                     else:
                         total_actual = sum(pts_hasta_aqui)
 
