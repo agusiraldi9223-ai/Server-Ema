@@ -561,20 +561,20 @@ if seccion_menu == "Resumen General":
                     lambda row: correccion_definitiva.get(row["Piloto"], row["Auto"]), axis=1
                 )
 
-            # --- ENCABEZADO Y SELECTOR MEJORADO ---
-            col_tit, col_btn = st.columns([0.55, 0.45])
+            # --- ENCABEZADO Y SELECTOR LIMPIO (RADIO HORIZONTAL) ---
+            col_tit, col_btn = st.columns([0.5, 0.5])
             with col_tit:
                 st.subheader("🏆 Resumen del Campeonato General")
             with col_btn:
-                # Contenedor con estilo para que el selector luzca integrado y moderno
-                st.markdown(
-                    """
-                    <div style="background-color: #1f2937; padding: 6px 14px; border-radius: 10px; border: 1px solid #374151; display: flex; align-items: center; justify-content: flex-end; margin-top: 5px;">
-                    """, 
-                    unsafe_allow_html=True
+                # Selector en formato de opciones limpias (Píldoras horizontales)
+                modo_puntos = st.radio(
+                    "Modo de Puntuación",
+                    ["Puntaje Completo", "🔄 Descontar Peor Fecha"],
+                    horizontal=True,
+                    label_visibility="collapsed"
                 )
-                aplicar_descarte = st.toggle("🔄 Descontar Peor Fecha")
-                st.markdown("</div>", unsafe_allow_html=True)
+            
+            aplicar_descarte = (modo_puntos == "🔄 Descontar Peor Fecha")
 
             col_fecha = "Fecha" if "Fecha" in df_global.columns else "Circuito"
 
