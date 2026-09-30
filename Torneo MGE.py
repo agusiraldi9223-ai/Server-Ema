@@ -625,17 +625,16 @@ if seccion_menu == "Resumen General":
         else:
             st.info("Sube archivos de resultados para ver el campeonato.")
 
-    # --- EVOLUCIÓN DEL CAMPEONATO EN VIVO (CORREGIDO PARA AFECTAR A TODOS) ---
+    # --- EVOLUCIÓN DEL CAMPEONATO (CORREGIDO PARA TODOS LOS PILOTOS) ---
     if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
         st.markdown("---")
         with st.container():
-            st.subheader("📈 Evolución del Campeonato en Vivo")
+            st.subheader("📈 Evolución del Campeonato")
             
             datos_evolucion_limpios = []
             max_puntaje_detectado = 50.0
             mapa_autos_df = df_global.groupby("Piloto")["Auto"].agg(lambda x: x.iloc[0] if not x.empty else "-").to_dict() if "Auto" in df_global.columns else {}
 
-            # Recopilar todos los puntos fecha por fecha para cada piloto
             puntos_por_piloto_fecha = {}
             resultados_info = {}
             
@@ -673,17 +672,16 @@ if seccion_menu == "Resumen General":
 
             cantidad_fechas_disputadas = len(fechas_reales)
 
-            # 2. Recorremos acumulando correctamente según el estado del botón para cada piloto
+            # 2. Recorremos acumulando correctamente fecha por fecha para cada piloto
             for idx, f_real in enumerate(fechas_reales):
                 num_fecha = idx + 1
                 nombre_fecha_eje_x = f"Fecha {num_fecha}"
                 
                 for piloto in todos_pilotos:
-                    # Obtenemos la lista de puntos de este piloto desde la fecha 1 hasta la actual
                     pts_hasta_aqui = [puntos_por_piloto_fecha.get(piloto, {}).get(f_n, 0.0) for f_n in range(1, num_fecha + 1)]
                     
-                    if aplicar_descarte and len(pts_hasta_aqui) > 1:
-                        # Si hay más de una fecha disputada, se descuenta la menor de las acumuladas hasta el momento
+                    # Solo aplicamos descarte si hay 2 o más fechas acumuladas (evita romper la primera fecha)
+                    if aplicar_descarte and len(pts_hasta_aqui) >= 2:
                         total_actual = sum(pts_hasta_aqui) - min(pts_hasta_aqui)
                     else:
                         total_actual = sum(pts_hasta_aqui)
