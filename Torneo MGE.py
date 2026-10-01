@@ -625,7 +625,7 @@ if seccion_menu == "Resumen General":
         else:
             st.info("Sube archivos de resultados para ver el campeonato.")
 
-    # --- EVOLUCIÓN DEL CAMPEONATO (DESCARTE INTELIGENTE EXCLUYENDO AUSENCIAS) ---
+    # --- EVOLUCIÓN DEL CAMPEONATO (DESCARTE DE PEOR FECHA > 0) ---
     if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
         st.markdown("---")
         with st.container():
@@ -672,7 +672,7 @@ if seccion_menu == "Resumen General":
 
             cantidad_fechas_disputadas = len(fechas_reales)
 
-            # 2. Cálculo con descarte exclusivo de fechas disputadas reales (> 0 puntos o con participación)
+            # 2. Recorrido con descarte condicionado a valores mayores a cero
             for idx, f_real in enumerate(fechas_reales):
                 num_fecha = idx + 1
                 nombre_fecha_eje_x = f"Fecha {num_fecha}"
@@ -681,15 +681,13 @@ if seccion_menu == "Resumen General":
                     pts_hasta_aqui = [puntos_por_piloto_fecha.get(piloto, {}).get(f_n, 0.0) for f_n in range(1, num_fecha + 1)]
                     
                     if aplicar_descarte:
-                        # Filtramos únicamente las fechas en las que el piloto efectivamente participó (puntos > 0)
-                        # O si se prefiere considerar todas las fechas corridas, filtramos las que sean mayores a 0 
-                        # para evitar penalizar con el 0 de una fecha en la que no corrió.
-                        fechas_con_participacion = [p for p in pts_hasta_aqui if p > 0]
+                        # Filtramos exclusivamente las fechas con puntaje mayor a 0 (fechas corridas reales)
+                        fechas_con_puntos = [p for p in pts_hasta_aqui if p > 0]
                         
-                        # Si tiene al menos 3 fechas con participación (o según aplique el reglamento general), descuenta la menor de ellas
-                        if len(pts_hasta_aqui) >= 3 and len(fechas_con_participacion) >= 3:
-                            min_val = min(fechas_con_participacion)
-                            total_actual = sum(pts_hasta_aqui) - min_val
+                        # Si tiene suficientes fechas con puntos para aplicar descarte
+                        if len(pts_hasta_aqui) >= 3 and len(fechas_con_puntos) >= 3:
+                            peor_fecha_valida = min(fechas_con_puntos)
+                            total_actual = sum(pts_hasta_aqui) - peor_fecha_valida
                         else:
                             total_actual = sum(pts_hasta_aqui)
                     else:
