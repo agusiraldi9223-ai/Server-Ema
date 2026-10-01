@@ -625,7 +625,7 @@ if seccion_menu == "Resumen General":
         else:
             st.info("Sube archivos de resultados para ver el campeonato.")
 
-    # --- EVOLUCIÓN DEL CAMPEONATO (CORREGIDA Y SINCRONIZADA CON LA TABLA) ---
+    # --- EVOLUCIÓN DEL CAMPEONATO (SINCRONIZACIÓN EXACTA CON LA TABLA) ---
     if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
         st.markdown("---")
         with st.container():
@@ -672,17 +672,17 @@ if seccion_menu == "Resumen General":
 
             cantidad_fechas_disputadas = len(fechas_reales)
 
-            # 2. Recorremos acumulando de forma sincronizada con la tabla general
+            # 2. Cálculo idéntico al de la tabla general para cada corte de fecha
             for idx, f_real in enumerate(fechas_reales):
                 num_fecha = idx + 1
                 nombre_fecha_eje_x = f"Fecha {num_fecha}"
                 
                 for piloto in todos_pilotos:
+                    # Obtenemos los puntos de todas las fechas transcurridas hasta el momento num_fecha
                     pts_hasta_aqui = [puntos_por_piloto_fecha.get(piloto, {}).get(f_n, 0.0) for f_n in range(1, num_fecha + 1)]
                     
-                    # Sincronización exacta con la regla de la tabla:
-                    # Si el descarte está activo y hay 3 o más fechas disputadas en total, se descuenta la peor de las disputadas hasta el momento.
-                    if aplicar_descarte and len(fechas_reales) >= 3 and len(pts_hasta_aqui) >= 3:
+                    # Si el descarte está activo y ya hay 3 o más fechas acumuladas en este punto de la evolución:
+                    if aplicar_descarte and len(pts_hasta_aqui) >= 3:
                         min_val = min(pts_hasta_aqui)
                         total_actual = sum(pts_hasta_aqui) - min_val
                     else:
