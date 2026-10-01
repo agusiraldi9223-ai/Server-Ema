@@ -1027,70 +1027,85 @@ elif seccion_menu == "Comparativa de Tiempos":
         if circuito_sel == "Campeonato Completo":
             st.markdown("### 📈 Resumen Global (Brecha Relativa y Promedio de Ritmo)")
             
-            # 1. Procesamiento para Clasificación (Brecha Relativa Porcentual)
-            stats_clasif = {}
-            vuelta_base_ms = None
-            
-            for circ, sesiones in datos_comparativa_tiempos.items():
-                if "Clasificación" in sesiones:
-                    items_q = sesiones["Clasificación"]
-                    lider_ms = None
-                    
-                    for idx, reg in enumerate(items_q):
-                        match_piloto = re.search(r'[—\-]\s*(.+)$', reg['Pos'])
-                        p_nombre = match_piloto.group(1).strip() if match_piloto else reg['Pos']
+            # Tomamos una referencia base global general (el mejor tiempo absoluto registrado en todo el campeonato para calcular la escala visual)
+            def procesar_campeonato_global(tipo_sesion):
+                stats = {}
+                mejor_tiempo_absoluto = None
+                
+                for circ, sesiones in datos_comparativa_tiempos.items():
+                    if tipo_sesion in sesiones:
+                        items = sesiones[tipo_sesion]
+                        lider_fecha_ms = None
                         
-                        t_str = reg['Tiempo']
-                        try:
-                            partes_min = t_str.split(':')
-                            minutos = int(partes_min[0])
-                            partes_seg = partes_min[1].split(',')
-                            segundos = int(partes_seg[0])
-                            milisegundos = int(partes_seg[1])
-                            t_ms = (minutos * 60 * 1000) + (segundos * 1000) + milisegundos
-                        except:
-                            t_ms = None
-                        
-                        if t_ms and t_ms > 0:
-                            if idx == 0:
-                                lider_ms = t_ms
-                                if vuelta_base_ms is None:
-                                    vuelta_base_ms = t_ms
+                        for idx, reg in enumerate(items):
+                            match_piloto = re.search(r'[—\-]\s*(.+)$', reg['Pos'])
+                            p_nombre = match_piloto.group(1).strip() if match_piloto else reg['Pos']
                             
-                            porcentaje_lider = (t_ms / lider_ms) * 100
+                            t_str = reg['Tiempo']
+                            try:
+                                partes_min = t_str.split(':')
+                                minutos = int(partes_min[0])
+                                partes_seg = partes_min[1].split(',')
+                                segundos = int(partes_seg[0])
+                                milisegundos = int(partes_seg[1])
+                                t_ms = (minutos * 60 * 1000) + (segundos * 1000) + milisegundos
+                            except:
+                                t_ms = None
                             
-                            if p_nombre not in stats_clasif:
-                                stats_clasif[p_nombre] = {"suma_pct": 0, "apariciones": 0, "mejor_t": t_ms}
-                            
-                            stats_clasif[p_nombre]["suma_pct"] += porcentaje_lider
-                            stats_clasif[p_nombre]["apariciones"] += 1
-                            if t_ms < stats_clasif[p_nombre]["mejor_t"]:
-                                stats_clasif[p_nombre]["mejor_t"] = t_ms
+                            if t_ms and t_ms > 0:
+                                if idx == 0:
+                                    lider_fecha_ms = t_ms
+                                    if mejor_tiempo_absoluto is None or t_ms < mejor_tiempo_absoluto:
+                                        mejor_tiempo_absoluto = t_ms
+                                
+                                # Delta en milisegundos respecto al líder de SU misma fecha
+                                delta_fecha = t_ms - lider_fecha_ms
+                                
+                                if p_nombre not in stats:
+                                    stats[p_nombre] = {"suma_delta": 0, "apariciones": 0, "mejor_t": t_ms}
+                                
+                                stats[p_nombre]["suma_delta"] += delta_fecha
+                                stats[p_nombre]["apariciones"] += 1
+                                if t_ms < stats[p_nombre]["mejor_t"]:
+                                    stats[p_nombre]["mejor_t"] = t_ms
 
-            if stats_clasif and vuelta_base_ms:
-                ranking_clasif_global = []
-                for p, data in stats_clasif.items():
-                    promedio_pct = data["suma_pct"] / data["apariciones"]
-                    ranking_clasif_global.append({
+                if not stats or not mejor_tiempo_absoluto:
+                    return []
+
+                ranking_global = []
+                for p, data in stats.items():
+                    # Promedio de la diferencia (en ms) que saca el líder en cada fecha que corrió
+                    promedio_delta = data["suma_delta"] / data["apariciones"]
+                    
+                    # Tiempo estimado global base = mejor tiempo absoluto + su promedio de retraso
+                    t_estimado_global = mejor_tiempo_absoluto + promedio_delta
+                    
+                    ranking_global.append({
                         "Piloto": p,
-                        "PromedioPct": promedio_pct,
+                        "TiempoEst": t_estimado_global,
                         "MejorTiempo": data["mejor_t"]
                     })
                 
-                ranking_clasif_global = sorted(ranking_clasif_global, key=lambda x: x["PromedioPct"])
-                lider_pct = ranking_clasif_global[0]["PromedioPct"]
+                # Ordenamos de menor a mayor tiempo estimado (el más rápido primero)
+                ranking_global = sorted(ranking_global, key=lambda x: x["TiempoEst"])
+                return ranking_global, mejor_tiempo_absoluto
+
+            # 1. Procesamiento para Clasificación
+            res_clasif = procesar_campeonato_global("Clasificación")
+            if res_clasif:
+                ranking_clasif_global, base_q = res_clasif
+                lider_t_q = ranking_clasif_global[0]["TiempoEst"]
                 
                 for idx, item in enumerate(ranking_clasif_global):
                     pos_num = idx + 1
                     p_nombre = item["Piloto"]
+                    t_est = item["TiempoEst"]
                     
                     if pos_num == 1:
                         dif_txt = "Líder"
-                        t_est = vuelta_base_ms
                     else:
-                        dif_pct = item["PromedioPct"] - lider_pct
-                        t_est = vuelta_base_ms + (vuelta_base_ms * (dif_pct / 100))
-                        dif_txt = f"+{(t_est - vuelta_base_ms)/1000:.3f}s (Promedio)"
+                        dif_ms = t_est - lider_t_q
+                        dif_txt = f"+{dif_ms/1000:.3f}s (Promedio)"
                     
                     t_formato = convertir_ms_a_minutos(int(t_est))
                     eventos_data["Clasificación"].append({
@@ -1099,70 +1114,22 @@ elif seccion_menu == "Comparativa de Tiempos":
                         "Dif": dif_txt
                     })
 
-            # 2. Procesamiento para Carrera (Aplicando la misma lógica de Brecha Relativa de Tiempo)
-            stats_carrera = {}
-            vuelta_base_carrera_ms = None
-            
-            for circ, sesiones in datos_comparativa_tiempos.items():
-                if "Carrera" in sesiones:
-                    items_c = sesiones["Carrera"]
-                    lider_c_ms = None
-                    
-                    for idx, reg in enumerate(items_c):
-                        match_piloto = re.search(r'[—\-]\s*(.+)$', reg['Pos'])
-                        p_nombre = match_piloto.group(1).strip() if match_piloto else reg['Pos']
-                        
-                        t_str = reg['Tiempo']
-                        try:
-                            partes_min = t_str.split(':')
-                            minutos = int(partes_min[0])
-                            partes_seg = partes_min[1].split(',')
-                            segundos = int(partes_seg[0])
-                            milisegundos = int(partes_seg[1])
-                            t_ms = (minutos * 60 * 1000) + (segundos * 1000) + milisegundos
-                        except:
-                            t_ms = None
-                        
-                        if t_ms and t_ms > 0:
-                            if idx == 0:
-                                lider_c_ms = t_ms
-                                if vuelta_base_carrera_ms is None:
-                                    vuelta_base_carrera_ms = t_ms
-                            
-                            porcentaje_lider_c = (t_ms / lider_c_ms) * 100
-                            
-                            if p_nombre not in stats_carrera:
-                                stats_carrera[p_nombre] = {"suma_pct": 0, "apariciones": 0, "mejor_t": t_ms}
-                            
-                            stats_carrera[p_nombre]["suma_pct"] += porcentaje_lider_c
-                            stats_carrera[p_nombre]["apariciones"] += 1
-                            if t_ms < stats_carrera[p_nombre]["mejor_t"]:
-                                stats_carrera[p_nombre]["mejor_t"] = t_ms
-
-            if stats_carrera and vuelta_base_carrera_ms:
-                ranking_carrera_global = []
-                for p, data in stats_carrera.items():
-                    promedio_pct_c = data["suma_pct"] / data["apariciones"]
-                    ranking_carrera_global.append({
-                        "Piloto": p,
-                        "PromedioPct": promedio_pct_c,
-                        "MejorTiempo": data["mejor_t"]
-                    })
-                
-                ranking_carrera_global = sorted(ranking_carrera_global, key=lambda x: x["PromedioPct"])
-                lider_pct_c = ranking_carrera_global[0]["PromedioPct"]
+            # 2. Procesamiento para Carrera
+            res_carrera = procesar_campeonato_global("Carrera")
+            if res_carrera:
+                ranking_carrera_global, base_c = res_carrera
+                lider_t_c = ranking_carrera_global[0]["TiempoEst"]
                 
                 for idx, item in enumerate(ranking_carrera_global):
                     pos_num = idx + 1
                     p_nombre = item["Piloto"]
+                    t_est = item["TiempoEst"]
                     
                     if pos_num == 1:
                         dif_txt = "Líder"
-                        t_est = vuelta_base_carrera_ms
                     else:
-                        dif_pct_c = item["PromedioPct"] - lider_pct_c
-                        t_est = vuelta_base_carrera_ms + (vuelta_base_carrera_ms * (dif_pct_c / 100))
-                        dif_txt = f"+{(t_est - vuelta_base_carrera_ms)/1000:.3f}s (Promedio)"
+                        dif_ms = t_est - lider_t_c
+                        dif_txt = f"+{dif_ms/1000:.3f}s (Promedio)"
                     
                     t_formato = convertir_ms_a_minutos(int(t_est))
                     eventos_data["Carrera"].append({
