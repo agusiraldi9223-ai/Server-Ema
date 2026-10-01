@@ -1027,10 +1027,9 @@ elif seccion_menu == "Comparativa de Tiempos":
         if circuito_sel == "Campeonato Completo":
             st.markdown("### 📈 Resumen Global (Brecha Relativa y Promedio de Ritmo)")
             
-            # Tomamos una referencia base global general (el mejor tiempo absoluto registrado en todo el campeonato para calcular la escala visual)
-            def procesar_campeonato_global(tipo_sesion):
+            def procesar_campeonato_porcentual(tipo_sesion):
                 stats = {}
-                mejor_tiempo_absoluto = None
+                vuelta_base_referencia = None
                 
                 for circ, sesiones in datos_comparativa_tiempos.items():
                     if tipo_sesion in sesiones:
@@ -1055,57 +1054,56 @@ elif seccion_menu == "Comparativa de Tiempos":
                             if t_ms and t_ms > 0:
                                 if idx == 0:
                                     lider_fecha_ms = t_ms
-                                    if mejor_tiempo_absoluto is None or t_ms < mejor_tiempo_absoluto:
-                                        mejor_tiempo_absoluto = t_ms
+                                    if vuelta_base_referencia is None:
+                                        vuelta_base_referencia = t_ms # Tomamos una vuelta base estándar de referencia visual
                                 
-                                # Delta en milisegundos respecto al líder de SU misma fecha
-                                delta_fecha = t_ms - lider_fecha_ms
+                                # Porcentaje de rendimiento respecto al poleman de ESA fecha específica
+                                pct_lider = (t_ms / lider_fecha_ms) * 100
                                 
                                 if p_nombre not in stats:
-                                    stats[p_nombre] = {"suma_delta": 0, "apariciones": 0, "mejor_t": t_ms}
+                                    stats[p_nombre] = {"suma_pct": 0, "apariciones": 0, "mejor_t": t_ms}
                                 
-                                stats[p_nombre]["suma_delta"] += delta_fecha
+                                stats[p_nombre]["suma_pct"] += pct_lider
                                 stats[p_nombre]["apariciones"] += 1
                                 if t_ms < stats[p_nombre]["mejor_t"]:
                                     stats[p_nombre]["mejor_t"] = t_ms
 
-                if not stats or not mejor_tiempo_absoluto:
+                if not stats or not vuelta_base_referencia:
                     return []
 
                 ranking_global = []
                 for p, data in stats.items():
-                    # Promedio de la diferencia (en ms) que saca el líder en cada fecha que corrió
-                    promedio_delta = data["suma_delta"] / data["apariciones"]
-                    
-                    # Tiempo estimado global base = mejor tiempo absoluto + su promedio de retraso
-                    t_estimado_global = mejor_tiempo_absoluto + promedio_delta
-                    
+                    # Promedio del porcentaje de rendimiento en las fechas que corrió
+                    promedio_pct = data["suma_pct"] / data["apariciones"]
                     ranking_global.append({
                         "Piloto": p,
-                        "TiempoEst": t_estimado_global,
+                        "PromedioPct": promedio_pct,
                         "MejorTiempo": data["mejor_t"]
                     })
                 
-                # Ordenamos de menor a mayor tiempo estimado (el más rápido primero)
-                ranking_global = sorted(ranking_global, key=lambda x: x["TiempoEst"])
-                return ranking_global, mejor_tiempo_absoluto
+                # Ordenamos de menor a mayor porcentaje (el que estuvo más cerca del 100% queda primero)
+                ranking_global = sorted(ranking_global, key=lambda x: x["PromedioPct"])
+                return ranking_global, vuelta_base_referencia
 
             # 1. Procesamiento para Clasificación
-            res_clasif = procesar_campeonato_global("Clasificación")
+            res_clasif = procesar_campeonato_porcentual("Clasificación")
             if res_clasif:
                 ranking_clasif_global, base_q = res_clasif
-                lider_t_q = ranking_clasif_global[0]["TiempoEst"]
+                lider_pct_q = ranking_clasif_global[0]["PromedioPct"]
                 
                 for idx, item in enumerate(ranking_clasif_global):
                     pos_num = idx + 1
                     p_nombre = item["Piloto"]
-                    t_est = item["TiempoEst"]
+                    prom_pct = item["PromedioPct"]
                     
                     if pos_num == 1:
                         dif_txt = "Líder"
+                        t_est = base_q
                     else:
-                        dif_ms = t_est - lider_t_q
-                        dif_txt = f"+{dif_ms/1000:.3f}s (Promedio)"
+                        # Diferencia porcentual neta respecto al líder general del campeonato
+                        dif_pct_neta = prom_pct - lider_pct_q
+                        t_est = base_q + (base_q * (dif_pct_neta / 100))
+                        dif_txt = f"+{(t_est - base_q)/1000:.3f}s (Promedio)"
                     
                     t_formato = convertir_ms_a_minutos(int(t_est))
                     eventos_data["Clasificación"].append({
@@ -1115,21 +1113,23 @@ elif seccion_menu == "Comparativa de Tiempos":
                     })
 
             # 2. Procesamiento para Carrera
-            res_carrera = procesar_campeonato_global("Carrera")
+            res_carrera = procesar_campeonato_porcentual("Carrera")
             if res_carrera:
                 ranking_carrera_global, base_c = res_carrera
-                lider_t_c = ranking_carrera_global[0]["TiempoEst"]
+                lider_pct_c = ranking_carrera_global[0]["PromedioPct"]
                 
                 for idx, item in enumerate(ranking_carrera_global):
                     pos_num = idx + 1
                     p_nombre = item["Piloto"]
-                    t_est = item["TiempoEst"]
+                    prom_pct_c = item["PromedioPct"]
                     
                     if pos_num == 1:
                         dif_txt = "Líder"
+                        t_est = base_c
                     else:
-                        dif_ms = t_est - lider_t_c
-                        dif_txt = f"+{dif_ms/1000:.3f}s (Promedio)"
+                        dif_pct_neta_c = prom_pct_c - lider_pct_c
+                        t_est = base_c + (base_c * (dif_pct_neta_c / 100))
+                        dif_txt = f"+{(t_est - base_c)/1000:.3f}s (Promedio)"
                     
                     t_formato = convertir_ms_a_minutos(int(t_est))
                     eventos_data["Carrera"].append({
