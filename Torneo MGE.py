@@ -784,12 +784,19 @@ if seccion_menu == "Resumen General":
             else:
                 st.info("No hay datos disponibles para mostrar en el gráfico de evolución del campeonato.")
 
-    # --- DESGLOSE POR FECHA / CIRCUITO (RECUPERADO) ---
+    # --- DESGLOSE POR FECHA / CIRCUITO (ORDENADO CRONOLÓGICAMENTE) ---
     if 'df_global' in locals() and not df_global.empty:
         st.markdown("---")
         st.subheader("📅 Desglose por Fecha / Circuito")
         
-        circuitos_disponibles = sorted(circuitos) if 'circuitos' in locals() and circuitos else (sorted(df_global["Circuito"].unique()) if "Circuito" in df_global.columns else [])
+        # Usamos fechas_reales si existe para mantener el orden cronológico estricto, o respaldamos con circuitos
+        if 'fechas_reales' in locals() and fechas_reales:
+            circuitos_disponibles = [f for f in fechas_reales if f in df_global["Circuito"].unique()]
+            # Por si quedó alguna fuera
+            restantes = [c for c in df_global["Circuito"].unique() if c not in circuitos_disponibles]
+            circuitos_disponibles.extend(sorted(restantes))
+        else:
+            circuitos_disponibles = sorted(circuitos) if 'circuitos' in locals() and circuitos else sorted(df_global["Circuito"].unique())
         
         if circuitos_disponibles:
             circuito_elegido_fecha = st.selectbox("🏁 Seleccionar Fecha / Circuito para ver detalles:", circuitos_disponibles, key="select_circuito_desglose_general")
