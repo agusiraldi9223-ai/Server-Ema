@@ -1336,11 +1336,12 @@ elif seccion_menu == "Estadísticas":
     
     if tiene_datos_comp or (not df_analisis_global.empty and "Piloto" in df_analisis_global.columns):
         
-        # --- 1. SELECTOR DE CIRCUITO ---
+        # --- 1. SELECTOR DE CIRCUITO (En orden cronológico) ---
         if tiene_datos_comp:
-            circuitos_disponibles = sorted(list(datos_comparativa_tiempos.keys()))
+            # Mantenemos el orden en el que vienen cargadas las fechas/circuitos en el diccionario
+            circuitos_disponibles = list(datos_comparativa_tiempos.keys())
         else:
-            circuitos_disponibles = sorted(df_analisis_global["Circuito"].unique()) if "Circuito" in df_analisis_global.columns else ["General"]
+            circuitos_disponibles = df_analisis_global["Circuito"].unique().tolist() if "Circuito" in df_analisis_global.columns else ["General"]
             
         circuito_seleccionado = st.selectbox("🏁 Seleccionar Circuito:", circuitos_disponibles, key="select_circuito_stats")
         
