@@ -1025,7 +1025,7 @@ elif seccion_menu == "Comparativa de Tiempos":
         eventos_data = {"Clasificación": [], "Sprint": [], "Carrera": []}
         
         if circuito_sel == "Campeonato Completo":
-            st.markdown("### 📈 Resumen Global (Brecha Relativa y Promedio de Ritmo)")
+            st.markdown("### 📈 Resumen Global (Brecha Relativa Porcentual)")
             
             def procesar_campeonato_porcentual(tipo_sesion):
                 stats = {}
@@ -1055,7 +1055,7 @@ elif seccion_menu == "Comparativa de Tiempos":
                                 if idx == 0:
                                     lider_fecha_ms = t_ms
                                     if vuelta_base_referencia is None:
-                                        vuelta_base_referencia = t_ms # Tomamos una vuelta base estándar de referencia visual
+                                        vuelta_base_referencia = t_ms
                                 
                                 # Porcentaje de rendimiento respecto al poleman de ESA fecha específica
                                 pct_lider = (t_ms / lider_fecha_ms) * 100
@@ -1100,7 +1100,6 @@ elif seccion_menu == "Comparativa de Tiempos":
                         dif_txt = "Líder"
                         t_est = base_q
                     else:
-                        # Diferencia porcentual neta respecto al líder general del campeonato
                         dif_pct_neta = prom_pct - lider_pct_q
                         t_est = base_q + (base_q * (dif_pct_neta / 100))
                         dif_txt = f"+{(t_est - base_q)/1000:.3f}s (Promedio)"
