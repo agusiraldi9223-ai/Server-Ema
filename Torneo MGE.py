@@ -1018,16 +1018,14 @@ if seccion_menu == "Resumen General":
 # --- VISTA: COMPARATIVA DE TIEMPOS ---
 elif seccion_menu == "Comparativa de Tiempos":
     st.subheader("📊 Comparativa Global de Tiempos por Evento")
+    
     if datos_comparativa_tiempos:
         opciones_circuitos = ["Campeonato Completo"] + list(datos_comparativa_tiempos.keys())
         circuito_sel = st.selectbox("Seleccionar Circuito / Evento:", opciones_circuitos)
         
-        # Diccionario para unificar nombres duplicados (Ajusta los nombres según prefieras)
+        # Diccionario para unificar nombres duplicados
         equivalencias_nombres = {
             "Fede Oris": "Federico Oris",
-            # "Federico Oris": "Federico Oris", # Ya queda unificado
-            # Agrega más variantes aquí si descubres otras, por ejemplo:
-            # "Nacho Perez": "Ignacio Pérez"
         }
         
         def normalizar_nombre(nombre):
@@ -1038,6 +1036,7 @@ elif seccion_menu == "Comparativa de Tiempos":
         if circuito_sel == "Campeonato Completo":
             st.markdown("### 📈 Resumen Global (Brecha Relativa Porcentual)")
             
+            # --- 1. PROCESAMIENTO ESTÁNDAR PARA CLASIFICACIÓN (COMO YA ESTABA) ---
             def procesar_campeonato_porcentual(tipo_sesion):
                 stats = {}
                 vuelta_base_referencia = None
@@ -1050,8 +1049,6 @@ elif seccion_menu == "Comparativa de Tiempos":
                         for idx, reg in enumerate(items):
                             match_piloto = re.search(r'[—\-]\s*(.+)$', reg['Pos'])
                             p_nombre_raw = match_piloto.group(1).strip() if match_piloto else reg['Pos']
-                            
-                            # Normalizamos el nombre para unificar variantes
                             p_nombre = normalizar_nombre(p_nombre_raw)
                             
                             t_str = reg['Tiempo']
@@ -1071,7 +1068,6 @@ elif seccion_menu == "Comparativa de Tiempos":
                                     if vuelta_base_referencia is None:
                                         vuelta_base_referencia = t_ms
                                 
-                                # Porcentaje de rendimiento respecto al poleman de ESA fecha específica
                                 pct_lider = (t_ms / lider_fecha_ms) * 100
                                 
                                 if p_nombre not in stats:
@@ -1083,11 +1079,10 @@ elif seccion_menu == "Comparativa de Tiempos":
                                     stats[p_nombre]["mejor_t"] = t_ms
 
                 if not stats or not vuelta_base_referencia:
-                    return []
+                    return None
 
                 ranking_global = []
                 for p, data in stats.items():
-                    # Promedio del porcentaje de rendimiento en las fechas que corrió
                     promedio_pct = data["suma_pct"] / data["apariciones"]
                     ranking_global.append({
                         "Piloto": p,
@@ -1095,11 +1090,74 @@ elif seccion_menu == "Comparativa de Tiempos":
                         "MejorTiempo": data["mejor_t"]
                     })
                 
-                # Ordenamos de menor a mayor porcentaje (el que estuvo más cerca del 100% queda primero)
                 ranking_global = sorted(ranking_global, key=lambda x: x["PromedioPct"])
                 return ranking_global, vuelta_base_referencia
 
-            # 1. Procesamiento para Clasificación
+            # --- 2. PROCESAMIENTO ESPECÍFICO PARA CARRERA (OPCIÓN 3: VUELTA RÁPIDA) ---
+            def procesar_campeonato_vuelta_rapida_carrera():
+                stats = {}
+                vuelta_base_referencia = None
+                
+                for circ, sesiones in datos_comparativa_tiempos.items():
+                    if "Carrera" in sesiones:
+                        items = sesiones["Carrera"]
+                        lider_fecha_ms = None
+                        mejor_vuelta_fecha_piloto = {}
+                        
+                        for idx, reg in enumerate(items):
+                            match_piloto = re.search(r'[—\-]\s*(.+)$', reg['Pos'])
+                            p_nombre_raw = match_piloto.group(1).strip() if match_piloto else reg['Pos']
+                            p_nombre = normalizar_nombre(p_nombre_raw)
+                            
+                            t_str = reg['Tiempo']
+                            try:
+                                partes_min = t_str.split(':')
+                                minutos = int(partes_min[0])
+                                partes_seg = partes_min[1].split(',')
+                                segundos = int(partes_seg[0])
+                                milisegundos = int(partes_seg[1])
+                                t_ms = (minutos * 60 * 1000) + (segundos * 1000) + milisegundos
+                            except:
+                                t_ms = None
+                            
+                            if t_ms and t_ms > 0:
+                                if idx == 0:
+                                    lider_fecha_ms = t_ms
+                                    if vuelta_base_referencia is None:
+                                        vuelta_base_referencia = t_ms
+                                
+                                # Nos quedamos estrictamente con la mejor vuelta rápida de CADA piloto en esta fecha
+                                if p_nombre not in mejor_vuelta_fecha_piloto or t_ms < mejor_vuelta_fecha_piloto[p_nombre]:
+                                    mejor_vuelta_fecha_piloto[p_nombre] = t_ms
+                        
+                        if lider_fecha_ms:
+                            for p_nombre, t_ms in mejor_vuelta_fecha_piloto.items():
+                                pct_lider = (t_ms / lider_fecha_ms) * 100
+                                
+                                if p_nombre not in stats:
+                                    stats[p_nombre] = {"suma_pct": 0, "apariciones": 0, "mejor_t": t_ms}
+                                
+                                stats[p_nombre]["suma_pct"] += pct_lider
+                                stats[p_nombre]["apariciones"] += 1
+                                if t_ms < stats[p_nombre]["mejor_t"]:
+                                    stats[p_nombre]["mejor_t"] = t_ms
+
+                if not stats or not vuelta_base_referencia:
+                    return None
+
+                ranking_global = []
+                for p, data in stats.items():
+                    promedio_pct = data["suma_pct"] / data["apariciones"]
+                    ranking_global.append({
+                        "Piloto": p,
+                        "PromedioPct": promedio_pct,
+                        "MejorTiempo": data["mejor_t"]
+                    })
+                
+                ranking_global = sorted(ranking_global, key=lambda x: x["PromedioPct"])
+                return ranking_global, vuelta_base_referencia
+
+            # Llenar Clasificación (Se mantiene igual)
             res_clasif = procesar_campeonato_porcentual("Clasificación")
             if res_clasif:
                 ranking_clasif_global, base_q = res_clasif
@@ -1125,8 +1183,8 @@ elif seccion_menu == "Comparativa de Tiempos":
                         "Dif": dif_txt
                     })
 
-            # 2. Procesamiento para Carrera
-            res_carrera = procesar_campeonato_porcentual("Carrera")
+            # Llenar Carrera (Aplicando Opción 3: en referencia al récord de vuelta)
+            res_carrera = procesar_campeonato_vuelta_rapida_carrera()
             if res_carrera:
                 ranking_carrera_global, base_c = res_carrera
                 lider_pct_c = ranking_carrera_global[0]["PromedioPct"]
@@ -1137,12 +1195,12 @@ elif seccion_menu == "Comparativa de Tiempos":
                     prom_pct_c = item["PromedioPct"]
                     
                     if pos_num == 1:
-                        dif_txt = "Líder"
+                        dif_txt = "Líder (Récord)"
                         t_est = base_c
                     else:
                         dif_pct_neta_c = prom_pct_c - lider_pct_c
                         t_est = base_c + (base_c * (dif_pct_neta_c / 100))
-                        dif_txt = f"+{(t_est - base_c)/1000:.3f}s (Promedio)"
+                        dif_txt = f"+{(t_est - base_c)/1000:.3f}s (Promedio Global)"
                     
                     t_formato = convertir_ms_a_minutos(int(t_est))
                     eventos_data["Carrera"].append({
@@ -1159,6 +1217,8 @@ elif seccion_menu == "Comparativa de Tiempos":
         for i, tipo in enumerate(tipos_sesion):
             with cols[i]:
                 st.markdown(f"### 📄 {tipo}")
+                if tipo == "Carrera":
+                    st.caption("*(Valores en referencia al récord de vuelta)*")
                 registros = eventos_data.get(tipo, [])
                 if registros:
                     for reg in registros:
