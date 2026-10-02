@@ -1724,14 +1724,10 @@ elif seccion_menu == "Perfil de Circuitos":
     
     if datos_comparativa_tiempos:
         # 1. Definimos una categorización automática o manual de los circuitos de tu torneo
-        # (Puedes ajustar esta clasificación según los nombres reales de tus circuitos)
         clasificacion_circuitos = {
             "San Luis": "Técnico / Mixto",
             "Balcarce": "Técnico / Mixto",
             "San Nicolás": "Rápido / Autovía",
-            # Agrega más circuitos aquí a medida que avancen las fechas:
-            # "Oscar y Juan Gálvez": "Rápido / Autovía",
-            # "La Plata": "Técnico / Mixto"
         }
         
         # Permitir al usuario ver la clasificación actual o reasignarla si lo desea
@@ -1743,12 +1739,11 @@ elif seccion_menu == "Perfil de Circuitos":
         
         # Procesamos los datos para evaluar el rendimiento relativo por tipo de pista
         for circ, sesiones in datos_comparativa_tiempos.items():
-            tipo_pista = clasificacion_circuitos.get(circ, "Técnico / Mixto") # Por defecto si no está mapeado
+            tipo_pista = clasificacion_circuitos.get(circ, "Técnico / Mixto")
             
             if tipo_filtro_pista != "Todos" and tipo_filtro_pista != tipo_pista:
                 continue
                 
-            # Tomamos por ejemplo la sesión de Carrera o Clasificación para medir ritmo
             for tipo_sesion in ["Carrera", "Clasificación"]:
                 if tipo_sesion in sesiones:
                     items = sesiones[tipo_sesion]
@@ -1773,7 +1768,6 @@ elif seccion_menu == "Perfil de Circuitos":
                             if idx == 0:
                                 lider_ms = t_ms
                             
-                            # Calculamos eficiencia respecto al líder de esa sesión en esa pista
                             eficiencia = (lider_ms / t_ms) * 100
                             
                             if p_nombre_raw not in perfiles_pilotos:
@@ -1785,18 +1779,16 @@ elif seccion_menu == "Perfil de Circuitos":
                             perfiles_pilotos[p_nombre_raw][tipo_pista]["suma"] += eficiencia
                             perfiles_pilotos[p_nombre_raw][tipo_pista]["cant"] += 1
 
-        # Mostramos los resultados en tarjetas o una tabla comparativa
+        # Mostramos los resultados en tabla y tarjetas
         if perfiles_pilotos:
             st.markdown("### 📊 Índice de Competitividad por ADN de Pista")
             st.caption("*(Valores cercanos al 100% indican rendimiento de punta en ese tipo de trazado)*")
             
             datos_tabla = []
             for piloto, tipos in perfiles_pilotos.items():
-                # Promedios para circuitos rápidos
-                q_ rap = tipos["Rápido / Autovía"]
+                q_rap = tipos["Rápido / Autovía"]
                 prom_rap = (q_rap["suma"] / q_rap["cant"]) if q_rap["cant"] > 0 else 0
                 
-                # Promedios para circuitos técnicos
                 q_tec = tipos["Técnico / Mixto"]
                 prom_tec = (q_tec["suma"] / q_tec["cant"]) if q_tec["cant"] > 0 else 0
                 
@@ -1812,7 +1804,6 @@ elif seccion_menu == "Perfil de Circuitos":
             
             st.dataframe(df_perfiles, use_container_width=True)
             
-            # Generador de perfiles automáticos tipo broadcast
             st.markdown("### 📝 Perfiles Destacados de la Comunidad")
             for _, row in df_perfiles.iterrows():
                 piloto = row["Piloto"]
