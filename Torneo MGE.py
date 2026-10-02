@@ -107,7 +107,9 @@ if st.sidebar.button("🎮 Simulador de Campeonato", use_container_width=True):
 if st.sidebar.button("📈 Estadísticas", use_container_width=True):
     st.session_state['pagina_activa'] = "Estadísticas"
     st.rerun()
-
+if st.sidebar.button("📈 Perfil de Circuitos", use_container_width=True):
+    st.session_state['pagina_activa'] = "Perfil de Circuitos"
+    st.rerun()
 seccion_menu = st.session_state['pagina_activa']
 
 # Obtiene la ruta absoluta de la carpeta donde se encuentra este archivo de script
@@ -1343,7 +1345,7 @@ elif seccion_menu == "Estadísticas":
         else:
             circuitos_disponibles = df_analisis_global["Circuito"].unique().tolist() if "Circuito" in df_analisis_global.columns else ["General"]
             
-        circuito_seleccionado = st.selectbox("🏁 Seleccionar Circuito:", circuitos_disponibles, key="select_circuito_stats")
+        circuito_seleccionado = st.selectbox("🏁 Seleccionar Circuito:", circuitos_disponibles, key="select_circuito_stats")    
         
         # --- 2. SELECTOR DE TIPO DE SESIÓN (SOLO CARRERA Y SPRINT) ---
         tipos_disponibles = []
@@ -1712,3 +1714,111 @@ elif seccion_menu == "Estadísticas":
 
     except Exception as e_radar:
         st.warning(f"Error generando el gráfico de radar: {e_radar}")
+
+# --- VISTA: PERFIL POR TIPO DE CIRCUITO (RÁPIDO VS TÉCNICO) ---
+elif seccion_menu == "Perfil de Circuitos":
+    st.subheader("🗺️ Rendimiento por Tipo de Circuito (Rápido vs. Técnico)")
+    st.markdown(
+        "> *Analiza el comportamiento de los pilotos según el ADN del trazado: pistas de velocidad pura (autovías/rectas largas) frente a circuitos trabados o mixtos.*"
+    )
+    
+    if datos_comparativa_tiempos:
+        # 1. Definimos una categorización automática o manual de los circuitos de tu torneo
+        # (Puedes ajustar esta clasificación según los nombres reales de tus circuitos)
+        clasificacion_circuitos = {
+            "San Luis": "Técnico / Mixto",
+            "Balcarce": "Técnico / Mixto",
+            "San Nicolás": "Rápido / Autovía",
+            # Agrega más circuitos aquí a medida que avancen las fechas:
+            # "Oscar y Juan Gálvez": "Rápido / Autovía",
+            # "La Plata": "Técnico / Mixto"
+        }
+        
+        # Permitir al usuario ver la clasificación actual o reasignarla si lo desea
+        st.sidebar.markdown("---")
+        st.sidebar.subheader("⚙️ Configuración de Pistas")
+        tipo_filtro_pista = st.radio("Filtrar análisis por tipo:", ["Todos", "Rápido / Autovía", "Técnico / Mixto"])
+        
+        perfiles_pilotos = {}
+        
+        # Procesamos los datos para evaluar el rendimiento relativo por tipo de pista
+        for circ, sesiones in datos_comparativa_tiempos.items():
+            tipo_pista = clasificacion_circuitos.get(circ, "Técnico / Mixto") # Por defecto si no está mapeado
+            
+            if tipo_filtro_pista != "Todos" and tipo_filtro_pista != tipo_pista:
+                continue
+                
+            # Tomamos por ejemplo la sesión de Carrera o Clasificación para medir ritmo
+            for tipo_sesion in ["Carrera", "Clasificación"]:
+                if tipo_sesion in sesiones:
+                    items = sesiones[tipo_sesion]
+                    lider_ms = None
+                    
+                    for idx, reg in enumerate(items):
+                        match_piloto = re.search(r'[—\-]\s*(.+)$', reg['Pos'])
+                        p_nombre_raw = match_piloto.group(1).strip() if match_piloto else reg['Pos']
+                        
+                        t_str = reg['Tiempo']
+                        try:
+                            partes_min = t_str.split(':')
+                            minutos = int(partes_min[0])
+                            partes_seg = partes_min[1].split(',')
+                            segundos = int(partes_seg[0])
+                            milisegundos = int(partes_seg[1])
+                            t_ms = (minutos * 60 * 1000) + (segundos * 1000) + milisegundos
+                        except:
+                            t_ms = None
+                            
+                        if t_ms and t_ms > 0:
+                            if idx == 0:
+                                lider_ms = t_ms
+                            
+                            # Calculamos eficiencia respecto al líder de esa sesión en esa pista
+                            eficiencia = (lider_ms / t_ms) * 100
+                            
+                            if p_nombre_raw not in perfiles_pilotos:
+                                perfiles_pilotos[p_nombre_raw] = {
+                                    "Rápido / Autovía": {"suma": 0, "cant": 0},
+                                    "Técnico / Mixto": {"suma": 0, "cant": 0}
+                                }
+                            
+                            perfiles_pilotos[p_nombre_raw][tipo_pista]["suma"] += eficiencia
+                            perfiles_pilotos[p_nombre_raw][tipo_pista]["cant"] += 1
+
+        # Mostramos los resultados en tarjetas o una tabla comparativa
+        if perfiles_pilotos:
+            st.markdown("### 📊 Índice de Competitividad por ADN de Pista")
+            st.caption("*(Valores cercanos al 100% indican rendimiento de punta en ese tipo de trazado)*")
+            
+            datos_tabla = []
+            for piloto, tipos in perfiles_pilotos.items():
+                # Promedios para circuitos rápidos
+                q_ rap = tipos["Rápido / Autovía"]
+                prom_rap = (q_rap["suma"] / q_rap["cant"]) if q_rap["cant"] > 0 else 0
+                
+                # Promedios para circuitos técnicos
+                q_tec = tipos["Técnico / Mixto"]
+                prom_tec = (q_tec["suma"] / q_tec["cant"]) if q_tec["cant"] > 0 else 0
+                
+                datos_tabla.append({
+                    "Piloto": piloto,
+                    "Pistas Rápidas (%)": round(prom_rap, 2),
+                    "Pistas Técnicas (%)": round(prom_tec, 2),
+                    "Especialidad": "⚡ Velocidad Pura" if prom_rap > prom_tec else "🎯 Ritmo y Técnica"
+                })
+            
+            df_perfiles = pd.DataFrame(datos_tabla)
+            df_perfiles = df_perfiles.sort_values(by="Pistas Rápidas (%)", ascending=False).reset_index(drop=True)
+            
+            st.dataframe(df_perfiles, use_container_width=True)
+            
+            # Generador de perfiles automáticos tipo broadcast
+            st.markdown("### 📝 Perfiles Destacados de la Comunidad")
+            for _, row in df_perfiles.iterrows():
+                piloto = row["Piloto"]
+                esp = row["Especialidad"]
+                st.info(f"👤 **{piloto}** — Perfil principal: **{esp}** (Rápidas: `{row['Pistas Rápidas (%)']}%` | Técnicas: `{row['Pistas Técnicas (%)']}%`)")
+        else:
+            st.warning("No hay suficientes datos cruzados para generar los perfiles con el filtro seleccionado.")
+    else:
+        st.info("Sube los datos del campeonato para habilitar el análisis de perfiles de circuito.")
