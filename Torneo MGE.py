@@ -1022,6 +1022,17 @@ elif seccion_menu == "Comparativa de Tiempos":
         opciones_circuitos = ["Campeonato Completo"] + list(datos_comparativa_tiempos.keys())
         circuito_sel = st.selectbox("Seleccionar Circuito / Evento:", opciones_circuitos)
         
+        # Diccionario para unificar nombres duplicados (Ajusta los nombres según prefieras)
+        equivalencias_nombres = {
+            "Fede Oris": "Federico Oris",
+            # "Federico Oris": "Federico Oris", # Ya queda unificado
+            # Agrega más variantes aquí si descubres otras, por ejemplo:
+            # "Nacho Perez": "Ignacio Pérez"
+        }
+        
+        def normalizar_nombre(nombre):
+            return equivalencias_nombres.get(nombre, nombre)
+        
         eventos_data = {"Clasificación": [], "Sprint": [], "Carrera": []}
         
         if circuito_sel == "Campeonato Completo":
@@ -1038,7 +1049,10 @@ elif seccion_menu == "Comparativa de Tiempos":
                         
                         for idx, reg in enumerate(items):
                             match_piloto = re.search(r'[—\-]\s*(.+)$', reg['Pos'])
-                            p_nombre = match_piloto.group(1).strip() if match_piloto else reg['Pos']
+                            p_nombre_raw = match_piloto.group(1).strip() if match_piloto else reg['Pos']
+                            
+                            # Normalizamos el nombre para unificar variantes
+                            p_nombre = normalizar_nombre(p_nombre_raw)
                             
                             t_str = reg['Tiempo']
                             try:
