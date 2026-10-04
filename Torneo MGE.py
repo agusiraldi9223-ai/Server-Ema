@@ -1751,6 +1751,16 @@ elif seccion_menu == "Perfil de Circuitos":
     )
     
     if datos_comparativa_tiempos:
+        # Función auxiliar para limpiar tildes, mayúsculas y espacios
+        import unicodedata
+        
+        def normalizar_texto(texto):
+            if not texto:
+                return ""
+            # Pone en minúsculas, quita acentos/tildes y espacios extras
+            nfkd_form = unicodedata.normalize('NFKD', str(texto))
+            return "".join([c for c in nfkd_form if not unicodedata.combining(c)]).lower().strip()
+
         # 1. Base de datos maestra de circuitos (Clasificación oficial ampliada)
         BASE_DATOS_CIRCUITOS = {
             # Veloces
@@ -1830,6 +1840,9 @@ elif seccion_menu == "Perfil de Circuitos":
             "Marcos Juárez": "Trabados"
         }
         
+        # Creamos un diccionario auxiliar normalizado para que las búsquedas sean infalibles
+        base_normalizada = {normalizar_texto(k): v for k, v in BASE_DATOS_CIRCUITOS.items()}
+        
         # Permitir al usuario filtrar análisis por tipo
         st.sidebar.markdown("---")
         st.sidebar.subheader("⚙️ Configuración de Pistas")
@@ -1841,12 +1854,14 @@ elif seccion_menu == "Perfil de Circuitos":
         
         # Procesamos los datos para evaluar el rendimiento relativo por tipo de pista
         for circ, sesiones in datos_comparativa_tiempos.items():
-            # Validación estricta: si el circuito no está en la base, avisamos en lugar de poner un comodín silencioso
-            if circ not in BASE_DATOS_CIRCUITOS:
+            circ_norm = normalizar_texto(circ)
+            
+            # Validación estricta usando la versión normalizada
+            if circ_norm not in base_normalizada:
                 circuitos_no_encontrados.add(circ)
                 continue
                 
-            tipo_pista = BASE_DATOS_CIRCUITOS[circ]
+            tipo_pista = base_normalizada[circ_norm]
             
             if tipo_filtro_pista != "Todos" and tipo_filtro_pista != tipo_pista:
                 continue
@@ -1888,7 +1903,7 @@ elif seccion_menu == "Perfil de Circuitos":
                                 perfiles_pilotos[p_nombre_raw][tipo_pista]["suma"] += eficiencia
                                 perfiles_pilotos[p_nombre_raw][tipo_pista]["cant"] += 1
 
-        # Advertencia estricta si hay circuitos faltantes en la base maestra
+        # Advertencia estricta si hay circuitos faltantes
         if circuitos_no_encontrados:
             st.error(f"⚠️ **Atención:** Los siguientes circuitos no tienen cargado el tipo de trazado en la base de datos maestra: `{', '.join(circuitos_no_encontrados)}`. Por favor, agrégalos al diccionario para poder analizarlos.")
 
@@ -1908,7 +1923,6 @@ elif seccion_menu == "Perfil de Circuitos":
                 q_trab = tipos["Trabados"]
                 prom_trab = (q_trab["suma"] / q_trab["cant"]) if q_trab["cant"] > 0 else 0
                 
-                # Determinamos la mayor especialidad entre las 3 categorías
                 mejor_puntaje = max(prom_vel, prom_mix, prom_trab)
                 if mejor_puntaje == prom_vel:
                     especialidad = "⚡ Especialista en Velocidad Pura"
