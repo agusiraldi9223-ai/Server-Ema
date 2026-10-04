@@ -563,7 +563,7 @@ if seccion_menu == "Resumen General":
                     lambda row: correccion_definitiva.get(row["Piloto"], row["Auto"]), axis=1
                 )
 
-            # --- ESTADO PARA EL BOTÓN DE DESCARTE ---
+# --- ESTADO PARA EL BOTÓN DE DESCARTE ---
             if "descontar_peor" not in st.session_state:
                 st.session_state.descontar_peor = False
 
@@ -583,18 +583,46 @@ if seccion_menu == "Resumen General":
             aplicar_descarte = st.session_state.descontar_peor
             col_fecha = "Fecha" if "Fecha" in df_global.columns else "Circuito"
 
-            # --- TABLA CAMPEONATO ---
-            if aplicar_descarte:
-                puntos_por_ronda = df_global.groupby(["Piloto", col_fecha])["Puntos"].sum().reset_index()
-                peor_ronda = puntos_por_ronda.groupby("Piloto")["Puntos"].min().reset_index()
-                peor_ronda.rename(columns={"Puntos": "Puntos_Min"}, inplace=True)
-                
-                tabla_campeonato = puntos_por_ronda.groupby("Piloto")["Puntos"].sum().reset_index()
-                tabla_campeonato = pd.merge(tabla_campeonato, peor_ronda, on="Piloto")
-                tabla_campeonato["Puntos"] = tabla_campeonato["Puntos"] - tabla_campeonato["Puntos_Min"]
-                tabla_campeonato = tabla_campeonato[["Piloto", "Puntos"]]
+# --- TABLA CAMPEONATO (AJUSTADA CON AUSENCIAS EN 0) ---
+            # Aseguramos que todos los pilotos tengan filas para todas las fechas reales del campeonato
+            if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
+                registros_completos_tabla = []
+                for f_real in fechas_reales:
+                    df_f = df_global[df_global["Fecha"] == f_real] if "Fecha" in df_global.columns else pd.DataFrame()
+                    for piloto in todos_pilotos:
+                        df_piloto_f = df_f[df_f["Piloto"] == piloto] if not df_f.empty else pd.DataFrame()
+                        pts_f = float(df_piloto_f["Puntos"].sum()) if not df_piloto_f.empty else 0.0
+                        registros_completos_tabla.append({
+                            "Piloto": piloto,
+                            "Fecha": f_real,
+                            "Puntos": pts_f
+                        })
+                df_campeonato_completo = pd.DataFrame(registros_completos_tabla)
             else:
-                tabla_campeonato = df_global.groupby("Piloto")["Puntos"].sum().reset_index()
+                df_campeonato_completo = df_global.copy()
+
+            col_fecha = "Fecha" if "Fecha" in df_campeonato_completo.columns else "Circuito"
+
+            if aplicar_descarte:
+                puntos_por_ronda = df_campeonato_completo.groupby(["Piloto", col_fecha])["Puntos"].sum().reset_index()
+                
+                # Descontamos la peor ronda de cada piloto (si tiene 2 o más fechas registradas)
+                tabla_campeonato_list = []
+                for piloto, grupo in puntos_por_ronda.groupby("Piloto"):
+                    puntos_fechas_piloto = grupo["Puntos"].tolist()
+                    suma_total = sum(puntos_fechas_piloto)
+                    
+                    if len(puntos_fechas_piloto) >= 2:
+                        peor_val = min(puntos_fechas_piloto)
+                        puntos_netos = suma_total - peor_val
+                    else:
+                        puntos_netos = suma_total
+                        
+                    tabla_campeonato_list.append({"Piloto": piloto, "Puntos": puntos_netos})
+                
+                tabla_campeonato = pd.DataFrame(tabla_campeonato_list)
+            else:
+                tabla_campeonato = df_campeonato_completo.groupby("Piloto")["Puntos"].sum().reset_index()
 
             tabla_campeonato = pd.merge(tabla_campeonato, df_autos, on="Piloto", how="left")
             tabla_campeonato = tabla_campeonato.sort_values(by="Puntos", ascending=False).reset_index(drop=True)
@@ -627,7 +655,7 @@ if seccion_menu == "Resumen General":
         else:
             st.info("Sube archivos de resultados para ver el campeonato.")
 
-    # --- EVOLUCIÓN DEL CAMPEONATO (DESCARTE EXCLUSIVO DE FECHAS > 0) ---
+    # --- EVOLUCIÓN DEL CAMPEONATO (DESCARTE DE LA PEOR FECHA INCLUYENDO AUSENCIAS) ---
     if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
         st.markdown("---")
         with st.container():
@@ -674,7 +702,7 @@ if seccion_menu == "Resumen General":
 
             cantidad_fechas_disputadas = len(fechas_reales)
 
-            # 2. Recorrido acumulando y descontando únicamente la peor fecha con puntos > 0
+            # 2. Recorrido acumulando y descontando únicamente la peor fecha (sea con puntos bajos o 0 por ausencia)
             for idx, f_real in enumerate(fechas_reales):
                 num_fecha = idx + 1
                 nombre_fecha_eje_x = f"Fecha {num_fecha}"
@@ -683,15 +711,15 @@ if seccion_menu == "Resumen General":
                     pts_hasta_aqui = [puntos_por_piloto_fecha.get(piloto, {}).get(f_n, 0.0) for f_n in range(1, num_fecha + 1)]
                     
                     if aplicar_descarte:
-                        # Filtramos estrictamente las fechas con puntos mayores a cero (carreras disputadas)
-                        fechas_con_puntos = [p for p in pts_hasta_aqui if p > 0]
+                        # Tomamos todas las fechas registradas hasta el momento (incluyendo 0s si faltó)
+                        fechas_totales = pts_hasta_aqui
                         
-                        # Si tiene al menos 2 o más fechas con puntos, descuenta la menor de ellas
-                        if len(fechas_con_puntos) >= 2:
-                            peor_fecha_valida = min(fechas_con_puntos)
-                            total_actual = sum(pts_hasta_aqui) - peor_fecha_valida
+                        # Si tiene al menos 2 fechas jugadas/registradas, descarta la menor (el 0 o la peor carrera)
+                        if len(fechas_totales) >= 2:
+                            peor_fecha_valida = min(fechas_totales)
+                            total_actual = sum(fechas_totales) - peor_fecha_valida
                         else:
-                            total_actual = sum(pts_hasta_aqui)
+                            total_actual = sum(fechas_totales)
                     else:
                         total_actual = sum(pts_hasta_aqui)
 
@@ -1716,7 +1744,7 @@ elif seccion_menu == "Estadísticas":
         st.warning(f"Error generando el gráfico de radar: {e_radar}")
 
 # --- VISTA: PERFIL POR TIPO DE CIRCUITO (RÁPIDO VS TÉCNICO) ---
-elif seccion_menu == "Perfil de Circuitos":
+elif seccion_menu == "Perfil de Circuitos": 
     st.subheader("🗺️ Rendimiento por Tipo de Circuito (Rápido vs. Técnico)")
     st.markdown(
         "> *Analiza el comportamiento de los pilotos según el ADN del trazado: pistas de velocidad pura (autovías/rectas largas) frente a circuitos trabados o mixtos.*"
