@@ -1750,6 +1750,22 @@ elif seccion_menu == "Perfil de Circuitos":
         "> *Analiza el comportamiento y la adaptación de los pilotos según el ADN del trazado, evaluando exclusivamente las sesiones de Clasificación (sin imprevistos de carrera).*"
     )
     
+    # 📌 EXPLICACIÓN METODOLÓGICA CLARA PARA LA COMUNIDAD
+    with st.expander("ℹ️ ¿Cómo se calculan estos valores y el perfil del piloto? (Click para leer)"):
+        st.markdown("""
+        ### Metodología de Análisis de Circuitos
+        Para evitar que los imprevistos de carrera (toques, abandonos o despistes involuntarios) distorsionen el rendimiento real, este análisis se basa **exclusivamente en las sesiones de Clasificación** (la vuelta rápida cronometrada del sábado con pista limpia).
+        
+        **Paso a paso del cálculo:**
+        1. **Clasificación del Trazado:** Cada circuito del torneo se categoriza automáticamente en una de tres familias según su ADN:
+           - ⚡ **Veloces** (Pistas de velocidad pura / autovías / óvalos).
+           - ⚖️ **Mixtos / Equilibrados** (Trazados de intermedia exigencia técnica y velocidad).
+           - 🎯 **Trabados** (Circuitos lentos, técnicos y de máxima exigencia de adherencia).
+        2. **Índice de Rendimiento Relativo (0 a 100):** Por cada sesión de clasificación, se evalúa la posición final obtenida por el piloto en relación al total de inscriptos de esa sesión. Al poleman se le asignan `100 puntos` y la escala desciende proporcionalmente hacia atrás. De esta forma, cada piloto compite contra su propio estándar de rendimiento.
+        3. **Promedio por Categoría de Pista:** El sistema agrupa los puntajes obtenidos por cada piloto según el tipo de circuito donde se consiguieron y calcula un promedio independiente para *Veloces*, *Mixtos* y *Trabados*.
+        4. **Determinación de la Especialidad:** Se compara el puntaje promedio obtenido en cada familia de circuitos. Aquella categoría donde el piloto obtenga su **puntuación más alta** se convierte en su perfil principal (ej. *Especialista en Velocidad Pura*, *Ritmo Equilibrado* o *Especialista en Pistas Trabadas*). Si no hay registros en alguna categoría, el sistema indica limpiamente *"Sin datos"* para mantener la equidad.
+        """)
+
     if datos_comparativa_tiempos:
         import unicodedata
         
@@ -1846,7 +1862,6 @@ elif seccion_menu == "Perfil de Circuitos":
                         t_ms = None
                         
                     if t_ms and t_ms > 0:
-                        # Puntaje interno basado en la posición de clasificación (100 al poleman)
                         rendimiento_clasificacion = max(0, 100 * (1 - (idx / max(1, total_autos))))
                         
                         if p_nombre_raw not in perfiles_pilotos:
