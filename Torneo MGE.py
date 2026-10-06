@@ -1775,6 +1775,24 @@ elif seccion_menu == "Perfil de Circuitos":
             nfkd_form = unicodedata.normalize('NFKD', str(texto))
             return "".join([c for c in nfkd_form if not unicodedata.combining(c)]).lower().strip()
 
+        # 🛠️ FUNCIÓN PARA UNIFICAR NOMBRES Y VARIANTES DE PILOTOS
+        def unificar_nombre_piloto(nombre_raw):
+            nombre_norm = normalizar_texto(nombre_raw)
+            
+            # 📌 DICCIONARIO DE ALIAS: Asocia variantes indeseadas al Nombre Oficial deseado
+            # (Ejemplo: si en una fecha se anotó abreviado o con apellido primero, lo unificamos acá)
+            MAPEO_ALIAS = {
+                # "juan perez": "Juan Pérez",
+                # "perez juan": "Juan Pérez",
+                # "j. perez": "Juan Pérez",
+            }
+            
+            if nombre_norm in MAPEO_ALIAS:
+                return MAPEO_ALIAS[nombre_norm]
+            
+            # Si no está en el diccionario manual, limpiamos y dejamos la primera letra en mayúscula por prolijidad
+            return nombre_raw.strip()
+
         BASE_DATOS_CIRCUITOS = {
             # Veloces
             "Autódromo Oscar y Juan Gálvez": "Veloces", "Buenos Aires": "Veloces",
@@ -1841,7 +1859,6 @@ elif seccion_menu == "Perfil de Circuitos":
             if tipo_filtro_pista != "Todos" and tipo_filtro_pista != tipo_pista:
                 continue
                 
-            # EXCLUSIVO: Solo procesamos la sesión de Clasificación
             if "Clasificación" in sesiones:
                 items = sesiones["Clasificación"]
                 total_autos = len(items)
@@ -1849,6 +1866,9 @@ elif seccion_menu == "Perfil de Circuitos":
                 for idx, reg in enumerate(items):
                     match_piloto = re.search(r'[—\-]\s*(.+)$', reg['Pos'])
                     p_nombre_raw = match_piloto.group(1).strip() if match_piloto else reg['Pos']
+                    
+                    # 🔑 APLICAMOS LA UNIFICACIÓN DE NOMBRES AQUÍ
+                    p_nombre_oficial = unificar_nombre_piloto(p_nombre_raw)
                     
                     t_str = reg['Tiempo']
                     try:
@@ -1864,19 +1884,19 @@ elif seccion_menu == "Perfil de Circuitos":
                     if t_ms and t_ms > 0:
                         rendimiento_clasificacion = max(0, 100 * (1 - (idx / max(1, total_autos))))
                         
-                        if p_nombre_raw not in perfiles_pilotos:
-                            perfiles_pilotos[p_nombre_raw] = {
+                        if p_nombre_oficial not in perfiles_pilotos:
+                            perfiles_pilotos[p_nombre_oficial] = {
                                 "Veloces": {"suma": 0, "cant": 0},
                                 "Mixtos / Equilibrados": {"suma": 0, "cant": 0},
                                 "Trabados": {"suma": 0, "cant": 0}
                             }
                         
-                        if tipo_pista in perfiles_pilotos[p_nombre_raw]:
-                            perfiles_pilotos[p_nombre_raw][tipo_pista]["suma"] += rendimiento_clasificacion
-                            perfiles_pilotos[p_nombre_raw][tipo_pista]["cant"] += 1
+                        if tipo_pista in perfiles_pilotos[p_nombre_oficial]:
+                            perfiles_pilotos[p_nombre_oficial][tipo_pista]["suma"] += rendimiento_clasificacion
+                            perfiles_pilotos[p_nombre_oficial][tipo_pista]["cant"] += 1
 
         if circuitos_no_encontrados:
-            st.error(f"⚠️ **Atención:** Los siguientes circuitos no tienen cargado el tipo de trazado en la base de datos maestra: `{', '.join(circuitos_no_encontrados)}`.")
+            st.error(f"⚠️️ **Atención:** Los siguientes circuitos no tienen cargado el tipo de trazado en la base de datos maestra: `{', '.join(circuitos_no_encontrados)}`.")
 
         if perfiles_pilotos:
             st.markdown("### 📊 Índice de Velocidad Pura y Clasificación por ADN de Pista")
