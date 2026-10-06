@@ -1775,22 +1775,22 @@ elif seccion_menu == "Perfil de Circuitos":
             nfkd_form = unicodedata.normalize('NFKD', str(texto))
             return "".join([c for c in nfkd_form if not unicodedata.combining(c)]).lower().strip()
 
-        # 🛠️ FUNCIÓN PARA UNIFICAR NOMBRES Y VARIANTES DE PILOTOS
-        def unificar_nombre_piloto(nombre_raw):
-            nombre_norm = normalizar_texto(nombre_raw)
-            
-            # 📌 DICCIONARIO DE ALIAS: Asocia variantes indeseadas al Nombre Oficial deseado
-            # (Ejemplo: si en una fecha se anotó abreviado o con apellido primero, lo unificamos acá)
-            MAPEO_ALIAS = {
-                # "juan perez": "Juan Pérez",
-                # "perez juan": "Juan Pérez",
-                # "j. perez": "Juan Pérez",
-            }
-            
-            if nombre_norm in MAPEO_ALIAS:
-                return MAPEO_ALIAS[nombre_norm]
-            
-            # Si no está en el diccionario manual, limpiamos y dejamos la primera letra en mayúscula por prolijidad
+        # 🔑 DICCIONARIO PARA UNIFICAR NOMBRES DUPLICADOS
+        equivalencias_nombres = {
+            "fede oris": "Federico Oris",
+            "federico oris": "Federico Oris",
+            "alan lasserre": "Alan Lasserre",
+            "alan245": "Alan Lasserre",
+            # Agregá más variantes acá si encontrás otras en tus planillas:
+            # "nombre viejo": "Nombre Oficial"
+        }
+
+        def normalizar_y_unificar_nombre(nombre_raw):
+            if not nombre_raw:
+                return "Desconocido"
+            nombre_limpio = normalizar_texto(nombre_raw)
+            if nombre_limpio in equivalencias_nombres:
+                return equivalencias_nombres[nombre_limpio]
             return nombre_raw.strip()
 
         BASE_DATOS_CIRCUITOS = {
@@ -1859,6 +1859,7 @@ elif seccion_menu == "Perfil de Circuitos":
             if tipo_filtro_pista != "Todos" and tipo_filtro_pista != tipo_pista:
                 continue
                 
+            # EXCLUSIVO: Solo procesamos la sesión de Clasificación
             if "Clasificación" in sesiones:
                 items = sesiones["Clasificación"]
                 total_autos = len(items)
@@ -1867,8 +1868,8 @@ elif seccion_menu == "Perfil de Circuitos":
                     match_piloto = re.search(r'[—\-]\s*(.+)$', reg['Pos'])
                     p_nombre_raw = match_piloto.group(1).strip() if match_piloto else reg['Pos']
                     
-                    # 🔑 APLICAMOS LA UNIFICACIÓN DE NOMBRES AQUÍ
-                    p_nombre_oficial = unificar_nombre_piloto(p_nombre_raw)
+                    # 🔑 UNIFICAMOS EL NOMBRE ACÁ
+                    p_nombre_oficial = normalizar_y_unificar_nombre(p_nombre_raw)
                     
                     t_str = reg['Tiempo']
                     try:
@@ -1896,7 +1897,7 @@ elif seccion_menu == "Perfil de Circuitos":
                             perfiles_pilotos[p_nombre_oficial][tipo_pista]["cant"] += 1
 
         if circuitos_no_encontrados:
-            st.error(f"⚠️️ **Atención:** Los siguientes circuitos no tienen cargado el tipo de trazado en la base de datos maestra: `{', '.join(circuitos_no_encontrados)}`.")
+            st.error(f"⚠️ **Atención:** Los siguientes circuitos no tienen cargado el tipo de trazado en la base de datos maestra: `{', '.join(circuitos_no_encontrados)}`.")
 
         if perfiles_pilotos:
             st.markdown("### 📊 Índice de Velocidad Pura y Clasificación por ADN de Pista")
