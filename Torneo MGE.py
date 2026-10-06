@@ -1745,105 +1745,66 @@ elif seccion_menu == "Estadísticas":
 
 # --- VISTA: PERFIL POR TIPO DE CIRCUITO (RÁPIDO VS TÉCNICO) ---
 elif seccion_menu == "Perfil de Circuitos":
-    st.subheader("🗺️ Rendimiento por Tipo de Circuito (Rápido vs. Técnico)")
+    st.subheader("🗺️ Rendimiento por Tipo de Circuito (Basado en Clasificaciones)")
     st.markdown(
-        "> *Analiza el comportamiento de los pilotos según el ADN del trazado: pistas de velocidad pura, mixtos equilibrados y circuitos trabados.*"
+        "> *Analiza el comportamiento y la adaptación de los pilotos según el ADN del trazado, evaluando exclusivamente las sesiones de Clasificación (sin imprevistos de carrera).*"
     )
     
     if datos_comparativa_tiempos:
-        # Función auxiliar para limpiar tildes, mayúsculas y espacios
         import unicodedata
         
         def normalizar_texto(texto):
             if not texto:
                 return ""
-            # Pone en minúsculas, quita acentos/tildes y espacios extras
             nfkd_form = unicodedata.normalize('NFKD', str(texto))
             return "".join([c for c in nfkd_form if not unicodedata.combining(c)]).lower().strip()
 
-        # 1. Base de datos maestra de circuitos (Clasificación oficial ampliada)
         BASE_DATOS_CIRCUITOS = {
             # Veloces
-            "Autódromo Oscar y Juan Gálvez": "Veloces",
-            "Buenos Aires": "Veloces",
-            "Autódromo de Rafaela": "Veloces",
-            "Rafaela": "Veloces",
+            "Autódromo Oscar y Juan Gálvez": "Veloces", "Buenos Aires": "Veloces",
+            "Autódromo de Rafaela": "Veloces", "Rafaela": "Veloces",
             "Autódromo de Rafaela (Variante Óvalo Puro sin chicanas)": "Veloces",
-            "Autódromo Toay / Ciudad de Santa Rosa": "Veloces",
-            "Toay": "Veloces",
-            "Autódromo Internacional Termas de Río Hondo": "Veloces",
-            "Termas de Río Hondo": "Veloces",
-            "Autódromo de San Nicolás": "Veloces",
-            "San Nicolás": "Veloces",
-            "Autódromo Rubén Luis Di Palma": "Veloces",
-            "Mar de Ajó": "Veloces",
-            "Autódromo Ciudad de Nueve de Julio": "Veloces",
-            "Nueve de Julio": "Veloces",
-            "Autódromo Juan Manuel Fangio": "Veloces",
-            "Balcarce": "Veloces",
-            "Autódromo Ciudad de Viedma": "Veloces",
-            "Viedma": "Veloces",
-            "Autódromo Parque Centenario": "Veloces",
-            "Neuquén": "Veloces",
-            "Autódromo General San Martín": "Veloces",
-            "Comodoro Rivadavia": "Veloces",
-            "Autódromo Ciudad de Concordia": "Veloces",
-            "Concordia": "Veloces",
-            "Autódromo Hermanos Emiliozzi": "Veloces",
-            "Olavarría": "Veloces",
-            "Autódromo Parque Ciudad de Río Cuarto": "Veloces",
-            "Río Cuarto": "Veloces",
-            "Autódromo El Calafate (Tierra Querida)": "Veloces",
-            "El Calafate": "Veloces",
-            "Autódromo de Las Flores": "Veloces",
-            "Las Flores": "Veloces",
-            "Autódromo Rosendo Hernández": "Veloces",
-            "San Luis": "Veloces",
+            "Autódromo Toay / Ciudad de Santa Rosa": "Veloces", "Toay": "Veloces",
+            "Autódromo Internacional Termas de Río Hondo": "Veloces", "Termas de Río Hondo": "Veloces",
+            "Autódromo de San Nicolás": "Veloces", "San Nicolás": "Veloces",
+            "Autódromo Rubén Luis Di Palma": "Veloces", "Mar de Ajó": "Veloces",
+            "Autódromo Ciudad de Nueve de Julio": "Veloces", "Nueve de Julio": "Veloces",
+            "Autódromo Juan Manuel Fangio": "Veloces", "Balcarce": "Veloces",
+            "Autódromo Ciudad de Viedma": "Veloces", "Viedma": "Veloces",
+            "Autódromo Parque Centenario": "Veloces", "Neuquén": "Veloces",
+            "Autódromo General San Martín": "Veloces", "Comodoro Rivadavia": "Veloces",
+            "Autódromo Ciudad de Concordia": "Veloces", "Concordia": "Veloces",
+            "Autódromo Hermanos Emiliozzi": "Veloces", "Olavarría": "Veloces",
+            "Autódromo Parque Ciudad de Río Cuarto": "Veloces", "Río Cuarto": "Veloces",
+            "Autódromo El Calafate (Tierra Querida)": "Veloces", "El Calafate": "Veloces",
+            "Autódromo de Las Flores": "Veloces", "Las Flores": "Veloces",
+            "Autódromo Rosendo Hernández": "Veloces", "San Luis": "Veloces",
 
             # Mixtos / Equilibrados
-            "Autódromo San Juan Villicum": "Mixtos / Equilibrados",
-            "San Juan Villicum": "Mixtos / Equilibrados",
-            "Autódromo Roberto Mouras": "Mixtos / Equilibrados",
-            "La Plata": "Mixtos / Equilibrados",
-            "Autódromo Jorge Ángel Pena": "Mixtos / Equilibrados",
-            "San Martín (Mendoza)": "Mixtos / Equilibrados",
-            "Autódromo Ciudad de Paraná": "Mixtos / Equilibrados",
-            "Paraná": "Mixtos / Equilibrados",
-            "Autódromo de Concepción del Uruguay": "Mixtos / Equilibrados",
-            "Concepción del Uruguay": "Mixtos / Equilibrados",
-            "Autódromo Eusebio Marcilla": "Mixtos / Equilibrados",
-            "Junín": "Mixtos / Equilibrados",
-            "Autódromo Oscar Cabalén": "Mixtos / Equilibrados",
-            "Alta Gracia": "Mixtos / Equilibrados",
-            "Autódromo Ciudad de Oberá": "Mixtos / Equilibrados",
-            "Oberá": "Mixtos / Equilibrados",
-            "Circuito Urbano La Pedrera": "Mixtos / Equilibrados",
-            "Villa Mercedes": "Mixtos / Equilibrados",
+            "Autódromo San Juan Villicum": "Mixtos / Equilibrados", "San Juan Villicum": "Mixtos / Equilibrados",
+            "Autódromo Roberto Mouras": "Mixtos / Equilibrados", "La Plata": "Mixtos / Equilibrados",
+            "Autódromo Jorge Ángel Pena": "Mixtos / Equilibrados", "San Martín (Mendoza)": "Mixtos / Equilibrados",
+            "Autódromo Ciudad de Paraná": "Mixtos / Equilibrados", "Paraná": "Mixtos / Equilibrados",
+            "Autódromo de Concepción del Uruguay": "Mixtos / Equilibrados", "Concepción del Uruguay": "Mixtos / Equilibrados",
+            "Autódromo Eusebio Marcilla": "Mixtos / Equilibrados", "Junín": "Mixtos / Equilibrados",
+            "Autódromo Oscar Cabalén": "Mixtos / Equilibrados", "Alta Gracia": "Mixtos / Equilibrados",
+            "Autódromo Ciudad de Oberá": "Mixtos / Equilibrados", "Oberá": "Mixtos / Equilibrados",
+            "Circuito Urbano La Pedrera": "Mixtos / Equilibrados", "Villa Mercedes": "Mixtos / Equilibrados",
 
             # Trabados
-            "Autódromo Parque de la Velocidad": "Trabados",
-            "San Jorge": "Trabados",
-            "Autódromo Rosamonte": "Trabados",
-            "Posadas": "Trabados",
-            "Autódromo Eduardo Copello (El Zonda)": "Trabados",
-            "Zonda (San Juan)": "Trabados",
-            "Circuito Semipermanente Potrero de los Funes": "Trabados",
-            "Potrero de los Funes": "Trabados",
-            "Autódromo Ciudad de Pigüé": "Trabados",
-            "Pigüé": "Trabados",
-            "Autódromo El Triángulo": "Trabados",
-            "General Roca": "Trabados",
-            "Autódromo Municipal Juan Manuel Fangio": "Trabados",
-            "Rosario": "Trabados",
+            "Autódromo Parque de la Velocidad": "Trabados", "San Jorge": "Trabados",
+            "Autódromo Rosamonte": "Trabados", "Posadas": "Trabados",
+            "Autódromo Eduardo Copello (El Zonda)": "Trabados", "Zonda (San Juan)": "Trabados",
+            "Circuito Semipermanente Potrero de los Funes": "Trabados", "Potrero de los Funes": "Trabados",
+            "Autódromo Ciudad de Pigüé": "Trabados", "Pigüé": "Trabados",
+            "Autódromo El Triángulo": "Trabados", "General Roca": "Trabados",
+            "Autódromo Municipal Juan Manuel Fangio": "Trabados", "Rosario": "Trabados",
             "Autódromo Parque Independencia (Histórico)": "Trabados",
-            "Autódromo Juan Oria": "Trabados",
-            "Marcos Juárez": "Trabados"
+            "Autódromo Juan Oria": "Trabados", "Marcos Juárez": "Trabados"
         }
         
-        # Creamos un diccionario auxiliar normalizado para que las búsquedas sean infalibles
         base_normalizada = {normalizar_texto(k): v for k, v in BASE_DATOS_CIRCUITOS.items()}
         
-        # Permitir al usuario filtrar análisis por tipo
         st.sidebar.markdown("---")
         st.sidebar.subheader("⚙️ Configuración de Pistas")
         tipos_pista_disponibles = ["Todos", "Veloces", "Mixtos / Equilibrados", "Trabados"]
@@ -1852,11 +1813,9 @@ elif seccion_menu == "Perfil de Circuitos":
         perfiles_pilotos = {}
         circuitos_no_encontrados = set()
         
-        # Procesamos los datos para evaluar el rendimiento relativo por tipo de pista
         for circ, sesiones in datos_comparativa_tiempos.items():
             circ_norm = normalizar_texto(circ)
             
-            # Validación estricta usando la versión normalizada
             if circ_norm not in base_normalizada:
                 circuitos_no_encontrados.add(circ)
                 continue
@@ -1866,91 +1825,85 @@ elif seccion_menu == "Perfil de Circuitos":
             if tipo_filtro_pista != "Todos" and tipo_filtro_pista != tipo_pista:
                 continue
                 
-            for tipo_sesion in ["Carrera", "Clasificación"]:
-                if tipo_sesion in sesiones:
-                    items = sesiones[tipo_sesion]
-                    lider_ms = None
+            # EXCLUSIVO: Solo procesamos la sesión de Clasificación
+            if "Clasificación" in sesiones:
+                items = sesiones["Clasificación"]
+                total_autos = len(items)
+                
+                for idx, reg in enumerate(items):
+                    match_piloto = re.search(r'[—\-]\s*(.+)$', reg['Pos'])
+                    p_nombre_raw = match_piloto.group(1).strip() if match_piloto else reg['Pos']
                     
-                    for idx, reg in enumerate(items):
-                        match_piloto = re.search(r'[—\-]\s*(.+)$', reg['Pos'])
-                        p_nombre_raw = match_piloto.group(1).strip() if match_piloto else reg['Pos']
+                    t_str = reg['Tiempo']
+                    try:
+                        partes_min = t_str.split(':')
+                        minutos = int(partes_min[0])
+                        partes_seg = partes_min[1].split(',')
+                        segundos = int(partes_seg[0])
+                        milisegundos = int(partes_seg[1])
+                        t_ms = (minutos * 60 * 1000) + (segundos * 1000) + milisegundos
+                    except:
+                        t_ms = None
                         
-                        t_str = reg['Tiempo']
-                        try:
-                            partes_min = t_str.split(':')
-                            minutos = int(partes_min[0])
-                            partes_seg = partes_min[1].split(',')
-                            segundos = int(partes_seg[0])
-                            milisegundos = int(partes_seg[1])
-                            t_ms = (minutos * 60 * 1000) + (segundos * 1000) + milisegundos
-                        except:
-                            t_ms = None
-                            
-                        if t_ms and t_ms > 0:
-                            if idx == 0:
-                                lider_ms = t_ms
-                            
-                            eficiencia = (lider_ms / t_ms) * 100
-                            
-                            if p_nombre_raw not in perfiles_pilotos:
-                                perfiles_pilotos[p_nombre_raw] = {
-                                    "Veloces": {"suma": 0, "cant": 0},
-                                    "Mixtos / Equilibrados": {"suma": 0, "cant": 0},
-                                    "Trabados": {"suma": 0, "cant": 0}
-                                }
-                            
-                            if tipo_pista in perfiles_pilotos[p_nombre_raw]:
-                                perfiles_pilotos[p_nombre_raw][tipo_pista]["suma"] += eficiencia
-                                perfiles_pilotos[p_nombre_raw][tipo_pista]["cant"] += 1
+                    if t_ms and t_ms > 0:
+                        # Puntaje interno basado en la posición de clasificación (100 al poleman)
+                        rendimiento_clasificacion = max(0, 100 * (1 - (idx / max(1, total_autos))))
+                        
+                        if p_nombre_raw not in perfiles_pilotos:
+                            perfiles_pilotos[p_nombre_raw] = {
+                                "Veloces": {"suma": 0, "cant": 0},
+                                "Mixtos / Equilibrados": {"suma": 0, "cant": 0},
+                                "Trabados": {"suma": 0, "cant": 0}
+                            }
+                        
+                        if tipo_pista in perfiles_pilotos[p_nombre_raw]:
+                            perfiles_pilotos[p_nombre_raw][tipo_pista]["suma"] += rendimiento_clasificacion
+                            perfiles_pilotos[p_nombre_raw][tipo_pista]["cant"] += 1
 
-        # Advertencia estricta si hay circuitos faltantes
         if circuitos_no_encontrados:
-            st.error(f"⚠️ **Atención:** Los siguientes circuitos no tienen cargado el tipo de trazado en la base de datos maestra: `{', '.join(circuitos_no_encontrados)}`. Por favor, agrégalos al diccionario para poder analizarlos.")
+            st.error(f"⚠️ **Atención:** Los siguientes circuitos no tienen cargado el tipo de trazado en la base de datos maestra: `{', '.join(circuitos_no_encontrados)}`.")
 
-        # Mostramos los resultados en tabla y tarjetas
         if perfiles_pilotos:
-            st.markdown("### 📊 Índice de Competitividad por ADN de Pista")
-            st.caption("*(Valores cercanos al 100% indican rendimiento de punta en ese tipo de trazado)*")
+            st.markdown("### 📊 Índice de Velocidad Pura y Clasificación por ADN de Pista")
+            st.caption("*(Evaluación estricta a una vuelta cronometrada)*")
             
             datos_tabla = []
             for piloto, tipos in perfiles_pilotos.items():
-                q_vel = tipos["Veloces"]
-                prom_vel = (q_vel["suma"] / q_vel["cant"]) if q_vel["cant"] > 0 else 0
+                prom_vel = (tipos["Veloces"]["suma"] / tipos["Veloces"]["cant"]) if tipos["Veloces"]["cant"] > 0 else None
+                prom_mix = (tipos["Mixtos / Equilibrados"]["suma"] / tipos["Mixtos / Equilibrados"]["cant"]) if tipos["Mixtos / Equilibrados"]["cant"] > 0 else None
+                prom_trab = (tipos["Trabados"]["suma"] / tipos["Trabados"]["cant"]) if tipos["Trabados"]["cant"] > 0 else None
                 
-                q_mix = tipos["Mixtos / Equilibrados"]
-                prom_mix = (q_mix["suma"] / q_mix["cant"]) if q_mix["cant"] > 0 else 0
+                proms_validos = {
+                    "⚡ Velocista Puro (Clasificación)": prom_vel,
+                    "⚖ Ritmo Equilibrado (Clasificación)": prom_mix,
+                    "🎯 Especialista en Pistas Trabadas (Clasificación)": prom_trab
+                }
+                proms_validos = {k: v for k, v in proms_validos.items() if v is not None}
                 
-                q_trab = tipos["Trabados"]
-                prom_trab = (q_trab["suma"] / q_trab["cant"]) if q_trab["cant"] > 0 else 0
-                
-                mejor_puntaje = max(prom_vel, prom_mix, prom_trab)
-                if mejor_puntaje == prom_vel:
-                    especialidad = "⚡ Especialista en Velocidad Pura"
-                elif mejor_puntaje == prom_mix:
-                    especialidad = "⚖️ Equilibrado / Ritmo Mixto"
+                if proms_validos:
+                    mejor_especialidad = max(proms_validos, key=proms_validos.get)
                 else:
-                    especialidad = "🎯 Especialista en Pistas Trabadas"
+                    mejor_especialidad = "Sin datos suficientes"
                 
                 datos_tabla.append({
                     "Piloto": piloto,
-                    "Veloces (%)": round(prom_vel, 2),
-                    "Mixtos (%)": round(prom_mix, 2),
-                    "Trabados (%)": round(prom_trab, 2),
-                    "Especialidad": especialidad
+                    "Veloces": f"{round(prom_vel, 1)} pts" if prom_vel is not None else "Sin datos",
+                    "Mixtos": f"{round(prom_mix, 1)} pts" if prom_mix is not None else "Sin datos",
+                    "Trabados": f"{round(prom_trab, 1)} pts" if prom_trab is not None else "Sin datos",
+                    "Especialidad Sábados": mejor_especialidad,
+                    "_sort_val": prom_vel if prom_vel is not None else 0
                 })
             
             df_perfiles = pd.DataFrame(datos_tabla)
-            df_perfiles = df_perfiles.sort_values(by="Veloces (%)", ascending=False).reset_index(drop=True)
+            df_perfiles = df_perfiles.sort_values(by="_sort_val", ascending=False).drop(columns=["_sort_val"]).reset_index(drop=True)
             
             st.dataframe(df_perfiles, use_container_width=True)
             
-            st.markdown("### 📝 Perfiles Destacados de la Comunidad")
+            st.markdown("### 📝 Perfiles de Clasificación Destacados")
             for _, row in df_perfiles.iterrows():
-                piloto = row["Piloto"]
-                esp = row["Especialidad"]
-                st.info(f"👤 **{piloto}** — Perfil principal: **{esp}** (Veloces: `{row['Veloces (%)']}%` | Mixtos: `{row['Mixtos (%)']}%` | Trabados: `{row['Trabados (%)']}%`)")
+                st.info(f"👤 **{row['Piloto']}** — Especialidad sábados: **{row['Especialidad Sábados']}** (Veloces: `{row['Veloces']}` | Mixtos: `{row['Mixtos']}` | Trabados: `{row['Trabados']}`)")
         else:
             if not circuitos_no_encontrados:
-                st.warning("No hay suficientes datos cruzados para generar los perfiles con el filtro seleccionado.")
+                st.warning("No hay suficientes datos de clasificación para generar los perfiles con el filtro seleccionado.")
     else:
         st.info("Sube los datos del campeonato para habilitar el análisis de perfiles de circuito.")
