@@ -110,6 +110,9 @@ if st.sidebar.button("📈 Estadísticas", use_container_width=True):
 if st.sidebar.button("📈 Perfil de Circuitos", use_container_width=True):
     st.session_state['pagina_activa'] = "Perfil de Circuitos"
     st.rerun()
+if st.sidebar.button("⚔️ Premios Especiales", use_container_width=True):
+    st.session_state['pagina_activa'] = "⚔️ Premios Especiales"
+    st.rerun()
 seccion_menu = st.session_state['pagina_activa']
 
 # Obtiene la ruta absoluta de la carpeta donde se encuentra este archivo de script
