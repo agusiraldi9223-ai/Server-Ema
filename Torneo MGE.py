@@ -1839,15 +1839,42 @@ elif seccion_menu == "⚔️ Premios Especiales":
         else:
             st.info("Sin datos suficientes para calcular largadas.")
 
-    with col2:
+with col2:
         st.markdown("### 👑 El Rey de la Pole")
         st.caption("Pilotos con mayor cantidad de mejores tiempos en clasificación.")
+        
+        df_poles = pd.DataFrame()
+        try:
+            if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos:
+                poles_list = []
+                for circuito_name, circuito_data in datos_comparativa_tiempos.items():
+                    registros_clasif = circuito_data.get("Clasificación", [])
+                    for reg in registros_clasif:
+                        texto_pos = str(reg.get("Pos", ""))
+                        if "—" in texto_pos:
+                            partes = texto_pos.split("—")
+                            nombre_p = partes[-1].strip()
+                            import re
+                            nums = re.findall(r'\d+', partes[0])
+                            if nums:
+                                p_num = int(nums[0])
+                                # Si hizo P1 en la clasificación de este circuito, cuenta como Pole
+                                if p_num == 1:
+                                    poles_list.append({"Piloto": nombre_p})
+                
+                if poles_list:
+                    df_p_temp = pd.DataFrame(poles_list)
+                    df_poles = df_p_temp.groupby("Piloto").size().reset_index(name="Poles")
+                    df_poles = df_poles.sort_values(by="Poles", ascending=False).reset_index(drop=True)
+        except Exception:
+            pass
+
         if not df_poles.empty:
             st.dataframe(df_poles, use_container_width=True)
             top_pole = df_poles.iloc[0]
             st.success(f"🏆 **{top_pole['Piloto']}** manda en los sábados con **{int(top_pole['Poles'])}** pole(s).")
         else:
-            st.info("No se encontraron registros de poles en el dataframe global.")
+            st.info("No se encontraron registros de poles en la comparativa de tiempos.")
 
     st.markdown("---")
     
