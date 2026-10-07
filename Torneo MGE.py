@@ -1877,8 +1877,6 @@ with col2:
             st.info("No se encontraron registros de poles en la comparativa de tiempos.")
 
     
-    col3, col4 = st.columns(2)
-
     with col3:
         st.markdown("### 🧗 El Rey de la Remontada")
         st.caption("Mayor avance de posiciones desde la clasificación hasta la bandera a cuadros en carrera.")
