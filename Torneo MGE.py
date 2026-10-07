@@ -1953,17 +1953,20 @@ elif seccion_menu == "Premios Especiales":
         "> *Métricas de comportamiento en pista: quiénes son los más vivos en la largada en movimiento, los reyes de la pole y las remontadas de carrera.*"
     )
 
-    # Como los archivos están en la misma carpeta raíz del proyecto, leemos el directorio actual (".")
-    directorio_actual = "." 
+    import os
+    import json
+    import re
+    import pandas as pd
+
     largada_stats_list = []
     
+    # Buscamos en la raíz del proyecto los archivos de vueltas (ej: '01 San Luis vueltas.json')
+    directorio_actual = "." 
     if os.path.exists(directorio_actual):
-        # Buscamos todos los archivos que terminen en "vueltas.json" en la raíz
         archivos_vueltas = [f for f in os.listdir(directorio_actual) if f.endswith("vueltas.json")]
         
         for archivo in archivos_vueltas:
             circuito_nombre = archivo.replace("vueltas.json", "").strip()
-            # Limpiamos los números iniciales (ej: "01 San Luis " -> "San Luis")
             circuito_limpio = re.sub(r'^\d+\s*', '', circuito_nombre)
             
             try:
@@ -1979,10 +1982,8 @@ elif seccion_menu == "Premios Especiales":
             if vueltas_data:
                 df_v = pd.DataFrame(vueltas_data)
                 
+                # Verificamos que contenga las columnas esenciales tal como en tu gráfico de ritmo
                 if not df_v.empty and "Vuelta" in df_v.columns and "Piloto" in df_v.columns and "TiemposMs" in df_v.columns:
-                    # Normalizamos nombres si ya tenés esa función en tu app
-                    if 'normalizar_y_unificar_nombre' in globals():
-                        df_v["Piloto"] = df_v["Piloto"].apply(normalizar_y_unificar_nombre)
                     
                     df_v["TiemposMs"] = pd.to_numeric(df_v["TiemposMs"], errors="coerce")
                     
@@ -1990,7 +1991,7 @@ elif seccion_menu == "Premios Especiales":
                     df_v = df_v.sort_values(by=["Piloto", "Vuelta"])
                     df_v["Tiempo_Acumulado"] = df_v.groupby("Piloto")["TiemposMs"].cumsum()
                     
-                    # Posición al final de la Vuelta 1 (Fin de vuelta controlada / Formación)
+                    # Posición al final de la Vuelta 1 (Fin de vuelta controlada)
                     df_v1 = df_v[df_v["Vuelta"] == 1].sort_values(by="Tiempo_Acumulado").reset_index(drop=True)
                     df_v1["Pos_V1"] = df_v1.index + 1
                     
@@ -2006,7 +2007,7 @@ elif seccion_menu == "Premios Especiales":
                             how="inner"
                         )
                         
-                        # Puestos ganados = Posición en V1 menos Posición en V2
+                        # Puestos ganados netos (Posición inicial V1 menos Posición en V2)
                         df_larga["Puestos_Ganados"] = df_larga["Pos_V1"] - df_larga["Pos_V2"]
                         df_larga["Circuito"] = circuito_limpio
                         largada_stats_list.append(df_larga)
@@ -2020,20 +2021,18 @@ elif seccion_menu == "Premios Especiales":
             
             with col1:
                 st.markdown("### 🚀 El Káiser de la Largada")
-                st.caption("Balance neto de posiciones ganadas entre el fin de la vuelta controlada (V1) y el primer giro de velocidad (V2).")
+                st.caption("Balance neto de posiciones ganadas entre el final de la vuelta controlada (V1) y el primer giro libre (V2).")
                 
                 df_k_view = kaiser_largada.copy()
-                df_k_view.columns = ["Piloto", "Puestos Netos Ganados (Largada)"]
+                df_k_view.columns = ["Piloto", "Puestos Netos Ganados"]
                 st.dataframe(df_k_view, use_container_width=True)
                 
             with col2:
                 st.markdown("### 👑 Podio de Arranque")
                 if not kaiser_largada.empty:
                     top_k = kaiser_largada.iloc[0]
-                    st.success(f"🏆 **{top_k['Piloto']}** lidera el galardón de largadas con un saldo acumulado de **+{int(top_k['Puestos_Ganados'])} posiciones** ganadas en los arranques.")
+                    st.success(f"🏆 **{top_k['Piloto']}** lidera el galardón con un saldo acumulado de **+{int(top_k['Puestos_Ganados'])} posiciones** ganadas en los arranques.")
                 else:
                     st.info("Sin datos suficientes.")
         else:
-            st.warning("No se pudieron procesar datos de las vueltas 1 y 2 en los archivos de la raíz.")
-    else:
-        st.info("No se pudo acceder al directorio.")
+            st.warning("No se pudieron procesar datos de las vueltas 1 y 2 en los archivos.")
