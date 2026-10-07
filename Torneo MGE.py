@@ -1947,92 +1947,75 @@ elif seccion_menu == "Perfil de Circuitos":
     else:
         st.info("Sube los datos del campeonato para habilitar el análisis de perfiles de circuito.")
 
-elif seccion_menu == "Premios Especiales":
+elif seccion_menu == "⚔️ Premios Especiales":
     st.subheader("⚔️ Premios Especiales: El Káiser de la Largada y Más")
     st.markdown(
         "> *Métricas de comportamiento en pista: quiénes son los más vivos en la largada en movimiento, los reyes de la pole y las remontadas de carrera.*"
     )
 
-    import os
-    import json
-    import re
-    import pandas as pd
-
-    largada_stats_list = []
-    
-    # Buscamos en la raíz del proyecto los archivos de vueltas (ej: '01 San Luis vueltas.json')
-    directorio_actual = "." 
-    if os.path.exists(directorio_actual):
-        archivos_vueltas = [f for f in os.listdir(directorio_actual) if f.endswith("vueltas.json")]
+    if not df_vueltas_global.empty:
+        # Filtramos solo las vueltas de carrera para el análisis de largada
+        df_carrera_vueltas = df_vueltas_global[df_vueltas_global["Tipo"] == "Carrera"].copy()
         
-        for archivo in archivos_vueltas:
-            circuito_nombre = archivo.replace("vueltas.json", "").strip()
-            circuito_limpio = re.sub(r'^\d+\s*', '', circuito_nombre)
+        if not df_carrera_vueltas.empty:
+            largada_stats_list = []
             
-            try:
-                with open(archivo, 'r', encoding='utf-8') as f:
-                    vueltas_data = json.load(f)
-            except Exception:
-                try:
-                    with open(archivo, 'r', encoding='latin-1') as f:
-                        vueltas_data = json.load(f)
-                except:
-                    vueltas_data = []
+            # Agrupamos por circuito y piloto para calcular posiciones al finalizar vuelta 1 y vuelta 2
+            for circuito, df_circ in df_carrera_vueltas.groupby("Circuito"):
+                # Ordenamos por piloto y número de vuelta
+                df_circ = df_circ.sort_values(by=["Piloto", "Vuelta"])
+                
+                # Calculamos el tiempo acumulado de carrera por piloto
+                df_circ["Tiempo_Acumulado"] = df_circ.groupby("Piloto")["TiempoMs"].cumsum()
+                
+                # Posición al final de la Vuelta 1 (Controlada / Largada)
+                df_v1 = df_circ[df_circ["Vuelta"] == 1].sort_values(by="Tiempo_Acumulado").reset_index(drop=True)
+                df_v1["Pos_V1"] = df_v1.index + 1
+                
+                # Posición al final de la Vuelta 2 (Primer giro de velocidad real)
+                df_v2 = df_circ[df_circ["Vuelta"] == 2].sort_values(by="Tiempo_Acumulado").reset_index(drop=True)
+                df_v2["Pos_V2"] = df_v2.index + 1
+                
+                if not df_v1.empty and not df_v2.empty:
+                    df_larga = pd.merge(
+                        df_v1[["Piloto", "Pos_V1"]],
+                        df_v2[["Piloto", "Pos_V2"]],
+                        on="Piloto",
+                        how="inner"
+                    )
+                    # Posiciones ganadas (Posición inicial V1 menos la posición en V2; positivo = ganó puestos)
+                    df_larga["Puestos_Ganados"] = df_larga["Pos_V1"] - df_larga["Pos_V2"]
+                    df_larga["Circuito"] = circuito
+                    largada_stats_list.append(df_larga)
 
-            if vueltas_data:
-                df_v = pd.DataFrame(vueltas_data)
+            if largada_stats_list:
+                df_todas_largadas = pd.concat(largada_stats_list, ignore_index=True)
                 
-                # Verificamos que contenga las columnas esenciales tal como en tu gráfico de ritmo
-                if not df_v.empty and "Vuelta" in df_v.columns and "Piloto" in df_v.columns and "TiemposMs" in df_v.columns:
-                    
-                    df_v["TiemposMs"] = pd.to_numeric(df_v["TiemposMs"], errors="coerce")
-                    
-                    # Ordenamos por piloto y vuelta para calcular el tiempo acumulado
-                    df_v = df_v.sort_values(by=["Piloto", "Vuelta"])
-                    df_v["Tiempo_Acumulado"] = df_v.groupby("Piloto")["TiemposMs"].cumsum()
-                    
-                    # Posición al final de la Vuelta 1 (Fin de vuelta controlada)
-                    df_v1 = df_v[df_v["Vuelta"] == 1].sort_values(by="Tiempo_Acumulado").reset_index(drop=True)
-                    df_v1["Pos_V1"] = df_v1.index + 1
-                    
-                    # Posición al final de la Vuelta 2 (Primer giro real de velocidad)
-                    df_v2 = df_v[df_v["Vuelta"] == 2].sort_values(by="Tiempo_Acumulado").reset_index(drop=True)
-                    df_v2["Pos_V2"] = df_v2.index + 1
-                    
-                    if not df_v1.empty and not df_v2.empty:
-                        df_larga = pd.merge(
-                            df_v1[["Piloto", "Pos_V1"]],
-                            df_v2[["Piloto", "Pos_V2"]],
-                            on="Piloto",
-                            how="inner"
-                        )
-                        
-                        # Puestos ganados netos (Posición inicial V1 menos Posición en V2)
-                        df_larga["Puestos_Ganados"] = df_larga["Pos_V1"] - df_larga["Pos_V2"]
-                        df_larga["Circuito"] = circuito_limpio
-                        largada_stats_list.append(df_larga)
-
-        if largada_stats_list:
-            df_todas_largadas = pd.concat(largada_stats_list, ignore_index=True)
-            kaiser_largada = df_todas_largadas.groupby("Piloto")["Puestos_Ganados"].sum().reset_index()
-            kaiser_largada = kaiser_largada.sort_values(by="Puestos_Ganados", ascending=False).reset_index(drop=True)
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.markdown("### 🚀 El Káiser de la Largada")
-                st.caption("Balance neto de posiciones ganadas entre el final de la vuelta controlada (V1) y el primer giro libre (V2).")
+                # Unificamos nombres si hay equivalencias (usando tu mapeo)
+                mapeo_nombres = {"Fede Oris": "Federico Oris", "Alan Lasserre": "Alan245"}
+                df_todas_largadas["Piloto"] = df_todas_largadas["Piloto"].replace(mapeo_nombres)
                 
-                df_k_view = kaiser_largada.copy()
-                df_k_view.columns = ["Piloto", "Puestos Netos Ganados"]
-                st.dataframe(df_k_view, use_container_width=True)
+                kaiser_largada = df_todas_largadas.groupby("Piloto")["Puestos_Ganados"].sum().reset_index()
+                kaiser_largada = kaiser_largada.sort_values(by="Puestos_Ganados", ascending=False).reset_index(drop=True)
                 
-            with col2:
-                st.markdown("### 👑 Podio de Arranque")
-                if not kaiser_largada.empty:
-                    top_k = kaiser_largada.iloc[0]
-                    st.success(f"🏆 **{top_k['Piloto']}** lidera el galardón con un saldo acumulado de **+{int(top_k['Puestos_Ganados'])} posiciones** ganadas en los arranques.")
-                else:
-                    st.info("Sin datos suficientes.")
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.markdown("### 🚀 El Káiser de la Largada")
+                    st.caption("Balance neto de posiciones ganadas entre el final de la vuelta 1 y la vuelta 2.")
+                    
+                    df_k_view = kaiser_largada.copy()
+                    df_k_view.columns = ["Piloto", "Puestos Netos Ganados"]
+                    st.dataframe(df_k_view, use_container_width=True)
+                    
+                with col2:
+                    st.markdown("### 👑 Líder de Arranque")
+                    if not kaiser_largada.empty:
+                        top_k = kaiser_largada.iloc[0]
+                        st.success(f"🏆 **{top_k['Piloto']}** lidera el galardón con un saldo acumulado de **+{int(top_k['Puestos_Ganados'])} posiciones** ganadas en los arranques.")
+            else:
+                st.warning("No hay suficientes registros de las vueltas 1 y 2 para calcular las largadas.")
         else:
-            st.warning("No se pudieron procesar datos de las vueltas 1 y 2 en los archivos.")
+            st.warning("No hay datos de vueltas catalogadas como 'Carrera'.")
+    else:
+        st.info("No hay datos de vueltas detalladas cargados en `df_vueltas_global`.")
