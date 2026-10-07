@@ -1954,9 +1954,10 @@ elif seccion_menu == "⚔️ Premios Especiales":
     )
 
     # -------------------------------------------------------------
-    # 1. EL KÁISER DE LA LARGADA (El que ya teníamos)
+    # 1. EL KÁISER DE LA LARGADA
     # -------------------------------------------------------------
-    if not df_vueltas_global.empty:
+    kaiser_largada = pd.DataFrame()
+    if 'df_vueltas_global' in locals() and not df_vueltas_global.empty:
         df_carrera_vueltas = df_vueltas_global[df_vueltas_global["Tipo"] == "Carrera"].copy()
         
         if not df_carrera_vueltas.empty:
@@ -1979,15 +1980,9 @@ elif seccion_menu == "⚔️ Premios Especiales":
 
             if largada_stats_list:
                 df_todas_largadas = pd.concat(largada_stats_list, ignore_index=True)
-                df_todas_largadas["Piloto"] = df_todas_largadas["Piloto"].replace(mapeo_nombres)
-                kaiser_largada = df_todas_largadas.groupby("Piloto")["Puestos_Ganados"].sum().reset_index()
-                kaiser_largada = kaiser_largada.sort_values(by="Puestos_Ganados", ascending=False).reset_index(drop=True)
-            else:
-                kaiser_largada = pd.DataFrame()
-        else:
-            kaiser_largada = pd.DataFrame()
-    else:
-        kaiser_largada = pd.DataFrame()
+                if "Piloto" in df_todas_largadas.columns:
+                    kaiser_largada = df_todas_largadas.groupby("Piloto")["Puestos_Ganados"].sum().reset_index()
+                    kaiser_largada = kaiser_largada.sort_values(by="Puestos_Ganados", ascending=False).reset_index(drop=True)
 
     # Visualización en Columnas para los Premios
     col1, col2 = st.columns(2)
@@ -2007,13 +2002,10 @@ elif seccion_menu == "⚔️ Premios Especiales":
     with col2:
         st.markdown("### 👑 El Rey de la Pole")
         st.caption("Pilotos con mayor cantidad de mejores tiempos en clasificación.")
-        # Asumiendo que tenés un dataframe de clasificación general o procesado (ej: df_clasif_global)
-        # Si la estructura se llama distinto, adaptamos la variable:
         try:
             if 'df_clasif_global' in locals() and not df_clasif_global.empty:
                 df_poles = df_clasif_global[df_clasif_global["Posicion"] == 1].groupby("Piloto").size().reset_index(name="Poles")
                 df_poles = df_poles.sort_values(by="Poles", ascending=False).reset_index(drop=True)
-                df_poles["Piloto"] = df_poles["Piloto"].replace(mapeo_nombres)
                 st.dataframe(df_poles, use_container_width=True)
                 if not df_poles.empty:
                     top_pole = df_poles.iloc[0]
@@ -2032,11 +2024,9 @@ elif seccion_menu == "⚔️ Premios Especiales":
         st.caption("Mayor avance de posiciones desde la clasificación hasta la bandera a cuadros en carrera.")
         try:
             if 'df_resultados_global' in locals() and not df_resultados_global.empty:
-                # Calculamos diferencia entre posición de grilla/clasif y posición final
                 df_rem = df_resultados_global.copy()
                 if "PosClasif" in df_rem.columns and "PosCarrera" in df_rem.columns:
                     df_rem["Remontada"] = df_rem["PosClasif"] - df_rem["PosCarrera"]
-                    df_rem["Piloto"] = df_rem["Piloto"].replace(mapeo_nombres)
                     df_rem_sum = df_rem.groupby("Piloto")["Remontada"].sum().reset_index()
                     df_rem_sum = df_rem_sum.sort_values(by="Remontada", ascending=False).reset_index(drop=True)
                     st.dataframe(df_rem_sum, use_container_width=True)
@@ -2056,7 +2046,6 @@ elif seccion_menu == "⚔️ Premios Especiales":
         try:
             if 'df_resultados_global' in locals() and not df_resultados_global.empty:
                 df_podios = df_resultados_global[df_resultados_global["PosCarrera"] <= 3].copy()
-                df_podios["Piloto"] = df_podios["Piloto"].replace(mapeo_nombres)
                 conteo_podios = df_podios.groupby("Piloto").size().reset_index(name="Podios")
                 conteo_podios = conteo_podios.sort_values(by="Podios", ascending=False).reset_index(drop=True)
                 st.dataframe(conteo_podios, use_container_width=True)
