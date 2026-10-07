@@ -1876,7 +1876,6 @@ with col2:
         else:
             st.info("No se encontraron registros de poles en la comparativa de tiempos.")
 
-    st.markdown("---")
     
     col3, col4 = st.columns(2)
 
