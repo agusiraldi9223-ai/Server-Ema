@@ -1948,74 +1948,122 @@ elif seccion_menu == "Perfil de Circuitos":
         st.info("Sube los datos del campeonato para habilitar el análisis de perfiles de circuito.")
 
 elif seccion_menu == "⚔️ Premios Especiales":
-    st.subheader("⚔️ Premios Especiales: El Káiser de la Largada y Más")
+    st.subheader("⚔️ Premios Especiales: Galardones de la Temporada")
     st.markdown(
-        "> *Métricas de comportamiento en pista: quiénes son los más vivos en la largada en movimiento, los reyes de la pole y las remontadas de carrera.*"
+        "> *Reconocimientos estadísticos al rendimiento puro, la inteligencia en carrera y las remontadas memorables.*"
     )
 
+    # -------------------------------------------------------------
+    # 1. EL KÁISER DE LA LARGADA (El que ya teníamos)
+    # -------------------------------------------------------------
     if not df_vueltas_global.empty:
-        # Filtramos solo las vueltas de carrera para el análisis de largada
         df_carrera_vueltas = df_vueltas_global[df_vueltas_global["Tipo"] == "Carrera"].copy()
         
         if not df_carrera_vueltas.empty:
             largada_stats_list = []
-            
-            # Agrupamos por circuito y piloto para calcular posiciones al finalizar vuelta 1 y vuelta 2
             for circuito, df_circ in df_carrera_vueltas.groupby("Circuito"):
-                # Ordenamos por piloto y número de vuelta
                 df_circ = df_circ.sort_values(by=["Piloto", "Vuelta"])
-                
-                # Calculamos el tiempo acumulado de carrera por piloto
                 df_circ["Tiempo_Acumulado"] = df_circ.groupby("Piloto")["TiempoMs"].cumsum()
                 
-                # Posición al final de la Vuelta 1 (Controlada / Largada)
                 df_v1 = df_circ[df_circ["Vuelta"] == 1].sort_values(by="Tiempo_Acumulado").reset_index(drop=True)
                 df_v1["Pos_V1"] = df_v1.index + 1
                 
-                # Posición al final de la Vuelta 2 (Primer giro de velocidad real)
                 df_v2 = df_circ[df_circ["Vuelta"] == 2].sort_values(by="Tiempo_Acumulado").reset_index(drop=True)
                 df_v2["Pos_V2"] = df_v2.index + 1
                 
                 if not df_v1.empty and not df_v2.empty:
-                    df_larga = pd.merge(
-                        df_v1[["Piloto", "Pos_V1"]],
-                        df_v2[["Piloto", "Pos_V2"]],
-                        on="Piloto",
-                        how="inner"
-                    )
-                    # Posiciones ganadas (Posición inicial V1 menos la posición en V2; positivo = ganó puestos)
+                    df_larga = pd.merge(df_v1[["Piloto", "Pos_V1"]], df_v2[["Piloto", "Pos_V2"]], on="Piloto", how="inner")
                     df_larga["Puestos_Ganados"] = df_larga["Pos_V1"] - df_larga["Pos_V2"]
                     df_larga["Circuito"] = circuito
                     largada_stats_list.append(df_larga)
 
             if largada_stats_list:
                 df_todas_largadas = pd.concat(largada_stats_list, ignore_index=True)
-                
-                # Unificamos nombres si hay equivalencias (usando tu mapeo)
-                mapeo_nombres = {"Fede Oris": "Federico Oris", "Alan Lasserre": "Alan245"}
                 df_todas_largadas["Piloto"] = df_todas_largadas["Piloto"].replace(mapeo_nombres)
-                
                 kaiser_largada = df_todas_largadas.groupby("Piloto")["Puestos_Ganados"].sum().reset_index()
                 kaiser_largada = kaiser_largada.sort_values(by="Puestos_Ganados", ascending=False).reset_index(drop=True)
-                
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    st.markdown("### 🚀 El Káiser de la Largada")
-                    st.caption("Balance neto de posiciones ganadas entre el final de la vuelta 1 y la vuelta 2.")
-                    
-                    df_k_view = kaiser_largada.copy()
-                    df_k_view.columns = ["Piloto", "Puestos Netos Ganados"]
-                    st.dataframe(df_k_view, use_container_width=True)
-                    
-                with col2:
-                    st.markdown("### 👑 Líder de Arranque")
-                    if not kaiser_largada.empty:
-                        top_k = kaiser_largada.iloc[0]
-                        st.success(f"🏆 **{top_k['Piloto']}** lidera el galardón con un saldo acumulado de **+{int(top_k['Puestos_Ganados'])} posiciones** ganadas en los arranques.")
             else:
-                st.warning("No hay suficientes registros de las vueltas 1 y 2 para calcular las largadas.")
+                kaiser_largada = pd.DataFrame()
         else:
-            st.warning("No hay datos de vueltas catalogadas como 'Carrera'.")
+            kaiser_largada = pd.DataFrame()
     else:
-        st.info("No hay datos de vueltas detalladas cargados en `df_vueltas_global`.")
+        kaiser_largada = pd.DataFrame()
+
+    # Visualización en Columnas para los Premios
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("### 🚀 El Káiser de la Largada")
+        st.caption("Saldo neto de posiciones ganadas entre el final de la vuelta 1 y la vuelta 2.")
+        if not kaiser_largada.empty:
+            df_k_view = kaiser_largada.copy()
+            df_k_view.columns = ["Piloto", "Puestos Netos Ganados"]
+            st.dataframe(df_k_view, use_container_width=True)
+            top_k = kaiser_largada.iloc[0]
+            st.success(f"🏆 **{top_k['Piloto']}** lidera con **+{int(top_k['Puestos_Ganados'])}** puestos ganados.")
+        else:
+            st.info("Sin datos suficientes para calcular largadas.")
+
+    with col2:
+        st.markdown("### 👑 El Rey de la Pole")
+        st.caption("Pilotos con mayor cantidad de mejores tiempos en clasificación.")
+        # Asumiendo que tenés un dataframe de clasificación general o procesado (ej: df_clasif_global)
+        # Si la estructura se llama distinto, adaptamos la variable:
+        try:
+            if 'df_clasif_global' in locals() and not df_clasif_global.empty:
+                df_poles = df_clasif_global[df_clasif_global["Posicion"] == 1].groupby("Piloto").size().reset_index(name="Poles")
+                df_poles = df_poles.sort_values(by="Poles", ascending=False).reset_index(drop=True)
+                df_poles["Piloto"] = df_poles["Piloto"].replace(mapeo_nombres)
+                st.dataframe(df_poles, use_container_width=True)
+                if not df_poles.empty:
+                    top_pole = df_poles.iloc[0]
+                    st.success(f"🏆 **{top_pole['Piloto']}** manda en los sábados con **{int(top_pole['Poles'])}** pole(s).")
+            else:
+                st.info("Cargando métricas de clasificación...")
+        except Exception:
+            st.info("No se encontró el DataFrame de clasificación para este premio.")
+
+    st.markdown("---")
+    
+    col3, col4 = st.columns(2)
+
+    with col3:
+        st.markdown("### 🧗 El Rey de la Remontada")
+        st.caption("Mayor avance de posiciones desde la clasificación hasta la bandera a cuadros en carrera.")
+        try:
+            if 'df_resultados_global' in locals() and not df_resultados_global.empty:
+                # Calculamos diferencia entre posición de grilla/clasif y posición final
+                df_rem = df_resultados_global.copy()
+                if "PosClasif" in df_rem.columns and "PosCarrera" in df_rem.columns:
+                    df_rem["Remontada"] = df_rem["PosClasif"] - df_rem["PosCarrera"]
+                    df_rem["Piloto"] = df_rem["Piloto"].replace(mapeo_nombres)
+                    df_rem_sum = df_rem.groupby("Piloto")["Remontada"].sum().reset_index()
+                    df_rem_sum = df_rem_sum.sort_values(by="Remontada", ascending=False).reset_index(drop=True)
+                    st.dataframe(df_rem_sum, use_container_width=True)
+                    if not df_rem_sum.empty:
+                        top_rem = df_rem_sum.iloc[0]
+                        st.success(f"🏆 **{top_rem['Piloto']}** es el rey del domingo con **+{int(top_rem['Remontada'])}** puestos recuperados.")
+                else:
+                    st.info("Faltan columnas de grilla/clasif en los resultados de carrera.")
+            else:
+                st.info("Sección de remontadas pendiente de sincronización con tus datos de carrera.")
+        except Exception:
+            st.info("Datos de remontadas no disponibles temporalmente.")
+
+    with col4:
+        st.markdown("### 🍾 El Imán de Podios")
+        st.caption("Pilotos con mayor cantidad de presencias en el podio (Top 3 de carrera).")
+        try:
+            if 'df_resultados_global' in locals() and not df_resultados_global.empty:
+                df_podios = df_resultados_global[df_resultados_global["PosCarrera"] <= 3].copy()
+                df_podios["Piloto"] = df_podios["Piloto"].replace(mapeo_nombres)
+                conteo_podios = df_podios.groupby("Piloto").size().reset_index(name="Podios")
+                conteo_podios = conteo_podios.sort_values(by="Podios", ascending=False).reset_index(drop=True)
+                st.dataframe(conteo_podios, use_container_width=True)
+                if not conteo_podios.empty:
+                    top_podio = conteo_podios.iloc[0]
+                    st.success(f"🏆 **{top_podio['Piloto']}** lidera los podios con **{int(top_podio['Podios'])}** visitas al estrado.")
+            else:
+                st.info("Cargando datos de podios...")
+        except Exception:
+            st.info("Datos de podios no disponibles.")
