@@ -2108,68 +2108,95 @@ elif seccion_menu == "⚔️ Premios Especiales":
     
     col3, col4 = st.columns(2)
 
-    with col3:
-            st.markdown("### 🧗 El Rey de la Remontada")
-            st.caption("Mayor avance de posiciones desde la clasificación hasta la bandera a cuadros en carrera.")
-            
-            df_rem_sum = pd.DataFrame()
-            try:
-                if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos:
-                    remontadas_list = []
-                    for circuito_name, circuito_data in datos_comparativa_tiempos.items():
-                        # Obtenemos clasificación y carrera de este circuito
-                        reg_clasif = circuito_data.get("Clasificación", [])
-                        reg_carrera = circuito_data.get("Carrera", [])
-                        
-                        # Mapear posición de salida (Clasificación) por piloto
-                        pos_salida_dict = {}
-                        for reg in reg_clasif:
-                            texto_pos = str(reg.get("Pos", ""))
-                            if "—" in texto_pos:
-                                partes = texto_pos.split("—")
-                                nombre_p = partes[-1].strip()
-                                import re
-                                nums = re.findall(r'\d+', partes[0])
-                                if nums:
-                                    pos_salida_dict[nombre_p.lower()] = int(nums[0])
-                                    
-                        # Mapear posición final (Carrera) por piloto
-                        pos_carrera_dict = {}
-                        for reg in reg_carrera:
-                            texto_pos = str(reg.get("Pos", ""))
-                            if "—" in texto_pos:
-                                partes = texto_pos.split("—")
-                                nombre_p = partes[-1].strip()
-                                import re
-                                nums = re.findall(r'\d+', partes[0])
-                                if nums:
-                                    pos_carrera_dict[nombre_p.lower()] = int(nums[0])
-                                    
-                        # Calcular la remontada (Salida - Carrera) para cada piloto en este circuito
-                        for p_lower, p_sal in pos_salida_dict.items():
-                            if p_lower in pos_carrera_dict:
-                                p_car = pos_carrera_dict[p_lower]
-                                # Buscamos el nombre original limpio (sin importar minúsculas/mayúsculas)
-                                nombre_original = [r.split("—")[-1].strip() for r in reg_clasif if r.split("—")[-1].strip().lower() == p_lower]
-                                if nombre_original:
-                                    nom_piloto = nombre_original[0]
-                                    rem = p_sal - p_car  # Positivo si avanzó, negativo si retrocedió
-                                    remontadas_list.append({"Piloto": nom_piloto, "Remontada": rem})
+with col3:
+        st.markdown("### 🧗 El Rey de la Remontada")
+        st.caption("Mayor avance de posiciones desde la clasificación hasta la bandera a cuadros en carrera.")
+        
+        df_rem_sum = pd.DataFrame()
+        try:
+            if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos:
+                remontadas_list = []
+                for circuito_name, circuito_data in datos_comparativa_tiempos.items():
+                    # Obtenemos clasificación y carrera de este circuito
+                    reg_clasif = circuito_data.get("Clasificación", [])
+                    reg_carrera = circuito_data.get("Carrera", [])
                     
-                    if remontadas_list:
-                        df_r_temp = pd.DataFrame(remontadas_list)
-                        df_rem_sum = df_r_temp.groupby("Piloto")["Remontada"].sum().reset_index()
-                        df_rem_sum = df_rem_sum.sort_values(by="Remontada", ascending=False).reset_index(drop=True)
-            except Exception:
-                pass
+                    # Mapear posición de salida (Clasificación) por piloto
+                    pos_salida_dict = {}
+                    for reg in reg_clasif:
+                        texto_pos = str(reg.get("Pos", ""))
+                        if "—" in texto_pos:
+                            partes = texto_pos.split("—")
+                            nombre_p = partes[-1].strip()
+                            import re
+                            nums = re.findall(r'\d+', partes[0])
+                            if nums:
+                                pos_salida_dict[nombre_p.lower()] = int(nums[0])
+                                
+                    # Mapear posición final (Carrera) y auto por piloto
+                    pos_carrera_dict = {}
+                    auto_carrera_dict = {}
+                    for reg in reg_carrera:
+                        texto_pos = str(reg.get("Pos", ""))
+                        if "—" in texto_pos:
+                            partes = texto_pos.split("—")
+                            nombre_p = partes[-1].strip()
+                            import re
+                            nums = re.findall(r'\d+', partes[0])
+                            if nums:
+                                p_num = int(nums[0])
+                                pos_carrera_dict[nombre_p.lower()] = p_num
+                                # Intentamos rescatar el auto si viene en el registro
+                                auto_val = reg.get("Auto", "-") if isinstance(reg, dict) else "-"
+                                auto_carrera_dict[nombre_p.lower()] = auto_val
+                                
+                    # Calcular la remontada (Salida - Carrera) para cada piloto en este circuito
+                    for p_lower, p_sal in pos_salida_dict.items():
+                        if p_lower in pos_carrera_dict:
+                            p_car = pos_carrera_dict[p_lower]
+                            # Buscamos el nombre original limpio
+                            nombre_original = [r.split("—")[-1].strip() for r in reg_clasif if r.split("—")[-1].strip().lower() == p_lower]
+                            if nombre_original:
+                                nom_piloto = nombre_original[0]
+                                rem = p_sal - p_car  # Positivo si avanzó, negativo si retrocedió
+                                auto_p = auto_carrera_dict.get(p_lower, "-")
+                                
+                                remontadas_list.append({
+                                    "Circuito": circuito_name,
+                                    "Piloto": nom_piloto,
+                                    "Salida": p_sal,
+                                    "Llegada": p_car,
+                                    "Remontada": rem,
+                                    "Auto": auto_p
+                                })
+                
+                if remontadas_list:
+                    df_r_temp = pd.DataFrame(remontadas_list)
+                    
+                    # Agrupamos sumando el total de posiciones ganadas en todo el campeonato
+                    df_rem_sum = df_r_temp.groupby("Piloto")["Remontada"].sum().reset_index()
+                    df_rem_sum = df_rem_sum.sort_values(by="Remontada", ascending=False).reset_index(drop=True)
+                    df_rem_sum.columns = ["Piloto", "Total Puestos Ganados"]
+                    
+                    # Guardamos el detalle completo por si querés mostrar las mayores hazañas individuales
+                    df_detalle_rem = df_r_temp.sort_values(by="Remontada", ascending=False)
+        except Exception as e:
+            st.caption(f"Error al calcular remontadas: {e}")
 
-            if not df_rem_sum.empty:
-                st.dataframe(df_rem_sum, use_container_width=True)
-                top_rem = df_rem_sum.iloc[0]
-                st.success(f"🏆 **{top_rem['Piloto']}** es el rey del domingo con **+{int(top_rem['Remontada'])}** puestos recuperados en total.")
-            else:
-                st.info("Datos de remontadas pendientes de sincronización.")
-
+        if not df_rem_sum.empty:
+            st.markdown("#### 📊 Acumulado en el Campeonato")
+            st.dataframe(df_rem_sum, use_container_width=True, hide_index=True)
+            
+            top_rem = df_rem_sum.iloc[0]
+            st.success(f"🏆 **{top_rem['Piloto']}** es el rey del domingo con un total de **+{int(top_rem['Total Puestos Ganados'])}** puestos recuperados.")
+            
+            # Opcional: Mostrar la mayor remontada en una sola carrera
+            if 'df_detalle_rem' in locals() and not df_detalle_rem.empty:
+                max_single = df_detalle_rem.iloc[0]
+                if max_single['Remontada'] > 0:
+                    st.info(f"🔥 **Mayor avance en una sola fecha:** {max_single['Piloto']} en **{max_single['Circuito']}** (Salió P{max_single['Salida']} ➔ Llegó P{max_single['Llegada']} | **+{max_single['Remontada']} puestos**).")
+        else:
+            st.info("Datos de remontadas pendientes de sincronización.")
     with col4:
         st.markdown("### 🍾 El Imán de Podios")
         st.caption("Pilotos con mayor cantidad de presencias en el podio (Top 3 de carrera).")
