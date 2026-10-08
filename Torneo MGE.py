@@ -816,237 +816,236 @@ if seccion_menu == "Resumen General":
                 st.plotly_chart(fig_evolucion, use_container_width=True)
             else:
                 st.info("No hay datos disponibles para mostrar en el gráfico de evolución del campeonato.")
-# --- DESGLOSE POR FECHA / CIRCUITO (ORDENADO CRONOLÓGICAMENTE) ---
-    if 'df_global' in locals() and not df_global.empty:
-        st.markdown("---")
-        st.subheader("📅 Desglose por Fecha / Circuito")
-        
-        # Usamos fechas_reales si existe para mantener el orden cronológico estricto, o respaldamos con circuitos
-        if 'fechas_reales' in locals() and fechas_reales:
-            circuitos_disponibles = [f for f in fechas_reales if f in df_global["Circuito"].unique()]
-            # Por si quedó alguna fuera
-            restantes = [c for c in df_global["Circuito"].unique() if c not in circuitos_disponibles]
-            circuitos_disponibles.extend(sorted(restantes))
-        else:
-            circuitos_disponibles = sorted(circuitos) if 'circuitos' in locals() and circuitos else sorted(df_global["Circuito"].unique())
-        
-        if circuitos_disponibles:
-            circuito_elegido_fecha = st.selectbox("🏁 Seleccionar Fecha / Circuito para ver detalles:", circuitos_disponibles, key="select_circuito_desglose_general")
-            
-            col_sprint, col_carrera = st.columns(2)
-            
-            def consolidar_sesion_fecha(df_sub, es_carrera_principal=False):
-                if df_sub.empty:
-                    return pd.DataFrame()
-                
-                agrupados = []
-                pilotos_en_sesion = df_sub["Piloto"].unique()
-                
-                for pil in pilotos_en_sesion:
-                    df_p = df_sub[df_sub["Piloto"] == pil]
-                    
-                    reg_pos = df_p[~df_p["Tipo"].astype(str).str.lower().str.contains("pole|vuelta|vr", na=False)]
-                    if not reg_pos.empty:
-                        pos_val = reg_pos["Posición"].values[0]
-                        auto_val = reg_pos["Auto"].values[0] if "Auto" in reg_pos.columns else "-"
-                    else:
-                        pos_val = 999
-                        auto_val = df_p["Auto"].values[0] if "Auto" in df_p.columns else "-"
+    # --- DESGLOSE POR FECHA / CIRCUITO (ORDENADO CRONOLÓGICAMENTE) ---
+    if 'df_global' in locals() and not df_global.empty:
+        st.markdown("---")
+        st.subheader("📅 Desglose por Fecha / Circuito")
+        
+        # Usamos fechas_reales si existe para mantener el orden cronológico estricto, o respaldamos con circuitos
+        if 'fechas_reales' in locals() and fechas_reales:
+            circuitos_disponibles = [f for f in fechas_reales if f in df_global["Circuito"].unique()]
+            # Por si quedó alguna fuera
+            restantes = [c for c in df_global["Circuito"].unique() if c not in circuitos_disponibles]
+            circuitos_disponibles.extend(sorted(restantes))
+        else:
+            circuitos_disponibles = sorted(circuitos) if 'circuitos' in locals() and circuitos else sorted(df_global["Circuito"].unique())
+        
+        if circuitos_disponibles:
+            circuito_elegido_fecha = st.selectbox("🏁 Seleccionar Fecha / Circuito para ver detalles:", circuitos_disponibles, key="select_circuito_desglose_general")
+            
+            col_sprint, col_carrera = st.columns(2)
+            
+            def consolidar_sesion_fecha(df_sub, es_carrera_principal=False):
+                if df_sub.empty:
+                    return pd.DataFrame()
+                
+                agrupados = []
+                pilotos_en_sesion = df_sub["Piloto"].unique()
+                
+                for pil in pilotos_en_sesion:
+                    df_p = df_sub[df_sub["Piloto"] == pil]
+                    
+                    reg_pos = df_p[~df_p["Tipo"].astype(str).str.lower().str.contains("pole|vuelta|vr", na=False)]
+                    if not reg_pos.empty:
+                        pos_val = reg_pos["Posición"].values[0]
+                        auto_val = reg_pos["Auto"].values[0] if "Auto" in reg_pos.columns else "-"
+                    else:
+                        pos_val = 999
+                        auto_val = df_p["Auto"].values[0] if "Auto" in df_p.columns else "-"
 
-                    pos_salida_val = "-"
-                    if es_carrera_principal and 'df_global' in locals():
-                        df_clasif_piloto = df_global[
-                            (df_global["Circuito"] == circuito_elegido_fecha) & 
-                            (df_global["Piloto"] == pil) & 
-                            (
-                                df_global["Tipo"].astype(str).str.lower().str.contains("clasif|quali|q1|q2|q3", na=False) |
-                                (df_global["Sesion"].astype(str).str.lower().str.contains("clasif|quali", na=False) if "Sesion" in df_global.columns else False)
-                            )
-                        ]
-                        if not df_clasif_piloto.empty:
-                            p_sal = df_clasif_piloto["Posición"].min()
-                            if not pd.isna(p_sal):
-                                pos_salida_val = f"P{int(p_sal)}"
+                    pos_salida_val = "-"
+                    if es_carrera_principal and 'df_global' in locals():
+                        df_clasif_piloto = df_global[
+                            (df_global["Circuito"] == circuito_elegido_fecha) & 
+                            (df_global["Piloto"] == pil) & 
+                            (
+                                df_global["Tipo"].astype(str).str.lower().str.contains("clasif|quali|q1|q2|q3", na=False) |
+                                (df_global["Sesion"].astype(str).str.lower().str.contains("clasif|quali", na=False) if "Sesion" in df_global.columns else False)
+                            )
+                        ]
+                        if not df_clasif_piloto.empty:
+                            p_sal = df_clasif_piloto["Posición"].min()
+                            if not pd.isna(p_sal):
+                                pos_salida_val = f"P{int(p_sal)}"
 
-                    extras_txt = []
-                    for _, row_r in df_p.iterrows():
-                        tipo_str = str(row_r.get("Tipo", "")).lower()
-                        pts_r = float(row_r.get("Puntos", 0))
-                        
-                        if "pole" in tipo_str or "clasif" in tipo_str:
-                            if pts_r > 0 and "pole" in tipo_str:
-                                extras_txt.append(f"P: +{int(pts_r) if pts_r.is_integer() else pts_r}")
-                        if "vuelta" in tipo_str or "vr" in tipo_str:
-                            if pts_r > 0:
-                                extras_txt.append(f"Vr: +{int(pts_r) if pts_r.is_integer() else pts_r}")
+                    extras_txt = []
+                    for _, row_r in df_p.iterrows():
+                        tipo_str = str(row_r.get("Tipo", "")).lower()
+                        pts_r = float(row_r.get("Puntos", 0))
+                        
+                        if "pole" in tipo_str or "clasif" in tipo_str:
+                            if pts_r > 0 and "pole" in tipo_str:
+                                extras_txt.append(f"P: +{int(pts_r) if pts_r.is_integer() else pts_r}")
+                        if "vuelta" in tipo_str or "vr" in tipo_str:
+                            if pts_r > 0:
+                                extras_txt.append(f"Vr: +{int(pts_r) if pts_r.is_integer() else pts_r}")
 
-                    puntos_totales_sesion = df_p["Puntos"].sum()
-                    detalles_extras_str = f" ({', '.join(extras_txt)})" if extras_txt else ""
-                    
-                    try:
-                        pos_int = int(pos_val)
-                    except:
-                        pos_int = 999
+                    puntos_totales_sesion = df_p["Puntos"].sum()
+                    detalles_extras_str = f" ({', '.join(extras_txt)})" if extras_txt else ""
+                    
+                    try:
+                        pos_int = int(pos_val)
+                    except:
+                        pos_int = 999
 
-                    item_dict = {
-                        "Pos_Sort": pos_int,
-                        "Posición": pos_int if pos_int != 999 else "-",
-                        "Piloto": pil,
-                        "Auto": auto_val,
-                    }
-                    if es_carrera_principal:
-                        item_dict["Clasificación (Salida)"] = pos_salida_val
-                    
-                    item_dict["Puntos"] = f"{int(puntos_totales_sesion) if puntos_totales_sesion.is_integer() else puntos_totales_sesion}{detalles_extras_str}"
-                    agrupados.append(item_dict)
-                
-                df_res = pd.DataFrame(agrupados)
-                if not df_res.empty:
-                    df_res = df_res.sort_values(by="Pos_Sort", ascending=True).drop(columns=["Pos_Sort"]).reset_index(drop=True)
-                return df_res
+                    item_dict = {
+                        "Pos_Sort": pos_int,
+                        "Posición": pos_int if pos_int != 999 else "-",
+                        "Piloto": pil,
+                        "Auto": auto_val,
+                    }
+                    if es_carrera_principal:
+                        item_dict["Clasificación (Salida)"] = pos_salida_val
+                    
+                    item_dict["Puntos"] = f"{int(puntos_totales_sesion) if puntos_totales_sesion.is_integer() else puntos_totales_sesion}{detalles_extras_str}"
+                    agrupados.append(item_dict)
+                
+                df_res = pd.DataFrame(agrupados)
+                if not df_res.empty:
+                    df_res = df_res.sort_values(by="Pos_Sort", ascending=True).drop(columns=["Pos_Sort"]).reset_index(drop=True)
+                return df_res
 
-            with col_sprint:
-                st.markdown("#### ⚡ Sprint")
-                try:
-                    df_sprint_fecha = df_global[(df_global["Circuito"] == circuito_elegido_fecha) & (df_global["Tipo"].str.lower().str.contains("sprint", na=False))]
-                    df_sprint_cons = consolidar_sesion_fecha(df_sprint_fecha, es_carrera_principal=False)
-                    if not df_sprint_cons.empty:
-                        st.dataframe(df_sprint_cons, use_container_width=True, hide_index=True)
-                    else:
-                        st.caption("No hay registros de Sprint para este circuito.")
-                except Exception as e_sprint:
-                    st.caption(f"Error al cargar Sprint: {e_sprint}")
-                    
-            with col_carrera:
-                st.markdown("#### 🏎️ Carrera")
-                try:
-                    df_carrera_fecha = df_global[(df_global["Circuito"] == circuito_elegido_fecha) & (~df_global["Tipo"].str.lower().str.contains("sprint|clasif|quali", na=False))]
-                    df_carrera_cons = consolidar_sesion_fecha(df_carrera_fecha, es_carrera_principal=True)
-                    if not df_carrera_cons.empty:
-                        st.dataframe(df_carrera_cons, use_container_width=True, hide_index=True)
-                    else:
-                        st.caption("No hay registros de Carrera para este circuito.")
-                except Exception as e_carrera:
-                    st.caption(f"Error al cargar Carrera: {e_carrera}")
+            with col_sprint:
+                st.markdown("#### ⚡ Sprint")
+                try:
+                    df_sprint_fecha = df_global[(df_global["Circuito"] == circuito_elegido_fecha) & (df_global["Tipo"].str.lower().str.contains("sprint", na=False))]
+                    df_sprint_cons = consolidar_sesion_fecha(df_sprint_fecha, es_carrera_principal=False)
+                    if not df_sprint_cons.empty:
+                        st.dataframe(df_sprint_cons, use_container_width=True, hide_index=True)
+                    else:
+                        st.caption("No hay registros de Sprint para este circuito.")
+                except Exception as e_sprint:
+                    st.caption(f"Error al cargar Sprint: {e_sprint}")
+                    
+            with col_carrera:
+                st.markdown("#### 🏎️ Carrera")
+                try:
+                    df_carrera_fecha = df_global[(df_global["Circuito"] == circuito_elegido_fecha) & (~df_global["Tipo"].str.lower().str.contains("sprint|clasif|quali", na=False))]
+                    df_carrera_cons = consolidar_sesion_fecha(df_carrera_fecha, es_carrera_principal=True)
+                    if not df_carrera_cons.empty:
+                        st.dataframe(df_carrera_cons, use_container_width=True, hide_index=True)
+                    else:
+                        st.caption("No hay registros de Carrera para este circuito.")
+                except Exception as e_carrera:
+                    st.caption(f"Error al cargar Carrera: {e_carrera}")
 
 # --- EVOLUCIÓN DE POSICIONES DE CLASIFICACIÓN (SALIDA - 10 FECHAS) ---
-    if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos and 'todos_pilotos' in locals() and todos_pilotos:
-        st.markdown("---")
-        with st.container():
-            st.subheader("📈 Evolución de Posiciones de Clasificación (Salida - 10 Fechas)")
-            
-            datos_clasif_evolucion = []
-            
-            # Definimos la posición base inferior común para que todas arranquen juntas abajo (ej. P13)
-            posicion_vertice_inferior = len(todos_pilotos) if len(todos_pilotos) > 0 else 13
-            
-            circuitos_disponibles = list(datos_comparativa_tiempos.keys())
-            
-            # 1. Creamos el punto "0. Inicio": TODOS nacen exactamente en la misma esquina inferior
-            for piloto in todos_pilotos:
-                auto_p = mapa_autos_df.get(piloto, "-") if 'mapa_autos_df' in locals() else "-"
-                datos_clasif_evolucion.append({
-                    "Piloto": piloto,
-                    "Gran Premio": "0. Inicio",
-                    "Posición Salida": posicion_vertice_inferior, # <--- Todas nacen abajo del todo
-                    "Circuito": "Inicio",
-                    "Auto": auto_p,
-                    "TextoPos": "" # Sin texto en el inicio para mantenerlo limpio
-                })
-            
-            # 2. Recorremos hasta 10 fechas/circuitos
-            for i in range(1, 11):
-                nombre_fecha_eje_x = f"Fecha {i}"
-                
-                circuito_actual = None
-                if len(circuitos_disponibles) >= i:
-                    circuito_actual = circuitos_disponibles[i - 1]
-                
-                registros_clasif = []
-                circuito_nombre = f"Fecha {i} (Pendiente)"
-                
-                if circuito_actual is not None:
-                    circuito_nombre = circuito_actual
-                    registros_clasif = datos_comparativa_tiempos[circuito_actual].get("Clasificación", [])
-                
-                # Mapeamos las posiciones de este circuito para cada piloto
-                posiciones_circuito = {}
-                for reg in registros_clasif:
-                    texto_pos = str(reg.get("Pos", ""))
-                    if "—" in texto_pos:
-                        partes = texto_pos.split("—")
-                        nombre_p = partes[-1].strip()
-                        import re
-                        nums = re.findall(r'\d+', partes[0])
-                        if nums:
-                            p_num = int(nums[0])
-                            posiciones_circuito[nombre_p.lower()] = p_num
+    if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos and 'todos_pilotos' in locals() and todos_pilotos:
+        st.markdown("---")
+        with st.container():
+            st.subheader("📈 Evolución de Posiciones de Clasificación (Salida - 10 Fechas)")
+            
+            datos_clasif_evolucion = []
+            
+            # Definimos la posición base inferior común para que todas arranquen juntas abajo (ej. P13)
+            posicion_vertice_inferior = len(todos_pilotos) if len(todos_pilotos) > 0 else 13
+            
+            circuitos_disponibles = list(datos_comparativa_tiempos.keys())
+            
+            # 1. Creamos el punto "0. Inicio": TODOS nacen exactamente en la misma esquina inferior
+            for piloto in todos_pilotos:
+                auto_p = mapa_autos_df.get(piloto, "-") if 'mapa_autos_df' in locals() else "-"
+                datos_clasif_evolucion.append({
+                    "Piloto": piloto,
+                    "Gran Premio": "0. Inicio",
+                    "Posición Salida": posicion_vertice_inferior, # <--- Todas nacen abajo del todo
+                    "Circuito": "Inicio",
+                    "Auto": auto_p,
+                    "TextoPos": "" # Sin texto en el inicio para mantenerlo limpio
+                })
+            
+            # 2. Recorremos hasta 10 fechas/circuitos
+            for i in range(1, 11):
+                nombre_fecha_eje_x = f"Fecha {i}"
+                
+                circuito_actual = None
+                if len(circuitos_disponibles) >= i:
+                    circuito_actual = circuitos_disponibles[i - 1]
+                
+                registros_clasif = []
+                circuito_nombre = f"Fecha {i} (Pendiente)"
+                
+                if circuito_actual is not None:
+                    circuito_nombre = circuito_actual
+                    registros_clasif = datos_comparativa_tiempos[circuito_actual].get("Clasificación", [])
+                
+                # Mapeamos las posiciones de este circuito para cada piloto
+                posiciones_circuito = {}
+                for reg in registros_clasif:
+                    texto_pos = str(reg.get("Pos", ""))
+                    if "—" in texto_pos:
+                        partes = texto_pos.split("—")
+                        nombre_p = partes[-1].strip()
+                        import re
+                        nums = re.findall(r'\d+', partes[0])
+                        if nums:
+                            p_num = int(nums[0])
+                            posiciones_circuito[nombre_p.lower()] = p_num
 
-                for piloto in todos_pilotos:
-                    pos_val = None
-                    for p_key, p_val in posiciones_circuito.items():
-                        if p_key == piloto.lower():
-                            pos_val = p_val
-                            break
-                    
-                    auto_p = mapa_autos_df.get(piloto, "-") if 'mapa_autos_df' in locals() else "-"
-                    
-                    datos_clasif_evolucion.append({
-                        "Piloto": piloto,
-                        "Gran Premio": nombre_fecha_eje_x,
-                        "Posición Salida": pos_val,
-                        "Circuito": circuito_nombre,
-                        "Auto": auto_p,
-                        "TextoPos": str(pos_val) if pos_val is not None else ""
-                    })
+                for piloto in todos_pilotos:
+                    pos_val = None
+                    for p_key, p_val in posiciones_circuito.items():
+                        if p_key == piloto.lower():
+                            pos_val = p_val
+                            break
+                    
+                    auto_p = mapa_autos_df.get(piloto, "-") if 'mapa_autos_df' in locals() else "-"
+                    
+                    datos_clasif_evolucion.append({
+                        "Piloto": piloto,
+                        "Gran Premio": nombre_fecha_eje_x,
+                        "Posición Salida": pos_val,
+                        "Circuito": circuito_nombre,
+                        "Auto": auto_p,
+                        "TextoPos": str(pos_val) if pos_val is not None else ""
+                    })
 
-            df_melted_clasif = pd.DataFrame(datos_clasif_evolucion)
-            lista_10_fechas_clasif = ["0. Inicio"] + [f"Fecha {i}" for i in range(1, 11)]
-            
-            if not df_melted_clasif.empty:
-                fig_clasif_ev = px.line(
-                    df_melted_clasif, x="Gran Premio", y="Posición Salida", color="Piloto",
-                    template="plotly_dark", markers=True,
-                    text="TextoPos",
-                    custom_data=["Circuito", "Piloto", "Auto", "Posición Salida"],
-                    category_orders={"Gran Premio": lista_10_fechas_clasif}
-                )
-                
-                fig_clasif_ev.update_traces(
-                    mode="lines+markers+text",
-                    textposition="top center",
-                    textfont=dict(size=10, color="white"),
-                    line=dict(width=1.0), 
-                    marker=dict(size=5),
-                    hovertemplate="<br><b>Piloto:</b> %{customdata[1]}<br>🚗 <b>Modelo:</b> %{customdata[2]}<br>📍 <b>Circuito:</b> %{customdata[0]}<br>🏁 <b>Posición de Salida:</b> P%{y}<extra></extra>"
-                )
-                
-                fig_clasif_ev.update_layout(
-                    hovermode="closest",
-                    plot_bgcolor="#111827",
-                    paper_bgcolor="#111827",
-                    margin=dict(l=20, r=140, t=30, b=20),
-                    height=500,
-                    xaxis=dict(categoryorder="array", categoryarray=lista_10_fechas_clasif),
-                    yaxis=dict(
-                        autorange="reversed",
-                        dtick=1,
-                        showgrid=True,
-                        gridcolor='rgba(255, 255, 255, 0.08)'
-                    ),
-                    legend=dict(
-                        title=dict(text="<b>Pilotos</b>", font=dict(size=13, color="white")),
-                        font=dict(size=12, color="white"),
-                        bgcolor="rgba(17, 24, 39, 0.8)",
-                        bordercolor="rgba(255, 255, 255, 0.2)",
-                        borderwidth=1,
-                        x=1.02, y=1, xanchor="left", yanchor="top"
-                    )
-                )
-                st.plotly_chart(fig_clasif_ev, use_container_width=True)
-            else:
-                st.info("No hay datos disponibles para mostrar en el gráfico de clasificación.")
-
+            df_melted_clasif = pd.DataFrame(datos_clasif_evolucion)
+            lista_10_fechas_clasif = ["0. Inicio"] + [f"Fecha {i}" for i in range(1, 11)]
+            
+            if not df_melted_clasif.empty:
+                fig_clasif_ev = px.line(
+                    df_melted_clasif, x="Gran Premio", y="Posición Salida", color="Piloto",
+                    template="plotly_dark", markers=True,
+                    text="TextoPos",
+                    custom_data=["Circuito", "Piloto", "Auto", "Posición Salida"],
+                    category_orders={"Gran Premio": lista_10_fechas_clasif}
+                )
+                
+                fig_clasif_ev.update_traces(
+                    mode="lines+markers+text",
+                    textposition="top center",
+                    textfont=dict(size=10, color="white"),
+                    line=dict(width=1.0), 
+                    marker=dict(size=5),
+                    hovertemplate="<br><b>Piloto:</b> %{customdata[1]}<br>🚗 <b>Modelo:</b> %{customdata[2]}<br>📍 <b>Circuito:</b> %{customdata[0]}<br>🏁 <b>Posición de Salida:</b> P%{y}<extra></extra>"
+                )
+                
+                fig_clasif_ev.update_layout(
+                    hovermode="closest",
+                    plot_bgcolor="#111827",
+                    paper_bgcolor="#111827",
+                    margin=dict(l=20, r=140, t=30, b=20),
+                    height=500,
+                    xaxis=dict(categoryorder="array", categoryarray=lista_10_fechas_clasif),
+                    yaxis=dict(
+                        autorange="reversed",
+                        dtick=1,
+                        showgrid=True,
+                        gridcolor='rgba(255, 255, 255, 0.08)'
+                    ),
+                    legend=dict(
+                        title=dict(text="<b>Pilotos</b>", font=dict(size=13, color="white")),
+                        font=dict(size=12, color="white"),
+                        bgcolor="rgba(17, 24, 39, 0.8)",
+                        bordercolor="rgba(255, 255, 255, 0.2)",
+                        borderwidth=1,
+                        x=1.02, y=1, xanchor="left", yanchor="top"
+                    )
+                )
+                st.plotly_chart(fig_clasif_ev, use_container_width=True)
+            else:
+                st.info("No hay datos disponibles para mostrar en el gráfico de clasificación.")
 # --- VISTA: COMPARATIVA DE TIEMPOS ---
 elif seccion_menu == "Comparativa de Tiempos":
     st.subheader("📊 Comparativa Global de Tiempos por Evento")
