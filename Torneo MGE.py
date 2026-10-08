@@ -816,7 +816,7 @@ if seccion_menu == "Resumen General":
                 st.plotly_chart(fig_evolucion, use_container_width=True)
             else:
                 st.info("No hay datos disponibles para mostrar en el gráfico de evolución del campeonato.")
-    # --- DESGLOSE POR FECHA / CIRCUITO (ORDENADO CRONOLÓGICAMENTE) ---
+# --- DESGLOSE POR FECHA / CIRCUITO (ORDENADO CRONOLÓGICAMENTE) ---
     if 'df_global' in locals() and not df_global.empty:
         st.markdown("---")
         st.subheader("📅 Desglose por Fecha / Circuito")
