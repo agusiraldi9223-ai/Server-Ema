@@ -816,7 +816,123 @@ if seccion_menu == "Resumen General":
                 st.plotly_chart(fig_evolucion, use_container_width=True)
             else:
                 st.info("No hay datos disponibles para mostrar en el gráfico de evolución del campeonato.")
+# --- EVOLUCIÓN DE POSICIONES DE CLASIFICACIÓN (SALIDA - 10 FECHAS) ---
+    if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos and 'todos_pilotos' in locals() and todos_pilotos:
+        st.markdown("---")
+        with st.container():
+            st.subheader("📈 Evolución de Posiciones de Clasificación (Salida - 10 Fechas)")
+            
+            datos_clasif_evolucion = []
+            
+            # Definimos la posición base inferior común para que todas arranquen juntas abajo (ej. P13)
+            posicion_vertice_inferior = len(todos_pilotos) if len(todos_pilotos) > 0 else 13
+            
+            circuitos_disponibles = list(datos_comparativa_tiempos.keys())
+            
+            # 1. Creamos el punto "0. Inicio": TODOS nacen exactamente en la misma esquina inferior
+            for piloto in todos_pilotos:
+                auto_p = mapa_autos_df.get(piloto, "-") if 'mapa_autos_df' in locals() else "-"
+                datos_clasif_evolucion.append({
+                    "Piloto": piloto,
+                    "Gran Premio": "0. Inicio",
+                    "Posición Salida": posicion_vertice_inferior, # <--- Todas nacen abajo del todo
+                    "Circuito": "Inicio",
+                    "Auto": auto_p,
+                    "TextoPos": "" # Sin texto en el inicio para mantenerlo limpio
+                })
+            
+            # 2. Recorremos hasta 10 fechas/circuitos
+            for i in range(1, 11):
+                nombre_fecha_eje_x = f"Fecha {i}"
+                
+                circuito_actual = None
+                if len(circuitos_disponibles) >= i:
+                    circuito_actual = circuitos_disponibles[i - 1]
+                
+                registros_clasif = []
+                circuito_nombre = f"Fecha {i} (Pendiente)"
+                
+                if circuito_actual is not None:
+                    circuito_nombre = circuito_actual
+                    registros_clasif = datos_comparativa_tiempos[circuito_actual].get("Clasificación", [])
+                
+                # Mapeamos las posiciones de este circuito para cada piloto
+                posiciones_circuito = {}
+                for reg in registros_clasif:
+                    texto_pos = str(reg.get("Pos", ""))
+                    if "—" in texto_pos:
+                        partes = texto_pos.split("—")
+                        nombre_p = partes[-1].strip()
+                        import re
+                        nums = re.findall(r'\d+', partes[0])
+                        if nums:
+                            p_num = int(nums[0])
+                            posiciones_circuito[nombre_p.lower()] = p_num
 
+                for piloto in todos_pilotos:
+                    pos_val = None
+                    for p_key, p_val in posiciones_circuito.items():
+                        if p_key == piloto.lower():
+                            pos_val = p_val
+                            break
+                    
+                    auto_p = mapa_autos_df.get(piloto, "-") if 'mapa_autos_df' in locals() else "-"
+                    
+                    datos_clasif_evolucion.append({
+                        "Piloto": piloto,
+                        "Gran Premio": nombre_fecha_eje_x,
+                        "Posición Salida": pos_val,
+                        "Circuito": circuito_nombre,
+                        "Auto": auto_p,
+                        "TextoPos": str(pos_val) if pos_val is not None else ""
+                    })
+
+            df_melted_clasif = pd.DataFrame(datos_clasif_evolucion)
+            lista_10_fechas_clasif = ["0. Inicio"] + [f"Fecha {i}" for i in range(1, 11)]
+            
+            if not df_melted_clasif.empty:
+                fig_clasif_ev = px.line(
+                    df_melted_clasif, x="Gran Premio", y="Posición Salida", color="Piloto",
+                    template="plotly_dark", markers=True,
+                    text="TextoPos",
+                    custom_data=["Circuito", "Piloto", "Auto", "Posición Salida"],
+                    category_orders={"Gran Premio": lista_10_fechas_clasif}
+                )
+                
+                fig_clasif_ev.update_traces(
+                    mode="lines+markers+text",
+                    textposition="top center",
+                    textfont=dict(size=10, color="white"),
+                    line=dict(width=1.0), 
+                    marker=dict(size=5),
+                    hovertemplate="<br><b>Piloto:</b> %{customdata[1]}<br>🚗 <b>Modelo:</b> %{customdata[2]}<br>📍 <b>Circuito:</b> %{customdata[0]}<br>🏁 <b>Posición de Salida:</b> P%{y}<extra></extra>"
+                )
+                
+                fig_clasif_ev.update_layout(
+                    hovermode="closest",
+                    plot_bgcolor="#111827",
+                    paper_bgcolor="#111827",
+                    margin=dict(l=20, r=140, t=30, b=20),
+                    height=500,
+                    xaxis=dict(categoryorder="array", categoryarray=lista_10_fechas_clasif),
+                    yaxis=dict(
+                        autorange="reversed",
+                        dtick=1,
+                        showgrid=True,
+                        gridcolor='rgba(255, 255, 255, 0.08)'
+                    ),
+                    legend=dict(
+                        title=dict(text="<b>Pilotos</b>", font=dict(size=13, color="white")),
+                        font=dict(size=12, color="white"),
+                        bgcolor="rgba(17, 24, 39, 0.8)",
+                        bordercolor="rgba(255, 255, 255, 0.2)",
+                        borderwidth=1,
+                        x=1.02, y=1, xanchor="left", yanchor="top"
+                    )
+                )
+                st.plotly_chart(fig_clasif_ev, use_container_width=True)
+            else:
+                st.info("No hay datos disponibles para mostrar en el gráfico de clasificación.")
     
 # --- VISTA: COMPARATIVA DE TIEMPOS ---
 elif seccion_menu == "Comparativa de Tiempos":
