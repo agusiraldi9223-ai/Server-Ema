@@ -2121,8 +2121,9 @@ elif seccion_menu == "⚔️ Premios Especiales":
                         reg_clasif = circuito_data.get("Clasificación", [])
                         reg_carrera = circuito_data.get("Carrera", [])
                         
-                        # Mapear posición de salida (Clasificación) por piloto
+                        # Mapear posición de salida (Clasificación) y nombre original por piloto
                         pos_salida_dict = {}
+                        nombre_original_dict = {}
                         for reg in reg_clasif:
                             texto_pos = str(reg.get("Pos", ""))
                             if "—" in texto_pos:
@@ -2131,7 +2132,9 @@ elif seccion_menu == "⚔️ Premios Especiales":
                                 import re
                                 nums = re.findall(r'\d+', partes[0])
                                 if nums:
-                                    pos_salida_dict[nombre_p.lower()] = int(nums[0])
+                                    p_lower = nombre_p.lower()
+                                    pos_salida_dict[p_lower] = int(nums[0])
+                                    nombre_original_dict[p_lower] = nombre_p
                                     
                         # Mapear posición final (Carrera) y auto por piloto
                         pos_carrera_dict = {}
@@ -2141,34 +2144,30 @@ elif seccion_menu == "⚔️ Premios Especiales":
                             if "—" in texto_pos:
                                 partes = texto_pos.split("—")
                                 nombre_p = partes[-1].strip()
-                                import re
                                 nums = re.findall(r'\d+', partes[0])
                                 if nums:
+                                    p_lower = nombre_p.lower()
                                     p_num = int(nums[0])
-                                    pos_carrera_dict[nombre_p.lower()] = p_num
-                                    # Intentamos rescatar el auto si viene en el registro
+                                    pos_carrera_dict[p_lower] = p_num
                                     auto_val = reg.get("Auto", "-") if isinstance(reg, dict) else "-"
-                                    auto_carrera_dict[nombre_p.lower()] = auto_val
+                                    auto_carrera_dict[p_lower] = auto_val
                                     
                         # Calcular la remontada (Salida - Carrera) para cada piloto en este circuito
                         for p_lower, p_sal in pos_salida_dict.items():
                             if p_lower in pos_carrera_dict:
                                 p_car = pos_carrera_dict[p_lower]
-                                # Buscamos el nombre original limpio
-                                nombre_original = [r.split("—")[-1].strip() for r in reg_clasif if r.split("—")[-1].strip().lower() == p_lower]
-                                if nombre_original:
-                                    nom_piloto = nombre_original[0]
-                                    rem = p_sal - p_car  # Positivo si avanzó, negativo si retrocedió
-                                    auto_p = auto_carrera_dict.get(p_lower, "-")
-                                    
-                                    remontadas_list.append({
-                                        "Circuito": circuito_name,
-                                        "Piloto": nom_piloto,
-                                        "Salida": p_sal,
-                                        "Llegada": p_car,
-                                        "Remontada": rem,
-                                        "Auto": auto_p
-                                    })
+                                nom_piloto = nombre_original_dict.get(p_lower, p_lower)
+                                rem = p_sal - p_car  # Positivo si avanzó, negativo si retrocedió
+                                auto_p = auto_carrera_dict.get(p_lower, "-")
+                                
+                                remontadas_list.append({
+                                    "Circuito": circuito_name,
+                                    "Piloto": nom_piloto,
+                                    "Salida": p_sal,
+                                    "Llegada": p_car,
+                                    "Remontada": rem,
+                                    "Auto": auto_p
+                                })
                     
                     if remontadas_list:
                         df_r_temp = pd.DataFrame(remontadas_list)
@@ -2178,7 +2177,7 @@ elif seccion_menu == "⚔️ Premios Especiales":
                         df_rem_sum = df_rem_sum.sort_values(by="Remontada", ascending=False).reset_index(drop=True)
                         df_rem_sum.columns = ["Piloto", "Total Puestos Ganados"]
                         
-                        # Guardamos el detalle completo por si querés mostrar las mayores hazañas individuales
+                        # Guardamos el detalle completo para la mayor hazaña individual
                         df_detalle_rem = df_r_temp.sort_values(by="Remontada", ascending=False)
             except Exception as e:
                 st.caption(f"Error al calcular remontadas: {e}")
@@ -2190,7 +2189,6 @@ elif seccion_menu == "⚔️ Premios Especiales":
                 top_rem = df_rem_sum.iloc[0]
                 st.success(f"🏆 **{top_rem['Piloto']}** es el rey del domingo con un total de **+{int(top_rem['Total Puestos Ganados'])}** puestos recuperados.")
                 
-                # Opcional: Mostrar la mayor remontada en una sola carrera
                 if 'df_detalle_rem' in locals() and not df_detalle_rem.empty:
                     max_single = df_detalle_rem.iloc[0]
                     if max_single['Remontada'] > 0:
