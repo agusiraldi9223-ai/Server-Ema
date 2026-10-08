@@ -110,6 +110,9 @@ if st.sidebar.button("📈 Estadísticas", use_container_width=True):
 if st.sidebar.button("📈 Perfil de Circuitos", use_container_width=True):
     st.session_state['pagina_activa'] = "Perfil de Circuitos"
     st.rerun()
+if st.sidebar.button("⚔️ Premios Especiales", use_container_width=True):
+    st.session_state['pagina_activa'] = "⚔️ Premios Especiales"
+    st.rerun()
 seccion_menu = st.session_state['pagina_activa']
 
 # Obtiene la ruta absoluta de la carpeta donde se encuentra este archivo de script
@@ -563,7 +566,7 @@ if seccion_menu == "Resumen General":
                     lambda row: correccion_definitiva.get(row["Piloto"], row["Auto"]), axis=1
                 )
 
-            # --- ESTADO PARA EL BOTÓN DE DESCARTE ---
+# --- ESTADO PARA EL BOTÓN DE DESCARTE ---
             if "descontar_peor" not in st.session_state:
                 st.session_state.descontar_peor = False
 
@@ -583,18 +586,46 @@ if seccion_menu == "Resumen General":
             aplicar_descarte = st.session_state.descontar_peor
             col_fecha = "Fecha" if "Fecha" in df_global.columns else "Circuito"
 
-            # --- TABLA CAMPEONATO ---
-            if aplicar_descarte:
-                puntos_por_ronda = df_global.groupby(["Piloto", col_fecha])["Puntos"].sum().reset_index()
-                peor_ronda = puntos_por_ronda.groupby("Piloto")["Puntos"].min().reset_index()
-                peor_ronda.rename(columns={"Puntos": "Puntos_Min"}, inplace=True)
-                
-                tabla_campeonato = puntos_por_ronda.groupby("Piloto")["Puntos"].sum().reset_index()
-                tabla_campeonato = pd.merge(tabla_campeonato, peor_ronda, on="Piloto")
-                tabla_campeonato["Puntos"] = tabla_campeonato["Puntos"] - tabla_campeonato["Puntos_Min"]
-                tabla_campeonato = tabla_campeonato[["Piloto", "Puntos"]]
+# --- TABLA CAMPEONATO (AJUSTADA CON AUSENCIAS EN 0) ---
+            # Aseguramos que todos los pilotos tengan filas para todas las fechas reales del campeonato
+            if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
+                registros_completos_tabla = []
+                for f_real in fechas_reales:
+                    df_f = df_global[df_global["Fecha"] == f_real] if "Fecha" in df_global.columns else pd.DataFrame()
+                    for piloto in todos_pilotos:
+                        df_piloto_f = df_f[df_f["Piloto"] == piloto] if not df_f.empty else pd.DataFrame()
+                        pts_f = float(df_piloto_f["Puntos"].sum()) if not df_piloto_f.empty else 0.0
+                        registros_completos_tabla.append({
+                            "Piloto": piloto,
+                            "Fecha": f_real,
+                            "Puntos": pts_f
+                        })
+                df_campeonato_completo = pd.DataFrame(registros_completos_tabla)
             else:
-                tabla_campeonato = df_global.groupby("Piloto")["Puntos"].sum().reset_index()
+                df_campeonato_completo = df_global.copy()
+
+            col_fecha = "Fecha" if "Fecha" in df_campeonato_completo.columns else "Circuito"
+
+            if aplicar_descarte:
+                puntos_por_ronda = df_campeonato_completo.groupby(["Piloto", col_fecha])["Puntos"].sum().reset_index()
+                
+                # Descontamos la peor ronda de cada piloto (si tiene 2 o más fechas registradas)
+                tabla_campeonato_list = []
+                for piloto, grupo in puntos_por_ronda.groupby("Piloto"):
+                    puntos_fechas_piloto = grupo["Puntos"].tolist()
+                    suma_total = sum(puntos_fechas_piloto)
+                    
+                    if len(puntos_fechas_piloto) >= 2:
+                        peor_val = min(puntos_fechas_piloto)
+                        puntos_netos = suma_total - peor_val
+                    else:
+                        puntos_netos = suma_total
+                        
+                    tabla_campeonato_list.append({"Piloto": piloto, "Puntos": puntos_netos})
+                
+                tabla_campeonato = pd.DataFrame(tabla_campeonato_list)
+            else:
+                tabla_campeonato = df_campeonato_completo.groupby("Piloto")["Puntos"].sum().reset_index()
 
             tabla_campeonato = pd.merge(tabla_campeonato, df_autos, on="Piloto", how="left")
             tabla_campeonato = tabla_campeonato.sort_values(by="Puntos", ascending=False).reset_index(drop=True)
@@ -627,7 +658,7 @@ if seccion_menu == "Resumen General":
         else:
             st.info("Sube archivos de resultados para ver el campeonato.")
 
-    # --- EVOLUCIÓN DEL CAMPEONATO (DESCARTE EXCLUSIVO DE FECHAS > 0) ---
+    # --- EVOLUCIÓN DEL CAMPEONATO (DESCARTE DE LA PEOR FECHA INCLUYENDO AUSENCIAS) ---
     if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
         st.markdown("---")
         with st.container():
@@ -674,7 +705,7 @@ if seccion_menu == "Resumen General":
 
             cantidad_fechas_disputadas = len(fechas_reales)
 
-            # 2. Recorrido acumulando y descontando únicamente la peor fecha con puntos > 0
+            # 2. Recorrido acumulando y descontando únicamente la peor fecha (sea con puntos bajos o 0 por ausencia)
             for idx, f_real in enumerate(fechas_reales):
                 num_fecha = idx + 1
                 nombre_fecha_eje_x = f"Fecha {num_fecha}"
@@ -683,15 +714,15 @@ if seccion_menu == "Resumen General":
                     pts_hasta_aqui = [puntos_por_piloto_fecha.get(piloto, {}).get(f_n, 0.0) for f_n in range(1, num_fecha + 1)]
                     
                     if aplicar_descarte:
-                        # Filtramos estrictamente las fechas con puntos mayores a cero (carreras disputadas)
-                        fechas_con_puntos = [p for p in pts_hasta_aqui if p > 0]
+                        # Tomamos todas las fechas registradas hasta el momento (incluyendo 0s si faltó)
+                        fechas_totales = pts_hasta_aqui
                         
-                        # Si tiene al menos 2 o más fechas con puntos, descuenta la menor de ellas
-                        if len(fechas_con_puntos) >= 2:
-                            peor_fecha_valida = min(fechas_con_puntos)
-                            total_actual = sum(pts_hasta_aqui) - peor_fecha_valida
+                        # Si tiene al menos 2 fechas jugadas/registradas, descarta la menor (el 0 o la peor carrera)
+                        if len(fechas_totales) >= 2:
+                            peor_fecha_valida = min(fechas_totales)
+                            total_actual = sum(fechas_totales) - peor_fecha_valida
                         else:
-                            total_actual = sum(pts_hasta_aqui)
+                            total_actual = sum(fechas_totales)
                     else:
                         total_actual = sum(pts_hasta_aqui)
 
@@ -785,120 +816,6 @@ if seccion_menu == "Resumen General":
                 st.plotly_chart(fig_evolucion, use_container_width=True)
             else:
                 st.info("No hay datos disponibles para mostrar en el gráfico de evolución del campeonato.")
-
-    # --- DESGLOSE POR FECHA / CIRCUITO (ORDENADO CRONOLÓGICAMENTE) ---
-    if 'df_global' in locals() and not df_global.empty:
-        st.markdown("---")
-        st.subheader("📅 Desglose por Fecha / Circuito")
-        
-        # Usamos fechas_reales si existe para mantener el orden cronológico estricto, o respaldamos con circuitos
-        if 'fechas_reales' in locals() and fechas_reales:
-            circuitos_disponibles = [f for f in fechas_reales if f in df_global["Circuito"].unique()]
-            # Por si quedó alguna fuera
-            restantes = [c for c in df_global["Circuito"].unique() if c not in circuitos_disponibles]
-            circuitos_disponibles.extend(sorted(restantes))
-        else:
-            circuitos_disponibles = sorted(circuitos) if 'circuitos' in locals() and circuitos else sorted(df_global["Circuito"].unique())
-        
-        if circuitos_disponibles:
-            circuito_elegido_fecha = st.selectbox("🏁 Seleccionar Fecha / Circuito para ver detalles:", circuitos_disponibles, key="select_circuito_desglose_general")
-            
-            col_sprint, col_carrera = st.columns(2)
-            
-            def consolidar_sesion_fecha(df_sub, es_carrera_principal=False):
-                if df_sub.empty:
-                    return pd.DataFrame()
-                
-                agrupados = []
-                pilotos_en_sesion = df_sub["Piloto"].unique()
-                
-                for pil in pilotos_en_sesion:
-                    df_p = df_sub[df_sub["Piloto"] == pil]
-                    
-                    reg_pos = df_p[~df_p["Tipo"].astype(str).str.lower().str.contains("pole|vuelta|vr", na=False)]
-                    if not reg_pos.empty:
-                        pos_val = reg_pos["Posición"].values[0]
-                        auto_val = reg_pos["Auto"].values[0] if "Auto" in reg_pos.columns else "-"
-                    else:
-                        pos_val = 999
-                        auto_val = df_p["Auto"].values[0] if "Auto" in df_p.columns else "-"
-
-                    pos_salida_val = "-"
-                    if es_carrera_principal and 'df_global' in locals():
-                        df_clasif_piloto = df_global[
-                            (df_global["Circuito"] == circuito_elegido_fecha) & 
-                            (df_global["Piloto"] == pil) & 
-                            (
-                                df_global["Tipo"].astype(str).str.lower().str.contains("clasif|quali|q1|q2|q3", na=False) |
-                                (df_global["Sesion"].astype(str).str.lower().str.contains("clasif|quali", na=False) if "Sesion" in df_global.columns else False)
-                            )
-                        ]
-                        if not df_clasif_piloto.empty:
-                            p_sal = df_clasif_piloto["Posición"].min()
-                            if not pd.isna(p_sal):
-                                pos_salida_val = f"P{int(p_sal)}"
-
-                    extras_txt = []
-                    for _, row_r in df_p.iterrows():
-                        tipo_str = str(row_r.get("Tipo", "")).lower()
-                        pts_r = float(row_r.get("Puntos", 0))
-                        
-                        if "pole" in tipo_str or "clasif" in tipo_str:
-                            if pts_r > 0 and "pole" in tipo_str:
-                                extras_txt.append(f"P: +{int(pts_r) if pts_r.is_integer() else pts_r}")
-                        if "vuelta" in tipo_str or "vr" in tipo_str:
-                            if pts_r > 0:
-                                extras_txt.append(f"Vr: +{int(pts_r) if pts_r.is_integer() else pts_r}")
-
-                    puntos_totales_sesion = df_p["Puntos"].sum()
-                    detalles_extras_str = f" ({', '.join(extras_txt)})" if extras_txt else ""
-                    
-                    try:
-                        pos_int = int(pos_val)
-                    except:
-                        pos_int = 999
-
-                    item_dict = {
-                        "Pos_Sort": pos_int,
-                        "Posición": pos_int if pos_int != 999 else "-",
-                        "Piloto": pil,
-                        "Auto": auto_val,
-                    }
-                    if es_carrera_principal:
-                        item_dict["Clasificación (Salida)"] = pos_salida_val
-                    
-                    item_dict["Puntos"] = f"{int(puntos_totales_sesion) if puntos_totales_sesion.is_integer() else puntos_totales_sesion}{detalles_extras_str}"
-                    agrupados.append(item_dict)
-                
-                df_res = pd.DataFrame(agrupados)
-                if not df_res.empty:
-                    df_res = df_res.sort_values(by="Pos_Sort", ascending=True).drop(columns=["Pos_Sort"]).reset_index(drop=True)
-                return df_res
-
-            with col_sprint:
-                st.markdown("#### ⚡ Sprint")
-                try:
-                    df_sprint_fecha = df_global[(df_global["Circuito"] == circuito_elegido_fecha) & (df_global["Tipo"].str.lower().str.contains("sprint", na=False))]
-                    df_sprint_cons = consolidar_sesion_fecha(df_sprint_fecha, es_carrera_principal=False)
-                    if not df_sprint_cons.empty:
-                        st.dataframe(df_sprint_cons, use_container_width=True, hide_index=True)
-                    else:
-                        st.caption("No hay registros de Sprint para este circuito.")
-                except Exception as e_sprint:
-                    st.caption(f"Error al cargar Sprint: {e_sprint}")
-                    
-            with col_carrera:
-                st.markdown("#### 🏎️ Carrera")
-                try:
-                    df_carrera_fecha = df_global[(df_global["Circuito"] == circuito_elegido_fecha) & (~df_global["Tipo"].str.lower().str.contains("sprint|clasif|quali", na=False))]
-                    df_carrera_cons = consolidar_sesion_fecha(df_carrera_fecha, es_carrera_principal=True)
-                    if not df_carrera_cons.empty:
-                        st.dataframe(df_carrera_cons, use_container_width=True, hide_index=True)
-                    else:
-                        st.caption("No hay registros de Carrera para este circuito.")
-                except Exception as e_carrera:
-                    st.caption(f"Error al cargar Carrera: {e_carrera}")
-
 # --- EVOLUCIÓN DE POSICIONES DE CLASIFICACIÓN (SALIDA - 10 FECHAS) ---
     if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos and 'todos_pilotos' in locals() and todos_pilotos:
         st.markdown("---")
@@ -1015,8 +932,38 @@ if seccion_menu == "Resumen General":
                 )
                 st.plotly_chart(fig_clasif_ev, use_container_width=True)
             else:
-                st.info("No hay datos disponibles para mostrar en el gráfico de clasificación.")
-
+                st.info("No hay datos disponibles para mostrar en el gráfico de clasificación.")  
+                
+# --- RESULTADOS DE SPRINT Y CARRERA (FECHA A FECHA) ---
+    st.subheader("📋 Resultados por Fecha (Sprint y Carrera)")
+    
+    # Selector de tipo de sesión
+    tipo_sesion_elegida = st.selectbox(
+        "Seleccioná el tipo de sesión:",
+        ["Carrera Principal", "Sprint"],
+        key="select_tipo_sesion_resultados"
+    )
+    
+    if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos:
+        circuitos_disp = list(datos_comparativa_tiempos.keys())
+        circuito_sel_res = st.selectbox(
+            "Seleccioná el Gran Premio:",
+            circuitos_disp,
+            key="select_circuito_resultados_general"
+        )
+        
+        if circuito_sel_res:
+            data_gp = datos_comparativa_tiempos[circuito_sel_res]
+            
+            # Mapeamos la selección al nombre de la clave en el diccionario
+            clave_diccionario = "Carrera" if tipo_sesion_elegida == "Carrera Principal" else "Sprint"
+            registros_sesion = data_gp.get(clave_diccionario, [])
+            
+            if registros_sesion:
+                df_res_sesion = pd.DataFrame(registros_sesion)
+                st.dataframe(df_res_sesion, use_container_width=True)
+            else:
+                st.info(f"Aún no hay registros disponibles para la sesión de **{tipo_sesion_elegida}** en el Gran Premio de **{circuito_sel_res}** (es posible que esta fecha aún no se haya corrido).")    
 # --- VISTA: COMPARATIVA DE TIEMPOS ---
 elif seccion_menu == "Comparativa de Tiempos":
     st.subheader("📊 Comparativa Global de Tiempos por Evento")
@@ -1716,100 +1663,437 @@ elif seccion_menu == "Estadísticas":
         st.warning(f"Error generando el gráfico de radar: {e_radar}")
 
 # --- VISTA: PERFIL POR TIPO DE CIRCUITO (RÁPIDO VS TÉCNICO) ---
-elif seccion_menu == "Perfil de Circuitos": 
-    st.subheader("🗺️ Rendimiento por Tipo de Circuito (Rápido vs. Técnico)")
+elif seccion_menu == "Perfil de Circuitos":
+    st.subheader("🗺️ Rendimiento por Tipo de Circuito (Basado en Clasificaciones)")
     st.markdown(
-        "> *Analiza el comportamiento de los pilotos según el ADN del trazado: pistas de velocidad pura (autovías/rectas largas) frente a circuitos trabados o mixtos.*"
+        "> *Analiza el comportamiento y la adaptación de los pilotos según el ADN del trazado, evaluando exclusivamente las sesiones de Clasificación (sin imprevistos de carrera).*"
     )
     
+    # 📌 EXPLICACIÓN METODOLÓGICA CLARA PARA LA COMUNIDAD
+    with st.expander("ℹ️ ¿Cómo se calculan estos valores y el perfil del piloto? (Click para leer)"):
+        st.markdown("""
+        ### Metodología de Análisis de Circuitos
+        Para evitar que los imprevistos de carrera (toques, abandonos o despistes involuntarios) distorsionen el rendimiento real, este análisis se basa **exclusivamente en las sesiones de Clasificación** (la vuelta rápida cronometrada del sábado con pista limpia).
+        
+        **Paso a paso del cálculo:**
+        1. **Clasificación del Trazado:** Cada circuito del torneo se categoriza automáticamente en una de tres familias según su ADN:
+           - ⚡ **Veloces** (Pistas de velocidad pura / autovías / óvalos).
+           - ⚖️ **Mixtos / Equilibrados** (Trazados de intermedia exigencia técnica y velocidad).
+           - 🎯 **Trabados** (Circuitos lentos, técnicos y de máxima exigencia de adherencia).
+        2. **Índice de Rendimiento Relativo (0 a 100):** Por cada sesión de clasificación, se evalúa la posición final obtenida por el piloto en relación al total de inscriptos de esa sesión. Al poleman se le asignan `100 puntos` y la escala desciende proporcionalmente hacia atrás. De esta forma, cada piloto compite contra su propio estándar de rendimiento.
+        3. **Promedio por Categoría de Pista:** El sistema agrupa los puntajes obtenidos por cada piloto según el tipo de circuito donde se consiguieron y calcula un promedio independiente para *Veloces*, *Mixtos* y *Trabados*.
+        4. **Determinación de la Especialidad:** Se compara el puntaje promedio obtenido en cada familia de circuitos. Aquella categoría donde el piloto obtenga su **puntuación más alta** se convierte en su perfil principal (ej. *Especialista en Velocidad Pura*, *Ritmo Equilibrado* o *Especialista en Pistas Trabadas*). Si no hay registros en alguna categoría, el sistema indica limpiamente *"Sin datos"* para mantener la equidad.
+        """)
+
     if datos_comparativa_tiempos:
-        # 1. Definimos una categorización automática o manual de los circuitos de tu torneo
-        clasificacion_circuitos = {
-            "San Luis": "Técnico / Mixto",
-            "Balcarce": "Técnico / Mixto",
-            "San Nicolás": "Rápido / Autovía",
+        import unicodedata
+        
+        def normalizar_texto(texto):
+            if not texto:
+                return ""
+            nfkd_form = unicodedata.normalize('NFKD', str(texto))
+            return "".join([c for c in nfkd_form if not unicodedata.combining(c)]).lower().strip()
+
+        # 🔑 DICCIONARIO PARA UNIFICAR NOMBRES DUPLICADOS
+        equivalencias_nombres = {
+            "fede oris": "Federico Oris",
+            "federico oris": "Federico Oris",
+            "alan lasserre": "Alan Lasserre",
+            "alan245": "Alan Lasserre",
+            # Agregá más variantes acá si encontrás otras en tus planillas:
+            # "nombre viejo": "Nombre Oficial"
+        }
+
+        def normalizar_y_unificar_nombre(nombre_raw):
+            if not nombre_raw:
+                return "Desconocido"
+            nombre_limpio = normalizar_texto(nombre_raw)
+            if nombre_limpio in equivalencias_nombres:
+                return equivalencias_nombres[nombre_limpio]
+            return nombre_raw.strip()
+
+        BASE_DATOS_CIRCUITOS = {
+            # Veloces
+            "Autódromo Oscar y Juan Gálvez": "Veloces", "Buenos Aires": "Veloces",
+            "Autódromo de Rafaela": "Veloces", "Rafaela": "Veloces",
+            "Autódromo de Rafaela (Variante Óvalo Puro sin chicanas)": "Veloces",
+            "Autódromo Toay / Ciudad de Santa Rosa": "Veloces", "Toay": "Veloces",
+            "Autódromo Internacional Termas de Río Hondo": "Veloces", "Termas de Río Hondo": "Veloces",
+            "Autódromo de San Nicolás": "Veloces", "San Nicolás": "Veloces",
+            "Autódromo Rubén Luis Di Palma": "Veloces", "Mar de Ajó": "Veloces",
+            "Autódromo Ciudad de Nueve de Julio": "Veloces", "Nueve de Julio": "Veloces",
+            "Autódromo Juan Manuel Fangio": "Veloces", "Balcarce": "Veloces",
+            "Autódromo Ciudad de Viedma": "Veloces", "Viedma": "Veloces",
+            "Autódromo Parque Centenario": "Veloces", "Neuquén": "Veloces",
+            "Autódromo General San Martín": "Veloces", "Comodoro Rivadavia": "Veloces",
+            "Autódromo Ciudad de Concordia": "Veloces", "Concordia": "Veloces",
+            "Autódromo Hermanos Emiliozzi": "Veloces", "Olavarría": "Veloces",
+            "Autódromo Parque Ciudad de Río Cuarto": "Veloces", "Río Cuarto": "Veloces",
+            "Autódromo El Calafate (Tierra Querida)": "Veloces", "El Calafate": "Veloces",
+            "Autódromo de Las Flores": "Veloces", "Las Flores": "Veloces",
+            "Autódromo Rosendo Hernández": "Veloces", "San Luis": "Veloces",
+
+            # Mixtos / Equilibrados
+            "Autódromo San Juan Villicum": "Mixtos / Equilibrados", "San Juan Villicum": "Mixtos / Equilibrados",
+            "Autódromo Roberto Mouras": "Mixtos / Equilibrados", "La Plata": "Mixtos / Equilibrados",
+            "Autódromo Jorge Ángel Pena": "Mixtos / Equilibrados", "San Martín (Mendoza)": "Mixtos / Equilibrados",
+            "Autódromo Ciudad de Paraná": "Mixtos / Equilibrados", "Paraná": "Mixtos / Equilibrados",
+            "Autódromo de Concepción del Uruguay": "Mixtos / Equilibrados", "Concepción del Uruguay": "Mixtos / Equilibrados",
+            "Autódromo Eusebio Marcilla": "Mixtos / Equilibrados", "Junín": "Mixtos / Equilibrados",
+            "Autódromo Oscar Cabalén": "Mixtos / Equilibrados", "Alta Gracia": "Mixtos / Equilibrados",
+            "Autódromo Ciudad de Oberá": "Mixtos / Equilibrados", "Oberá": "Mixtos / Equilibrados",
+            "Circuito Urbano La Pedrera": "Mixtos / Equilibrados", "Villa Mercedes": "Mixtos / Equilibrados",
+
+            # Trabados
+            "Autódromo Parque de la Velocidad": "Trabados", "San Jorge": "Trabados",
+            "Autódromo Rosamonte": "Trabados", "Posadas": "Trabados",
+            "Autódromo Eduardo Copello (El Zonda)": "Trabados", "Zonda (San Juan)": "Trabados",
+            "Circuito Semipermanente Potrero de los Funes": "Trabados", "Potrero de los Funes": "Trabados",
+            "Autódromo Ciudad de Pigüé": "Trabados", "Pigüé": "Trabados",
+            "Autódromo El Triángulo": "Trabados", "General Roca": "Trabados",
+            "Autódromo Municipal Juan Manuel Fangio": "Trabados", "Rosario": "Trabados",
+            "Autódromo Parque Independencia (Histórico)": "Trabados",
+            "Autódromo Juan Oria": "Trabados", "Marcos Juárez": "Trabados"
         }
         
-        # Permitir al usuario ver la clasificación actual o reasignarla si lo desea
+        base_normalizada = {normalizar_texto(k): v for k, v in BASE_DATOS_CIRCUITOS.items()}
+        
         st.sidebar.markdown("---")
         st.sidebar.subheader("⚙️ Configuración de Pistas")
-        tipo_filtro_pista = st.radio("Filtrar análisis por tipo:", ["Todos", "Rápido / Autovía", "Técnico / Mixto"])
+        tipos_pista_disponibles = ["Todos", "Veloces", "Mixtos / Equilibrados", "Trabados"]
+        tipo_filtro_pista = st.sidebar.radio("Filtrar análisis por tipo:", tipos_pista_disponibles)
         
         perfiles_pilotos = {}
+        circuitos_no_encontrados = set()
         
-        # Procesamos los datos para evaluar el rendimiento relativo por tipo de pista
         for circ, sesiones in datos_comparativa_tiempos.items():
-            tipo_pista = clasificacion_circuitos.get(circ, "Técnico / Mixto")
+            circ_norm = normalizar_texto(circ)
+            
+            if circ_norm not in base_normalizada:
+                circuitos_no_encontrados.add(circ)
+                continue
+                
+            tipo_pista = base_normalizada[circ_norm]
             
             if tipo_filtro_pista != "Todos" and tipo_filtro_pista != tipo_pista:
                 continue
                 
-            for tipo_sesion in ["Carrera", "Clasificación"]:
-                if tipo_sesion in sesiones:
-                    items = sesiones[tipo_sesion]
-                    lider_ms = None
+            # EXCLUSIVO: Solo procesamos la sesión de Clasificación
+            if "Clasificación" in sesiones:
+                items = sesiones["Clasificación"]
+                total_autos = len(items)
+                
+                for idx, reg in enumerate(items):
+                    match_piloto = re.search(r'[—\-]\s*(.+)$', reg['Pos'])
+                    p_nombre_raw = match_piloto.group(1).strip() if match_piloto else reg['Pos']
                     
-                    for idx, reg in enumerate(items):
-                        match_piloto = re.search(r'[—\-]\s*(.+)$', reg['Pos'])
-                        p_nombre_raw = match_piloto.group(1).strip() if match_piloto else reg['Pos']
+                    # 🔑 UNIFICAMOS EL NOMBRE ACÁ
+                    p_nombre_oficial = normalizar_y_unificar_nombre(p_nombre_raw)
+                    
+                    t_str = reg['Tiempo']
+                    try:
+                        partes_min = t_str.split(':')
+                        minutos = int(partes_min[0])
+                        partes_seg = partes_min[1].split(',')
+                        segundos = int(partes_seg[0])
+                        milisegundos = int(partes_seg[1])
+                        t_ms = (minutos * 60 * 1000) + (segundos * 1000) + milisegundos
+                    except:
+                        t_ms = None
                         
-                        t_str = reg['Tiempo']
-                        try:
-                            partes_min = t_str.split(':')
-                            minutos = int(partes_min[0])
-                            partes_seg = partes_min[1].split(',')
-                            segundos = int(partes_seg[0])
-                            milisegundos = int(partes_seg[1])
-                            t_ms = (minutos * 60 * 1000) + (segundos * 1000) + milisegundos
-                        except:
-                            t_ms = None
-                            
-                        if t_ms and t_ms > 0:
-                            if idx == 0:
-                                lider_ms = t_ms
-                            
-                            eficiencia = (lider_ms / t_ms) * 100
-                            
-                            if p_nombre_raw not in perfiles_pilotos:
-                                perfiles_pilotos[p_nombre_raw] = {
-                                    "Rápido / Autovía": {"suma": 0, "cant": 0},
-                                    "Técnico / Mixto": {"suma": 0, "cant": 0}
-                                }
-                            
-                            perfiles_pilotos[p_nombre_raw][tipo_pista]["suma"] += eficiencia
-                            perfiles_pilotos[p_nombre_raw][tipo_pista]["cant"] += 1
+                    if t_ms and t_ms > 0:
+                        rendimiento_clasificacion = max(0, 100 * (1 - (idx / max(1, total_autos))))
+                        
+                        if p_nombre_oficial not in perfiles_pilotos:
+                            perfiles_pilotos[p_nombre_oficial] = {
+                                "Veloces": {"suma": 0, "cant": 0},
+                                "Mixtos / Equilibrados": {"suma": 0, "cant": 0},
+                                "Trabados": {"suma": 0, "cant": 0}
+                            }
+                        
+                        if tipo_pista in perfiles_pilotos[p_nombre_oficial]:
+                            perfiles_pilotos[p_nombre_oficial][tipo_pista]["suma"] += rendimiento_clasificacion
+                            perfiles_pilotos[p_nombre_oficial][tipo_pista]["cant"] += 1
 
-        # Mostramos los resultados en tabla y tarjetas
+        if circuitos_no_encontrados:
+            st.error(f"⚠️ **Atención:** Los siguientes circuitos no tienen cargado el tipo de trazado en la base de datos maestra: `{', '.join(circuitos_no_encontrados)}`.")
+
         if perfiles_pilotos:
-            st.markdown("### 📊 Índice de Competitividad por ADN de Pista")
-            st.caption("*(Valores cercanos al 100% indican rendimiento de punta en ese tipo de trazado)*")
+            st.markdown("### 📊 Índice de Velocidad Pura y Clasificación por ADN de Pista")
+            st.caption("*(Evaluación estricta a una vuelta cronometrada)*")
             
             datos_tabla = []
             for piloto, tipos in perfiles_pilotos.items():
-                q_rap = tipos["Rápido / Autovía"]
-                prom_rap = (q_rap["suma"] / q_rap["cant"]) if q_rap["cant"] > 0 else 0
+                prom_vel = (tipos["Veloces"]["suma"] / tipos["Veloces"]["cant"]) if tipos["Veloces"]["cant"] > 0 else None
+                prom_mix = (tipos["Mixtos / Equilibrados"]["suma"] / tipos["Mixtos / Equilibrados"]["cant"]) if tipos["Mixtos / Equilibrados"]["cant"] > 0 else None
+                prom_trab = (tipos["Trabados"]["suma"] / tipos["Trabados"]["cant"]) if tipos["Trabados"]["cant"] > 0 else None
                 
-                q_tec = tipos["Técnico / Mixto"]
-                prom_tec = (q_tec["suma"] / q_tec["cant"]) if q_tec["cant"] > 0 else 0
+                proms_validos = {
+                    "⚡ Velocista Puro (Clasificación)": prom_vel,
+                    "⚖ Ritmo Equilibrado (Clasificación)": prom_mix,
+                    "🎯 Especialista en Pistas Trabadas (Clasificación)": prom_trab
+                }
+                proms_validos = {k: v for k, v in proms_validos.items() if v is not None}
+                
+                if proms_validos:
+                    mejor_especialidad = max(proms_validos, key=proms_validos.get)
+                else:
+                    mejor_especialidad = "Sin datos suficientes"
                 
                 datos_tabla.append({
                     "Piloto": piloto,
-                    "Pistas Rápidas (%)": round(prom_rap, 2),
-                    "Pistas Técnicas (%)": round(prom_tec, 2),
-                    "Especialidad": "⚡ Velocidad Pura" if prom_rap > prom_tec else "🎯 Ritmo y Técnica"
+                    "Veloces": f"{round(prom_vel, 1)} pts" if prom_vel is not None else "Sin datos",
+                    "Mixtos": f"{round(prom_mix, 1)} pts" if prom_mix is not None else "Sin datos",
+                    "Trabados": f"{round(prom_trab, 1)} pts" if prom_trab is not None else "Sin datos",
+                    "Especialidad Sábados": mejor_especialidad,
+                    "_sort_val": prom_vel if prom_vel is not None else 0
                 })
             
             df_perfiles = pd.DataFrame(datos_tabla)
-            df_perfiles = df_perfiles.sort_values(by="Pistas Rápidas (%)", ascending=False).reset_index(drop=True)
+            df_perfiles = df_perfiles.sort_values(by="_sort_val", ascending=False).drop(columns=["_sort_val"]).reset_index(drop=True)
             
             st.dataframe(df_perfiles, use_container_width=True)
             
-            st.markdown("### 📝 Perfiles Destacados de la Comunidad")
+            st.markdown("### 📝 Perfiles de Clasificación Destacados")
             for _, row in df_perfiles.iterrows():
-                piloto = row["Piloto"]
-                esp = row["Especialidad"]
-                st.info(f"👤 **{piloto}** — Perfil principal: **{esp}** (Rápidas: `{row['Pistas Rápidas (%)']}%` | Técnicas: `{row['Pistas Técnicas (%)']}%`)")
+                st.info(f"👤 **{row['Piloto']}** — Especialidad sábados: **{row['Especialidad Sábados']}** (Veloces: `{row['Veloces']}` | Mixtos: `{row['Mixtos']}` | Trabados: `{row['Trabados']}`)")
         else:
-            st.warning("No hay suficientes datos cruzados para generar los perfiles con el filtro seleccionado.")
+            if not circuitos_no_encontrados:
+                st.warning("No hay suficientes datos de clasificación para generar los perfiles con el filtro seleccionado.")
     else:
         st.info("Sube los datos del campeonato para habilitar el análisis de perfiles de circuito.")
+
+elif seccion_menu == "⚔️ Premios Especiales":
+    st.subheader("⚔️ Premios Especiales: Galardones de la Temporada")
+    st.markdown(
+        "> *Reconocimientos estadísticos al rendimiento puro, la inteligencia en carrera y las remontadas memorables.*"
+    )
+
+    # -------------------------------------------------------------
+    # 1. EL KÁISER DE LA LARGADA
+    # -------------------------------------------------------------
+    kaiser_largada = pd.DataFrame()
+    if 'df_vueltas_global' in locals() and not df_vueltas_global.empty:
+        df_carrera_vueltas = df_vueltas_global[df_vueltas_global["Tipo"] == "Carrera"].copy()
+        
+        if not df_carrera_vueltas.empty:
+            largada_stats_list = []
+            for circuito, df_circ in df_carrera_vueltas.groupby("Circuito"):
+                df_circ = df_circ.sort_values(by=["Piloto", "Vuelta"])
+                df_circ["Tiempo_Acumulado"] = df_circ.groupby("Piloto")["TiempoMs"].cumsum()
+                
+                df_v1 = df_circ[df_circ["Vuelta"] == 1].sort_values(by="Tiempo_Acumulado").reset_index(drop=True)
+                df_v1["Pos_V1"] = df_v1.index + 1
+                
+                df_v2 = df_circ[df_circ["Vuelta"] == 2].sort_values(by="Tiempo_Acumulado").reset_index(drop=True)
+                df_v2["Pos_V2"] = df_v2.index + 1
+                
+                if not df_v1.empty and not df_v2.empty:
+                    df_larga = pd.merge(df_v1[["Piloto", "Pos_V1"]], df_v2[["Piloto", "Pos_V2"]], on="Piloto", how="inner")
+                    df_larga["Puestos_Ganados"] = df_larga["Pos_V1"] - df_larga["Pos_V2"]
+                    df_larga["Circuito"] = circuito
+                    largada_stats_list.append(df_larga)
+
+            if largada_stats_list:
+                df_todas_largadas = pd.concat(largada_stats_list, ignore_index=True)
+                if "Piloto" in df_todas_largadas.columns:
+                    kaiser_largada = df_todas_largadas.groupby("Piloto")["Puestos_Ganados"].sum().reset_index()
+                    kaiser_largada = kaiser_largada.sort_values(by="Puestos_Ganados", ascending=False).reset_index(drop=True)
+
+    # -------------------------------------------------------------
+    # 2. EL REY DE LA POLE (Calculado desde df_global o datos_comparativa_tiempos)
+    # -------------------------------------------------------------
+    df_poles = pd.DataFrame()
+    try:
+        if 'df_global' in locals() and not df_global.empty:
+            df_p_filt = df_global[
+                df_global["Tipo"].astype(str).str.lower().str.contains("clasif|quali|q1|q2|q3|pole", na=False) & 
+                (df_global["Posición"] == 1)
+            ]
+            if not df_p_filt.empty:
+                df_poles = df_p_filt.groupby("Piloto").size().reset_index(name="Poles")
+                df_poles = df_poles.sort_values(by="Poles", ascending=False).reset_index(drop=True)
+    except Exception:
+        pass
+
+    # -------------------------------------------------------------
+    # 3. EL REY DE LA REMONTADA Y PODIOS (Usando df_global)
+    # -------------------------------------------------------------
+    df_rem_sum = pd.DataFrame()
+    conteo_podios = pd.DataFrame()
+    try:
+        if 'df_global' in locals() and not df_global.empty:
+            # Filtramos carreras principales
+            df_carreras = df_global[~df_global["Tipo"].astype(str).str.lower().str.contains("sprint|clasif|quali|pole|vuelta|vr", na=False)].copy()
+            if not df_carreras.empty and "Posición" in df_carreras.columns:
+                remontadas_list = []
+                podios_list = []
+                
+                for circuito, df_circ in df_carreras.groupby("Circuito"):
+                    for pil in df_circ["Piloto"].unique():
+                        df_p_c = df_circ[df_circ["Piloto"] == pil]
+                        pos_carrera = df_p_c["Posición"].values[0]
+                        
+                        # Buscamos su posición de salida (clasif) en ese mismo circuito
+                        df_clasif_piloto = df_global[
+                            (df_global["Circuito"] == circuito) & 
+                            (df_global["Piloto"] == pil) & 
+                            df_global["Tipo"].astype(str).str.lower().str.contains("clasif|quali|q1|q2|q3", na=False)
+                        ]
+                        
+                        if not df_clasif_piloto.empty:
+                            pos_salida = df_clasif_piloto["Posición"].min()
+                            try:
+                                rem = int(pos_salida) - int(pos_carrera)
+                                remontadas_list.append({"Piloto": pil, "Remontada": rem})
+                            except:
+                                pass
+                        
+                        try:
+                            if int(pos_carrera) <= 3:
+                                podios_list.append({"Piloto": pil})
+                        except:
+                            pass
+                
+                if remontadas_list:
+                    df_r_temp = pd.DataFrame(remontadas_list)
+                    df_rem_sum = df_r_temp.groupby("Piloto")["Remontada"].sum().reset_index()
+                    df_rem_sum = df_rem_sum.sort_values(by="Remontada", ascending=False).reset_index(drop=True)
+                
+                if podios_list:
+                    df_p_temp = pd.DataFrame(podios_list)
+                    conteo_podios = df_p_temp.groupby("Piloto").size().reset_index(name="Podios")
+                    conteo_podios = conteo_podios.sort_values(by="Podios", ascending=False).reset_index(drop=True)
+    except Exception:
+        pass
+
+
+    # -------------------------------------------------------------
+    # RENDERIZADO EN PANTALLA (Columnas de Streamlit)
+    # -------------------------------------------------------------
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("### 🚀 El Káiser de la Largada")
+        st.caption("Saldo neto de posiciones ganadas entre el final de la vuelta 1 y la vuelta 2.")
+        if not kaiser_largada.empty:
+            df_k_view = kaiser_largada.copy()
+            df_k_view.columns = ["Piloto", "Puestos Netos Ganados"]
+            st.dataframe(df_k_view, use_container_width=True)
+            top_k = kaiser_largada.iloc[0]
+            st.success(f"🏆 **{top_k['Piloto']}** lidera con **+{int(top_k['Puestos_Ganados'])}** puestos ganados.")
+        else:
+            st.info("Sin datos suficientes para calcular largadas.")
+
+    with col2:
+            st.markdown("### 👑 El Rey de la Pole")
+            st.caption("Pilotos con mayor cantidad de mejores tiempos en clasificación.")
+            
+            df_poles = pd.DataFrame()
+            try:
+                if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos:
+                    poles_list = []
+                    for circuito_name, circuito_data in datos_comparativa_tiempos.items():
+                        registros_clasif = circuito_data.get("Clasificación", [])
+                        for reg in registros_clasif:
+                            texto_pos = str(reg.get("Pos", ""))
+                            if "—" in texto_pos:
+                                partes = texto_pos.split("—")
+                                nombre_p = partes[-1].strip()
+                                import re
+                                nums = re.findall(r'\d+', partes[0])
+                                if nums:
+                                    p_num = int(nums[0])
+                                    # Si hizo P1 en la clasificación de este circuito, cuenta como Pole
+                                    if p_num == 1:
+                                        poles_list.append({"Piloto": nombre_p})
+                    
+                    if poles_list:
+                        df_p_temp = pd.DataFrame(poles_list)
+                        df_poles = df_p_temp.groupby("Piloto").size().reset_index(name="Poles")
+                        df_poles = df_poles.sort_values(by="Poles", ascending=False).reset_index(drop=True)
+            except Exception:
+                pass
+
+            if not df_poles.empty:
+                st.dataframe(df_poles, use_container_width=True)
+                top_pole = df_poles.iloc[0]
+                st.success(f"🏆 **{top_pole['Piloto']}** manda en los sábados con **{int(top_pole['Poles'])}** pole(s).")
+            else:
+                st.info("No se encontraron registros de poles en la comparativa de tiempos.")
+
+    st.markdown("---")
+    
+    col3, col4 = st.columns(2)
+
+    with col3:
+            st.markdown("### 🧗 El Rey de la Remontada")
+            st.caption("Mayor avance de posiciones desde la clasificación hasta la bandera a cuadros en carrera.")
+            
+            df_rem_sum = pd.DataFrame()
+            try:
+                if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos:
+                    remontadas_list = []
+                    for circuito_name, circuito_data in datos_comparativa_tiempos.items():
+                        # Obtenemos clasificación y carrera de este circuito
+                        reg_clasif = circuito_data.get("Clasificación", [])
+                        reg_carrera = circuito_data.get("Carrera", [])
+                        
+                        # Mapear posición de salida (Clasificación) por piloto
+                        pos_salida_dict = {}
+                        for reg in reg_clasif:
+                            texto_pos = str(reg.get("Pos", ""))
+                            if "—" in texto_pos:
+                                partes = texto_pos.split("—")
+                                nombre_p = partes[-1].strip()
+                                import re
+                                nums = re.findall(r'\d+', partes[0])
+                                if nums:
+                                    pos_salida_dict[nombre_p.lower()] = int(nums[0])
+                                    
+                        # Mapear posición final (Carrera) por piloto
+                        pos_carrera_dict = {}
+                        for reg in reg_carrera:
+                            texto_pos = str(reg.get("Pos", ""))
+                            if "—" in texto_pos:
+                                partes = texto_pos.split("—")
+                                nombre_p = partes[-1].strip()
+                                import re
+                                nums = re.findall(r'\d+', partes[0])
+                                if nums:
+                                    pos_carrera_dict[nombre_p.lower()] = int(nums[0])
+                                    
+                        # Calcular la remontada (Salida - Carrera) para cada piloto en este circuito
+                        for p_lower, p_sal in pos_salida_dict.items():
+                            if p_lower in pos_carrera_dict:
+                                p_car = pos_carrera_dict[p_lower]
+                                # Buscamos el nombre original limpio (sin importar minúsculas/mayúsculas)
+                                nombre_original = [r.split("—")[-1].strip() for r in reg_clasif if r.split("—")[-1].strip().lower() == p_lower]
+                                if nombre_original:
+                                    nom_piloto = nombre_original[0]
+                                    rem = p_sal - p_car  # Positivo si avanzó, negativo si retrocedió
+                                    remontadas_list.append({"Piloto": nom_piloto, "Remontada": rem})
+                    
+                    if remontadas_list:
+                        df_r_temp = pd.DataFrame(remontadas_list)
+                        df_rem_sum = df_r_temp.groupby("Piloto")["Remontada"].sum().reset_index()
+                        df_rem_sum = df_rem_sum.sort_values(by="Remontada", ascending=False).reset_index(drop=True)
+            except Exception:
+                pass
+
+            if not df_rem_sum.empty:
+                st.dataframe(df_rem_sum, use_container_width=True)
+                top_rem = df_rem_sum.iloc[0]
+                st.success(f"🏆 **{top_rem['Piloto']}** es el rey del domingo con **+{int(top_rem['Remontada'])}** puestos recuperados en total.")
+            else:
+                st.info("Datos de remontadas pendientes de sincronización.")
+
+    with col4:
+        st.markdown("### 🍾 El Imán de Podios")
+        st.caption("Pilotos con mayor cantidad de presencias en el podio (Top 3 de carrera).")
+        if not conteo_podios.empty:
+            st.dataframe(conteo_podios, use_container_width=True)
+            top_podio = conteo_podios.iloc[0]
+            st.success(f"🏆 **{top_podio['Piloto']}** lidera los podios con **{int(top_podio['Podios'])}** visitas al estrado.")
+        else:
+            st.info("Cargando datos de podios...")
