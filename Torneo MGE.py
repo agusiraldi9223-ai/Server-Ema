@@ -932,8 +932,38 @@ if seccion_menu == "Resumen General":
                 )
                 st.plotly_chart(fig_clasif_ev, use_container_width=True)
             else:
-                st.info("No hay datos disponibles para mostrar en el gráfico de clasificación.")
+                st.info("No hay datos disponibles para mostrar en el gráfico de clasificación.")  
+                
+# --- RESULTADOS DE SPRINT Y CARRERA (FECHA A FECHA) ---
+    st.subheader("📋 Resultados por Fecha (Sprint y Carrera)")
     
+    # Selector de tipo de sesión
+    tipo_sesion_elegida = st.selectbox(
+        "Seleccioná el tipo de sesión:",
+        ["Carrera Principal", "Sprint"],
+        key="select_tipo_sesion_resultados"
+    )
+    
+    if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos:
+        circuitos_disp = list(datos_comparativa_tiempos.keys())
+        circuito_sel_res = st.selectbox(
+            "Seleccioná el Gran Premio:",
+            circuitos_disp,
+            key="select_circuito_resultados_general"
+        )
+        
+        if circuito_sel_res:
+            data_gp = datos_comparativa_tiempos[circuito_sel_res]
+            
+            # Mapeamos la selección al nombre de la clave en el diccionario
+            clave_diccionario = "Carrera" if tipo_sesion_elegida == "Carrera Principal" else "Sprint"
+            registros_sesion = data_gp.get(clave_diccionario, [])
+            
+            if registros_sesion:
+                df_res_sesion = pd.DataFrame(registros_sesion)
+                st.dataframe(df_res_sesion, use_container_width=True)
+            else:
+                st.info(f"Aún no hay registros disponibles para la sesión de **{tipo_sesion_elegida}** en el Gran Premio de **{circuito_sel_res}** (es posible que esta fecha aún no se haya corrido).")    
 # --- VISTA: COMPARATIVA DE TIEMPOS ---
 elif seccion_menu == "Comparativa de Tiempos":
     st.subheader("📊 Comparativa Global de Tiempos por Evento")
