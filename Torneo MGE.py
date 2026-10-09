@@ -2121,7 +2121,7 @@ elif seccion_menu == "⚔️ Premios Especiales":
                         reg_clasif = circuito_data.get("Clasificación", [])
                         reg_carrera = circuito_data.get("Carrera", [])
                         
-                        # 1. Mapear posición de salida desde la Clasificación
+                        # 1. Mapear posición de salida desde la Clasificación normalizando el nombre
                         pos_salida_dict = {}
                         nombre_original_dict = {}
                         for reg in reg_clasif:
@@ -2135,11 +2135,12 @@ elif seccion_menu == "⚔️ Premios Especiales":
                                     nums = re.findall(r'\d+', partes[0])
                                     if nums:
                                         p_num = int(nums[0])
-                                        p_lower = nombre_p.lower()
-                                        pos_salida_dict[p_lower] = p_num
-                                        nombre_original_dict[p_lower] = nombre_p
+                                        # Normalizamos la clave a minúsculas y sin espacios extras
+                                        p_key = nombre_p.lower().strip()
+                                        pos_salida_dict[p_key] = p_num
+                                        nombre_original_dict[p_key] = nombre_p
                                         
-                        # 2. Mapear posición final desde la Carrera
+                        # 2. Mapear posición final desde la Carrera normalizando el nombre
                         pos_carrera_dict = {}
                         for reg in reg_carrera:
                             if isinstance(reg, dict):
@@ -2152,16 +2153,16 @@ elif seccion_menu == "⚔️ Premios Especiales":
                                     nums = re.findall(r'\d+', partes[0])
                                     if nums:
                                         p_num = int(nums[0])
-                                        p_lower = nombre_p.lower()
-                                        pos_carrera_dict[p_lower] = p_num
+                                        p_key = nombre_p.lower().strip()
+                                        pos_carrera_dict[p_key] = p_num
                                         
-                        # 3. Calcular la remontada real por piloto en este circuito
-                        for p_lower, p_sal in pos_salida_dict.items():
-                            if p_lower in pos_carrera_dict:
-                                p_car = pos_carrera_dict[p_lower]
-                                nom_piloto = nombre_original_dict.get(p_lower, p_lower)
+                        # 3. Calcular la remontada real cruzando por la clave normalizada
+                        for p_key, p_sal in pos_salida_dict.items():
+                            if p_key in pos_carrera_dict:
+                                p_car = pos_carrera_dict[p_key]
+                                nom_piloto = nombre_original_dict.get(p_key, p_key)
                                 
-                                # Salida - Llegada (Ej: Salió 8 - Llegó 5 = +3 puestos ganados)
+                                # Salida - Llegada (Ej: Salió 6 - Llegó 5 = +1 puesto)
                                 rem = p_sal - p_car
                                 
                                 remontadas_list.append({
