@@ -1998,8 +1998,8 @@ elif seccion_menu == "⚔️ Premios Especiales":
     except Exception:
         pass
 
-    # -------------------------------------------------------------
-    # 3. EL REY DE LA REMONTADA Y PODIOS (Usando df_global)
+# -------------------------------------------------------------
+    # 3. EL REY DE LA REMONTADA Y PODIOS (Usando df_global con Debug)
     # -------------------------------------------------------------
     df_rem_sum = pd.DataFrame()
     conteo_podios = pd.DataFrame()
@@ -2007,49 +2007,52 @@ elif seccion_menu == "⚔️ Premios Especiales":
         if 'df_global' in locals() and not df_global.empty:
             # Filtramos carreras principales
             df_carreras = df_global[~df_global["Tipo"].astype(str).str.lower().str.contains("sprint|clasif|quali|pole|vuelta|vr", na=False)].copy()
-            if not df_carreras.empty and "Posición" in df_carreras.columns:
-                remontadas_list = []
-                podios_list = []
-                
-                for circuito, df_circ in df_carreras.groupby("Circuito"):
-                    for pil in df_circ["Piloto"].unique():
-                        df_p_c = df_circ[df_circ["Piloto"] == pil]
-                        pos_carrera = df_p_c["Posición"].values[0]
-                        
-                        # Buscamos su posición de salida (clasif) en ese mismo circuito
-                        df_clasif_piloto = df_global[
-                            (df_global["Circuito"] == circuito) & 
-                            (df_global["Piloto"] == pil) & 
-                            df_global["Tipo"].astype(str).str.lower().str.contains("clasif|quali|q1|q2|q3", na=False)
-                        ]
-                        
-                        if not df_clasif_piloto.empty:
-                            pos_salida = df_clasif_piloto["Posición"].min()
-                            try:
-                                rem = int(pos_salida) - int(pos_carrera)
-                                remontadas_list.append({"Piloto": pil, "Remontada": rem})
-                            except:
-                                pass
-                        
+            
+            remontadas_list = []
+            podios_list = []
+            
+            for circuito, df_circ in df_carreras.groupby("Circuito"):
+                for pil in df_circ["Piloto"].unique():
+                    df_p_c = df_circ[df_circ["Piloto"] == pil]
+                    if df_p_c.empty:
+                        continue
+                    pos_carrera = df_p_c["Posición"].values[0]
+                    
+                    # Buscamos su posición de salida en la clasificación de este circuito de forma más amplia
+                    df_clasif_piloto = df_global[
+                        (df_global["Circuito"] == circuito) & 
+                        (df_global["Piloto"] == pil) & 
+                        (
+                            df_global["Tipo"].astype(str).str.lower().str.contains("clasif|quali|q1|q2|q3|grid|salida", na=False) |
+                            (df_global["Sesion"].astype(str).str.lower().str.contains("clasif|quali", na=False) if "Sesion" in df_global.columns else False)
+                        )
+                    ]
+                    
+                    if not df_clasif_piloto.empty:
+                        pos_salida = df_clasif_piloto["Posición"].min()
                         try:
-                            if int(pos_carrera) <= 3:
-                                podios_list.append({"Piloto": pil})
+                            rem = int(pos_salida) - int(pos_carrera)
+                            remontadas_list.append({"Piloto": pil, "Remontada": rem})
                         except:
                             pass
-                
-                if remontadas_list:
-                    df_r_temp = pd.DataFrame(remontadas_list)
-                    df_rem_sum = df_r_temp.groupby("Piloto")["Remontada"].sum().reset_index()
-                    df_rem_sum = df_rem_sum.sort_values(by="Remontada", ascending=False).reset_index(drop=True)
-                
-                if podios_list:
-                    df_p_temp = pd.DataFrame(podios_list)
-                    conteo_podios = df_p_temp.groupby("Piloto").size().reset_index(name="Podios")
-                    conteo_podios = conteo_podios.sort_values(by="Podios", ascending=False).reset_index(drop=True)
-    except Exception:
-        pass
-
-
+                    
+                    try:
+                        if int(pos_carrera) <= 3:
+                            podios_list.append({"Piloto": pil})
+                    except:
+                        pass
+            
+            if remontadas_list:
+                df_r_temp = pd.DataFrame(remontadas_list)
+                df_rem_sum = df_r_temp.groupby("Piloto")["Remontada"].sum().reset_index()
+                df_rem_sum = df_rem_sum.sort_values(by="Remontada", ascending=False).reset_index(drop=True)
+            
+            if podios_list:
+                df_p_temp = pd.DataFrame(podios_list)
+                conteo_podios = df_p_temp.groupby("Piloto").size().reset_index(name="Podios")
+                conteo_podios = conteo_podios.sort_values(by="Podios", ascending=False).reset_index(drop=True)
+    except Exception as e:
+        st.error(f"Error en procesamiento global: {e}")
     # -------------------------------------------------------------
     # RENDERIZADO EN PANTALLA (Columnas de Streamlit)
     # -------------------------------------------------------------
@@ -2106,25 +2109,25 @@ elif seccion_menu == "⚔️ Premios Especiales":
 
     st.markdown("---")
     
-        col3, col4 = st.columns(2)
-        with col3:
-            st.markdown("### 🧗 El Rey de la Remontada")
-            st.caption("Balance de posiciones (Clasificación vs. Bandera a cuadros en carrera).")
+    col3, col4 = st.columns(2)
+    with col3:
+        st.markdown("### 🧗 El Rey de la Remontada")
+        st.caption("Balance de posiciones (Clasificación vs. Bandera a cuadros en carrera).")
+        
+        # Usamos directamente el df_rem_sum calculado de forma global arriba
+        if 'df_rem_sum' in locals() and not df_rem_sum.empty:
+            df_rem_view = df_rem_sum.copy()
+            if "Remontada" in df_rem_view.columns:
+                df_rem_view.columns = ["Piloto", "Balance Puestos"]
             
-            # Usamos directamente el df_rem_sum calculado de forma global arriba
-            if 'df_rem_sum' in locals() and not df_rem_sum.empty:
-                df_rem_view = df_rem_sum.copy()
-                if "Remontada" in df_rem_view.columns:
-                    df_rem_view.columns = ["Piloto", "Balance Puestos"]
-                
-                st.dataframe(df_rem_view, use_container_width=True, hide_index=True)
-                
-                top_rem = df_rem_view.iloc[0]
-                val_top = int(top_rem['Balance Puestos'])
-                simbolo = "+" if val_top > 0 else ""
-                st.success(f"🏆 **{top_rem['Piloto']}** lidera el balance con un total de **{simbolo}{val_top}** puestos netos.")
-            else:
-                st.info("Datos de posiciones pendientes de sincronización.")
+            st.dataframe(df_rem_view, use_container_width=True, hide_index=True)
+            
+            top_rem = df_rem_view.iloc[0]
+            val_top = int(top_rem['Balance Puestos'])
+            simbolo = "+" if val_top > 0 else ""
+            st.success(f"🏆 **{top_rem['Piloto']}** lidera el balance con un total de **{simbolo}{val_top}** puestos netos.")
+        else:
+            st.info("Datos de posiciones pendientes de sincronización.")
 
     with col4:
         st.markdown("### 🍾 El Imán de Podios")
