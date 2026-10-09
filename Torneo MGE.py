@@ -2117,55 +2117,65 @@ elif seccion_menu == "⚔️ Premios Especiales":
                 if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos:
                     remontadas_list = []
                     
-                    def extraer_posicion_limpia(texto_pos):
-                        import re
-                        # Limpiamos el texto antes del guion para sacar únicamente el número de posición
-                        partes = str(texto_pos).split("—")
-                        if len(partes) > 0:
-                            nums = re.findall(r'\d+', partes[0])
-                            if nums:
-                                return int(nums[0])
-                        return None
-
                     for circuito_name, circuito_data in datos_comparativa_tiempos.items():
                         reg_clasif = circuito_data.get("Clasificación", [])
                         reg_carrera = circuito_data.get("Carrera", [])
                         
-                        # Mapear posición de salida (Clasificación)
+                        # 1. Mapear posición de salida desde la Clasificación de este circuito
                         pos_salida_dict = {}
                         nombre_original_dict = {}
                         for reg in reg_clasif:
-                            texto_pos = str(reg.get("Pos", ""))
-                            if "—" in texto_pos:
-                                partes = texto_pos.split("—")
-                                nombre_p = partes[-1].strip()
-                                p_num = extraer_posicion_limpia(texto_pos)
-                                if p_num is not None:
-                                    p_lower = nombre_p.lower()
-                                    pos_salida_dict[p_lower] = p_num
-                                    nombre_original_dict[p_lower] = nombre_p
+                            # Si 'reg' es un diccionario (como viene en datos_comparativa_tiempos)
+                            if isinstance(reg, dict):
+                                # Buscamos el nombre del piloto (suele estar al final del string 'Pos' o en una clave específica)
+                                texto_pos = str(reg.get("Pos", ""))
+                                # Intentamos extraer el nombre del piloto del formato habitual "P2 — NombrePiloto" o similar
+                                if "—" in texto_pos:
+                                    partes = texto_pos.split("—")
+                                    nombre_p = partes[-1].strip()
+                                else:
+                                    nombre_p = str(reg.get("Piloto", "")).strip()
                                     
-                        # Mapear posición final (Carrera)
+                                if nombre_p:
+                                    # Buscamos el número de posición exacto en el texto de clasificación
+                                    import re
+                                    nums = re.findall(r'\d+', texto_pos)
+                                    if nums:
+                                        # El primer número suele ser la posición
+                                        p_num = int(nums[0])
+                                        p_lower = nombre_p.lower()
+                                        pos_salida_dict[p_lower] = p_num
+                                        nombre_original_dict[p_lower] = nombre_p
+
+                        # 2. Mapear posición de llegada y auto desde la Carrera
                         pos_carrera_dict = {}
                         auto_carrera_dict = {}
                         for reg in reg_carrera:
-                            texto_pos = str(reg.get("Pos", ""))
-                            if "—" in texto_pos:
-                                partes = texto_pos.split("—")
-                                nombre_p = partes[-1].strip()
-                                p_num = extraer_posicion_limpia(texto_pos)
-                                if p_num is not None:
-                                    p_lower = nombre_p.lower()
-                                    pos_carrera_dict[p_lower] = p_num
-                                    auto_val = reg.get("Auto", "-") if isinstance(reg, dict) else "-"
-                                    auto_carrera_dict[p_lower] = auto_val
+                            if isinstance(reg, dict):
+                                texto_pos = str(reg.get("Pos", ""))
+                                if "—" in texto_pos:
+                                    partes = texto_pos.split("—")
+                                    nombre_p = partes[-1].strip()
+                                else:
+                                    nombre_p = str(reg.get("Piloto", "")).strip()
                                     
-                        # Calcular la remontada (Salida - Carrera) para cada piloto en este circuito
+                                if nombre_p:
+                                    import re
+                                    nums = re.findall(r'\d+', texto_pos)
+                                    if nums:
+                                        p_num = int(nums[0])
+                                        p_lower = nombre_p.lower()
+                                        pos_carrera_dict[p_lower] = p_num
+                                        auto_carrera_dict[p_lower] = reg.get("Auto", "-")
+
+                        # 3. Calcular la remontada (Salida - Llegada)
                         for p_lower, p_sal in pos_salida_dict.items():
                             if p_lower in pos_carrera_dict:
                                 p_car = pos_carrera_dict[p_lower]
                                 nom_piloto = nombre_original_dict.get(p_lower, p_lower)
-                                rem = p_sal - p_car  # Positivo si avanzó (Ej: Salió 2, llegó 1 -> 2 - 1 = +1)
+                                
+                                # La lógica correcta: Si salí 2 y llegué 1 -> 2 - 1 = +1
+                                rem = p_sal - p_car
                                 auto_p = auto_carrera_dict.get(p_lower, "-")
                                 
                                 remontadas_list.append({
