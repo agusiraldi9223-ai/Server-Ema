@@ -2116,7 +2116,6 @@ elif seccion_menu == "⚔️ Premios Especiales":
                 if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos:
                     remontadas_list = []
                     
-                    # Respetamos el orden cronológico estricto si existe 'fechas_reales'
                     circuitos_ordenados = []
                     if 'fechas_reales' in locals() and fechas_reales:
                         circuitos_ordenados = [f for f in fechas_reales if f in datos_comparativa_tiempos]
@@ -2130,7 +2129,7 @@ elif seccion_menu == "⚔️ Premios Especiales":
                         reg_clasif = circuito_data.get("Clasificación", [])
                         reg_carrera = circuito_data.get("Carrera", [])
                         
-                        # 1. Mapear posición de salida desde la Clasificación normalizando el nombre
+                        # 1. Mapear posición de salida desde la Clasificación
                         pos_salida_dict = {}
                         nombre_original_dict = {}
                         for reg in reg_clasif:
@@ -2139,7 +2138,6 @@ elif seccion_menu == "⚔️ Premios Especiales":
                                 if "—" in texto_pos:
                                     partes = texto_pos.split("—")
                                     nombre_p = partes[-1].strip()
-                                    
                                     import re
                                     nums = re.findall(r'\d+', partes[0])
                                     if nums:
@@ -2148,23 +2146,35 @@ elif seccion_menu == "⚔️ Premios Especiales":
                                         pos_salida_dict[p_key] = p_num
                                         nombre_original_dict[p_key] = nombre_p
                                         
-                        # 2. Mapear posición final desde la Carrera normalizando el nombre
+                        # 2. Mapear posición final desde la Carrera 
+                        # AQUÍ ESTABA EL ERROR: Aseguramos leer el índice/posición real de la lista de carrera
                         pos_carrera_dict = {}
-                        for reg in reg_carrera:
+                        for idx, reg in enumerate(reg_carrera):
                             if isinstance(reg, dict):
                                 texto_pos = str(reg.get("Pos", ""))
+                                # Buscamos el nombre del piloto
                                 if "—" in texto_pos:
                                     partes = texto_pos.split("—")
                                     nombre_p = partes[-1].strip()
+                                else:
+                                    nombre_p = str(reg.get("Piloto", "")).strip()
                                     
+                                if nombre_p:
+                                    p_key = nombre_p.lower().strip()
+                                    
+                                    # Intentamos sacar la posición del texto o usamos la posición en la lista (idx + 1)
                                     import re
-                                    nums = re.findall(r'\d+', partes[0])
+                                    nums = re.findall(r'\d+', texto_pos)
                                     if nums:
+                                        # Tomamos el primer número del texto de posición de carrera
                                         p_num = int(nums[0])
-                                        p_key = nombre_p.lower().strip()
-                                        pos_carrera_dict[p_key] = p_num
+                                    else:
+                                        # Fallback seguro: el orden en la lista de carrera es la posición de llegada
+                                        p_num = idx + 1
                                         
-                        # 3. Calcular el balance neto: Salida - Llegada por piloto en este circuito
+                                    pos_carrera_dict[p_key] = p_num
+                                        
+                        # 3. Calcular el balance neto: Salida - Llegada
                         for p_key, p_sal in pos_salida_dict.items():
                             if p_key in pos_carrera_dict:
                                 p_car = pos_carrera_dict[p_key]
@@ -2183,7 +2193,6 @@ elif seccion_menu == "⚔️ Premios Especiales":
                     if remontadas_list:
                         df_r_temp = pd.DataFrame(remontadas_list)
                         
-                        # Agrupamos sumando el balance total en el campeonato
                         df_rem_sum = df_r_temp.groupby("Piloto")["Remontada"].sum().reset_index()
                         df_rem_sum = df_rem_sum.sort_values(by="Remontada", ascending=False).reset_index(drop=True)
                         df_rem_sum.columns = ["Piloto", "Balance Puestos"]
