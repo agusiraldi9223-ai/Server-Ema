@@ -2108,11 +2108,6 @@ elif seccion_menu == "⚔️ Premios Especiales":
     
     col3, col4 = st.columns(2)
 
-# --- DEPURACIÓN RÁPIDA ---
-if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos:
-    primer_circuito = list(datos_comparativa_tiempos.keys())[0]
-    st.write("DEBUG - Estructura de Clasificación:", datos_comparativa_tiempos[primer_circuito].get("Clasificación", []))
-    st.write("DEBUG - Estructura de Carrera:", datos_comparativa_tiempos[primer_circuito].get("Carrera", []))
     with col3:
             st.markdown("### 🧗 El Rey de la Remontada")
             st.caption("Mayor avance de posiciones desde la clasificación hasta la bandera a cuadros en carrera.")
@@ -2126,33 +2121,26 @@ if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos:
                         reg_clasif = circuito_data.get("Clasificación", [])
                         reg_carrera = circuito_data.get("Carrera", [])
                         
-                        # 1. Mapear posición de salida desde la Clasificación de este circuito
+                        # 1. Mapear posición de salida desde la Clasificación
                         pos_salida_dict = {}
                         nombre_original_dict = {}
                         for reg in reg_clasif:
-                            # Si 'reg' es un diccionario (como viene en datos_comparativa_tiempos)
                             if isinstance(reg, dict):
-                                # Buscamos el nombre del piloto (suele estar al final del string 'Pos' o en una clave específica)
                                 texto_pos = str(reg.get("Pos", ""))
-                                # Intentamos extraer el nombre del piloto del formato habitual "P2 — NombrePiloto" o similar
                                 if "—" in texto_pos:
                                     partes = texto_pos.split("—")
                                     nombre_p = partes[-1].strip()
-                                else:
-                                    nombre_p = str(reg.get("Piloto", "")).strip()
                                     
-                                if nombre_p:
-                                    # Buscamos el número de posición exacto en el texto de clasificación
+                                    # Extraemos limpiamente la posición que está al inicio (ej. "#2" -> 2)
                                     import re
-                                    nums = re.findall(r'\d+', texto_pos)
+                                    nums = re.findall(r'\d+', partes[0])
                                     if nums:
-                                        # El primer número suele ser la posición
                                         p_num = int(nums[0])
                                         p_lower = nombre_p.lower()
                                         pos_salida_dict[p_lower] = p_num
                                         nombre_original_dict[p_lower] = nombre_p
 
-                        # 2. Mapear posición de llegada y auto desde la Carrera
+                        # 2. Mapear posición de llegada desde la Carrera
                         pos_carrera_dict = {}
                         auto_carrera_dict = {}
                         for reg in reg_carrera:
@@ -2161,26 +2149,23 @@ if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos:
                                 if "—" in texto_pos:
                                     partes = texto_pos.split("—")
                                     nombre_p = partes[-1].strip()
-                                else:
-                                    nombre_p = str(reg.get("Piloto", "")).strip()
                                     
-                                if nombre_p:
-                                    import re
-                                    nums = re.findall(r'\d+', texto_pos)
+                                    nums = re.findall(r'\d+', partes[0])
                                     if nums:
                                         p_num = int(nums[0])
                                         p_lower = nombre_p.lower()
                                         pos_carrera_dict[p_lower] = p_num
                                         auto_carrera_dict[p_lower] = reg.get("Auto", "-")
 
-                        # 3. Calcular la remontada (Salida - Llegada)
+                        # 3. Calcular la remontada: (Posición Salida - Posición Carrera)
+                        # Ejemplo: Saliste 2 y llegaste 1 -> 2 - 1 = +1 (Ganaste 1 puesto)
+                        # Ejemplo: Saliste 4 y llegaste 2 -> 4 - 2 = +2 (Ganaste 2 puestos)
                         for p_lower, p_sal in pos_salida_dict.items():
                             if p_lower in pos_carrera_dict:
                                 p_car = pos_carrera_dict[p_lower]
                                 nom_piloto = nombre_original_dict.get(p_lower, p_lower)
                                 
-                                # La lógica correcta: Si salí 2 y llegué 1 -> 2 - 1 = +1
-                                rem = p_sal - p_car
+                                rem = p_sal - p_car  
                                 auto_p = auto_carrera_dict.get(p_lower, "-")
                                 
                                 remontadas_list.append({
