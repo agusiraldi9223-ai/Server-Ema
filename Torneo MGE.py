@@ -2107,10 +2107,9 @@ elif seccion_menu == "⚔️ Premios Especiales":
     st.markdown("---")
     
     col3, col4 = st.columns(2)
-
     with col3:
             st.markdown("### 🧗 El Rey de la Remontada")
-            st.caption("Mayor avance de posiciones desde la clasificación hasta la bandera a cuadros en carrera.")
+            st.caption("Balance de posiciones (Clasificación vs. Bandera a cuadros en carrera).")
             
             df_rem_sum = pd.DataFrame()
             try:
@@ -2135,7 +2134,6 @@ elif seccion_menu == "⚔️ Premios Especiales":
                                     nums = re.findall(r'\d+', partes[0])
                                     if nums:
                                         p_num = int(nums[0])
-                                        # Normalizamos la clave a minúsculas y sin espacios extras
                                         p_key = nombre_p.lower().strip()
                                         pos_salida_dict[p_key] = p_num
                                         nombre_original_dict[p_key] = nombre_p
@@ -2156,13 +2154,14 @@ elif seccion_menu == "⚔️ Premios Especiales":
                                         p_key = nombre_p.lower().strip()
                                         pos_carrera_dict[p_key] = p_num
                                         
-                        # 3. Calcular la remontada real cruzando por la clave normalizada
+                        # 3. Calcular el balance neto: Salida - Llegada (Suma si avanza, resta si retrocede)
                         for p_key, p_sal in pos_salida_dict.items():
                             if p_key in pos_carrera_dict:
                                 p_car = pos_carrera_dict[p_key]
                                 nom_piloto = nombre_original_dict.get(p_key, p_key)
                                 
-                                # Salida - Llegada (Ej: Salió 6 - Llegó 5 = +1 puesto)
+                                # Ej: Salió 1 - Llegó 3 = -2 (resta posiciones netas)
+                                # Ej: Salió 8 - Llegó 5 = +3 (suma posiciones netas)
                                 rem = p_sal - p_car
                                 
                                 remontadas_list.append({
@@ -2176,28 +2175,29 @@ elif seccion_menu == "⚔️ Premios Especiales":
                     if remontadas_list:
                         df_r_temp = pd.DataFrame(remontadas_list)
                         
-                        # Agrupamos sumando el total de posiciones ganadas en todo el campeonato
+                        # Agrupamos sumando el balance total en el campeonato
                         df_rem_sum = df_r_temp.groupby("Piloto")["Remontada"].sum().reset_index()
                         df_rem_sum = df_rem_sum.sort_values(by="Remontada", ascending=False).reset_index(drop=True)
-                        df_rem_sum.columns = ["Piloto", "Total Puestos Ganados"]
+                        df_rem_sum.columns = ["Piloto", "Balance Puestos"]
                         
                         df_detalle_rem = df_r_temp.sort_values(by="Remontada", ascending=False)
             except Exception as e:
-                st.caption(f"Error al calcular remontadas: {e}")
+                st.caption(f"Error al calcular balance de posiciones: {e}")
 
             if not df_rem_sum.empty:
-                st.markdown("#### 📊 Acumulado en el Campeonato")
+                st.markdown("#### 📊 Balance en el Campeonato")
                 st.dataframe(df_rem_sum, use_container_width=True, hide_index=True)
                 
                 top_rem = df_rem_sum.iloc[0]
-                st.success(f"🏆 **{top_rem['Piloto']}** es el rey del domingo con un total de **+{int(top_rem['Total Puestos Ganados'])}** puestos recuperados.")
+                simbolo = "+" if top_rem['Balance Puestos'] > 0 else ""
+                st.success(f"🏆 **{top_rem['Piloto']}** lidera el balance con un total de **{simbolo}{int(top_rem['Balance Puestos'])}** puestos netos.")
                 
                 if 'df_detalle_rem' in locals() and not df_detalle_rem.empty:
                     max_single = df_detalle_rem.iloc[0]
                     if max_single['Remontada'] > 0:
                         st.info(f"🔥 **Mayor avance en una sola fecha:** {max_single['Piloto']} en **{max_single['Circuito']}** (Salió P{max_single['Salida']} ➔ Llegó P{max_single['Llegada']} | **+{max_single['Remontada']} puestos**).")
             else:
-                st.info("Datos de remontadas pendientes de sincronización.")
+                st.info("Datos de posiciones pendientes de sincronización.")
     with col4:
         st.markdown("### 🍾 El Imán de Podios")
         st.caption("Pilotos con mayor cantidad de presencias en el podio (Top 3 de carrera).")
