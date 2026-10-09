@@ -1999,85 +1999,70 @@ elif seccion_menu == "⚔️ Premios Especiales":
         pass
 
 # -------------------------------------------------------------
-    # 3. EL REY DE LA REMONTADA Y PODIOS (Lógica unificada y robusta)
+    # 3. EL REY DE LA REMONTADA Y PODIOS (Leyendo directo de los JSON)
     # -------------------------------------------------------------
     df_rem_sum = pd.DataFrame()
     conteo_podios = pd.DataFrame()
     try:
-        if 'df_global' in locals() and not df_global.empty:
+        if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos:
             remontadas_list = []
             podios_list = []
             
-            # Obtenemos los circuitos únicos del df_global
-            circuitos_disponibles = df_global["Circuito"].unique()
-            
-            for circuito_curr in circuitos_disponibles:
-                # 1. Filtramos la carrera principal de este circuito (igual que en el desglose)
-                df_carrera_curr = df_global[
-                    (df_global["Circuito"] == circuito_curr) & 
-                    (~df_global["Tipo"].astype(str).str.lower().str.contains("sprint|clasif|quali|pole|vuelta|vr", na=False))
-                ]
+            for circuito_name, circuito_data in datos_comparativa_tiempos.items():
+                # Buscamos los resultados de carrera en el diccionario/JSON del circuito
+                # (puede llamarse "Carrera", "Result", o similar según cómo cargues los json)
+                reg_carrera = circuito_data.get("Carrera", [])
                 
-                if df_carrera_curr.empty:
-                    continue
-                
-                # Ordenamos y asignamos la posición real de llegada (igual que el desglose)
-                df_c = df_carrera_curr.copy()
-                if "_Tiempo_ms" in df_c.columns:
-                    df_c["_tiempo_orden"] = df_c["_Tiempo_ms"].apply(lambda x: float(x) if pd.notnull(x) and float(x) > 0 else float('inf'))
-                    if "Vueltas" in df_c.columns:
-                        df_c = df_c.sort_values(by=["Vueltas", "_tiempo_orden"], ascending=[False, True])
-                    else:
-                        df_c = df_c.sort_values(by="_tiempo_orden", ascending=True)
-                    df_c = df_c.drop(columns=["_tiempo_orden"], errors="ignore")
-                
-                df_c = df_c.reset_index(drop=True)
-                df_c["Posicion_Real_Llegada"] = range(1, len(df_c) + 1)
-                
-                # 2. Iteramos por cada piloto en la carrera de este circuito
-                for _, row_c in df_c.iterrows():
-                    pil = row_c["Piloto"]
-                    pos_carrera = row_c["Posicion_Real_Llegada"]
-                    
-                    # 3. Buscamos su clasificación exactamente igual a cómo lo hace tu "Desglose por Fecha"
-                    df_clasif_piloto = df_global[
-                        (df_global["Circuito"] == circuito_curr) & 
-                        (df_global["Piloto"] == pil) & 
-                        (
-                            df_global["Tipo"].astype(str).str.lower().str.contains("clasif|quali|q1|q2|q3", na=False) |
-                            (df_global["Sesion"].astype(str).str.lower().str.contains("clasif|quali", na=False) if "Sesion" in df_global.columns else False)
-                        )
-                    ]
-                    
-                    if not df_clasif_piloto.empty:
-                        p_sal = df_clasif_piloto["Posición"].min()
-                        if not pd.isna(p_sal):
-                            try:
-                                pos_salida = int(p_sal)
-                                # Resta: Salida - Llegada (Suma si avanza, resta si retrocede)
-                                rem = pos_salida - int(pos_carrera)
-                                remontadas_list.append({"Piloto": pil, "Remontada": rem})
-                            except:
-                                pass
-                    
-                    # Podios (Top 3 de carrera)
-                    try:
-                        if int(pos_carrera) <= 3:
-                            podios_list.append({"Piloto": pil})
-                    except:
-                        pass
+                # Si los datos vienen estructurados como lista de objetos de carrera
+                if isinstance(reg_carrera, list) and len(reg_carrera) > 0:
+                    # Ordenamos igual que en la app para asegurar la posición de llegada real
+                    # O si ya vienen ordenados, usamos el índice (i + 1) como Puesta de llegada
+                    for idx, reg in enumerate(reg_carrera):
+                        if isinstance(reg, dict):
+                            # Nombre del piloto
+                            nombre_p = str(reg.get("Piloto", "")).strip()
+                            if not nombre_p and "Pos" in reg:
+                                texto_pos = str(reg.get("Pos", ""))
+                                if "—" in texto_pos:
+                                    nombre_p = texto_pos.split("—")[-1].strip()
+                            
+                            # Si tenemos GridPosition (Salida) y sabemos su posición de llegada (idx + 1)
+                            grid_pos = reg.get("GridPosition", reg.get("Grid", None))
+                            
+                            if nombre_p and grid_pos is not None:
+                                try:
+                                    pos_salida = int(grid_pos)
+                                    pos_llegada = idx + 1 # El orden en la lista de carrera es la llegada
+                                    
+                                    # Resta: Salida - Llegada (Positivo si avanzó, negativo si perdió)
+                                    rem = pos_salida - pos_llegada
+                                    
+                                    remontadas_list.append({
+                                        "Circuito": circuito_name,
+                                        "Piloto": nombre_p,
+                                        "Salida": pos_salida,
+                                        "Llegada": pos_llegada,
+                                        "Remontada": rem
+                                    })
+                                    
+                                    if pos_llegada <= 3:
+                                        podios_list.append({"Piloto": nombre_p})
+                                except:
+                                    pass
             
             if remontadas_list:
                 df_r_temp = pd.DataFrame(remontadas_list)
                 df_rem_sum = df_r_temp.groupby("Piloto")["Remontada"].sum().reset_index()
                 df_rem_sum = df_rem_sum.sort_values(by="Remontada", ascending=False).reset_index(drop=True)
+                df_rem_sum.columns = ["Piloto", "Balance Puestos"]
+                df_detalle_rem = df_r_temp.sort_values(by="Remontada", ascending=False)
             
             if podios_list:
                 df_p_temp = pd.DataFrame(podios_list)
                 conteo_podios = df_p_temp.groupby("Piloto").size().reset_index(name="Podios")
                 conteo_podios = conteo_podios.sort_values(by="Podios", ascending=False).reset_index(drop=True)
     except Exception as e:
-        st.caption(f"Error general en remontadas: {e}")
+        st.caption(f"Error al calcular remontadas desde JSON: {e}")
     # -------------------------------------------------------------
     # RENDERIZADO EN PANTALLA (Columnas de Streamlit)
     # -------------------------------------------------------------
@@ -2139,18 +2124,17 @@ elif seccion_menu == "⚔️ Premios Especiales":
         st.markdown("### 🧗 El Rey de la Remontada")
         st.caption("Balance de posiciones (Clasificación vs. Bandera a cuadros en carrera).")
         
-        # Usamos directamente el df_rem_sum calculado de forma global arriba
-        if 'df_rem_sum' in locals() and not df_rem_sum.empty:
-            df_rem_view = df_rem_sum.copy()
-            if "Remontada" in df_rem_view.columns:
-                df_rem_view.columns = ["Piloto", "Balance Puestos"]
-            
-            st.dataframe(df_rem_view, use_container_width=True, hide_index=True)
-            
-            top_rem = df_rem_view.iloc[0]
+        if not df_rem_sum.empty:
+            st.dataframe(df_rem_sum, use_container_width=True, hide_index=True)
+            top_rem = df_rem_sum.iloc[0]
             val_top = int(top_rem['Balance Puestos'])
             simbolo = "+" if val_top > 0 else ""
             st.success(f"🏆 **{top_rem['Piloto']}** lidera el balance con un total de **{simbolo}{val_top}** puestos netos.")
+            
+            if 'df_detalle_rem' in locals() and not df_detalle_rem.empty:
+                max_single = df_detalle_rem.iloc[0]
+                if max_single['Remontada'] > 0:
+                    st.info(f"🔥 **Mayor avance en una sola fecha:** {max_single['Piloto']} en **{max_single['Circuito']}** (Salió P{max_single['Salida']} ➔ Llegó P{max_single['Llegada']} | **+{max_single['Remontada']} puestos**).")
         else:
             st.info("Datos de posiciones pendientes de sincronización.")
 
