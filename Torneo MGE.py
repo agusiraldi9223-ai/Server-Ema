@@ -2154,14 +2154,14 @@ elif seccion_menu == "⚔️ Premios Especiales":
                                         p_key = nombre_p.lower().strip()
                                         pos_carrera_dict[p_key] = p_num
                                         
-                        # 3. Calcular el balance neto: Salida - Llegada (Suma si avanza, resta si retrocede)
+                        # 3. Cálculo correcto: Posición de Salida - Posición de Llegada
+                        # Si salió 6 y llegó 5 -> 6 - 5 = +1
+                        # Si salió 1 y llegó 3 -> 1 - 3 = -2
                         for p_key, p_sal in pos_salida_dict.items():
                             if p_key in pos_carrera_dict:
                                 p_car = pos_carrera_dict[p_key]
                                 nom_piloto = nombre_original_dict.get(p_key, p_key)
                                 
-                                # Ej: Salió 1 - Llegó 3 = -2 (resta posiciones netas)
-                                # Ej: Salió 8 - Llegó 5 = +3 (suma posiciones netas)
                                 rem = p_sal - p_car
                                 
                                 remontadas_list.append({
@@ -2189,8 +2189,9 @@ elif seccion_menu == "⚔️ Premios Especiales":
                 st.dataframe(df_rem_sum, use_container_width=True, hide_index=True)
                 
                 top_rem = df_rem_sum.iloc[0]
-                simbolo = "+" if top_rem['Balance Puestos'] > 0 else ""
-                st.success(f"🏆 **{top_rem['Piloto']}** lidera el balance con un total de **{simbolo}{int(top_rem['Balance Puestos'])}** puestos netos.")
+                val_top = int(top_rem['Balance Puestos'])
+                simbolo = "+" if val_top > 0 else ""
+                st.success(f"🏆 **{top_rem['Piloto']}** lidera el balance con un total de **{simbolo}{val_top}** puestos netos.")
                 
                 if 'df_detalle_rem' in locals() and not df_detalle_rem.empty:
                     max_single = df_detalle_rem.iloc[0]
