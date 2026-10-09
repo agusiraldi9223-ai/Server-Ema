@@ -2114,62 +2114,64 @@ elif seccion_menu == "⚔️ Premios Especiales":
             
             df_rem_sum = pd.DataFrame()
             try:
-                if 'df_global' in locals() and not df_global.empty:
+                if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos:
                     remontadas_list = []
                     
-                    # Obtenemos todos los circuitos disponibles
-                    circuitos_unicos = df_global["Circuito"].unique()
-                    
-                    for circuito_curr in circuitos_unicos:
-                        # Filtramos la carrera principal de este circuito (excluyendo sprint, clasificaciones, etc.)
-                        df_carrera_curr = df_global[
-                            (df_global["Circuito"] == circuito_curr) & 
-                            (~df_global["Tipo"].astype(str).str.lower().str.contains("sprint|clasif|quali|pole|vuelta|vr", na=False))
-                        ]
+                    for circuito_name, circuito_data in datos_comparativa_tiempos.items():
+                        reg_clasif = circuito_data.get("Clasificación", [])
+                        reg_carrera = circuito_data.get("Carrera", [])
                         
-                        pilotos_carrera = df_carrera_curr["Piloto"].unique()
-                        
-                        for pil in pilotos_carrera:
-                            df_p_carr = df_carrera_curr[df_carrera_curr["Piloto"] == pil]
-                            if df_p_carr.empty:
-                                continue
+                        # 1. Mapear posición de salida desde la Clasificación
+                        pos_salida_dict = {}
+                        nombre_original_dict = {}
+                        for reg in reg_clasif:
+                            if isinstance(reg, dict):
+                                texto_pos = str(reg.get("Pos", ""))
+                                if "—" in texto_pos:
+                                    partes = texto_pos.split("—")
+                                    nombre_p = partes[-1].strip()
+                                    
+                                    import re
+                                    nums = re.findall(r'\d+', partes[0])
+                                    if nums:
+                                        p_num = int(nums[0])
+                                        p_lower = nombre_p.lower()
+                                        pos_salida_dict[p_lower] = p_num
+                                        nombre_original_dict[p_lower] = nombre_p
+                                        
+                        # 2. Mapear posición final desde la Carrera
+                        pos_carrera_dict = {}
+                        for reg in reg_carrera:
+                            if isinstance(reg, dict):
+                                texto_pos = str(reg.get("Pos", ""))
+                                if "—" in texto_pos:
+                                    partes = texto_pos.split("—")
+                                    nombre_p = partes[-1].strip()
+                                    
+                                    import re
+                                    nums = re.findall(r'\d+', partes[0])
+                                    if nums:
+                                        p_num = int(nums[0])
+                                        p_lower = nombre_p.lower()
+                                        pos_carrera_dict[p_lower] = p_num
+                                        
+                        # 3. Calcular la remontada real por piloto en este circuito
+                        for p_lower, p_sal in pos_salida_dict.items():
+                            if p_lower in pos_carrera_dict:
+                                p_car = pos_carrera_dict[p_lower]
+                                nom_piloto = nombre_original_dict.get(p_lower, p_lower)
                                 
-                            # Posición final en carrera
-                            pos_final_val = df_p_carr["Posición"].values[0]
-                            auto_val = df_p_carr["Auto"].values[0] if "Auto" in df_p_carr.columns else "-"
-                            
-                            # Buscamos la posición de salida en la clasificación de este mismo circuito y piloto
-                            df_clasif_piloto = df_global[
-                                (df_global["Circuito"] == circuito_curr) & 
-                                (df_global["Piloto"] == pil) & 
-                                (
-                                    df_global["Tipo"].astype(str).str.lower().str.contains("clasif|quali|q1|q2|q3", na=False) |
-                                    (df_global["Sesion"].astype(str).str.lower().str.contains("clasif|quali", na=False) if "Sesion" in df_global.columns else False)
-                                )
-                            ]
-                            
-                            if not df_clasif_piloto.empty:
-                                p_sal = df_clasif_piloto["Posición"].min()
+                                # Salida - Llegada (Ej: Salió 8 - Llegó 5 = +3 puestos ganados)
+                                rem = p_sal - p_car
                                 
-                                try:
-                                    pos_s = int(p_sal)
-                                    pos_f = int(pos_final_val)
-                                    
-                                    # Cálculo exacto de la remontada: Salida - Llegada
-                                    # Ej: Salió 8 - Llegó 5 = +3 puestos ganados
-                                    rem = pos_s - pos_f
-                                    
-                                    remontadas_list.append({
-                                        "Circuito": circuito_curr,
-                                        "Piloto": pil,
-                                        "Salida": pos_s,
-                                        "Llegada": pos_f,
-                                        "Remontada": rem,
-                                        "Auto": auto_val
-                                    })
-                                except:
-                                    pass
-                                    
+                                remontadas_list.append({
+                                    "Circuito": circuito_name,
+                                    "Piloto": nom_piloto,
+                                    "Salida": p_sal,
+                                    "Llegada": p_car,
+                                    "Remontada": rem
+                                })
+                                
                     if remontadas_list:
                         df_r_temp = pd.DataFrame(remontadas_list)
                         
