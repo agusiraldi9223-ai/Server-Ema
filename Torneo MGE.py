@@ -2135,7 +2135,7 @@ elif seccion_menu == "⚔️ Premios Especiales":
                                 continue
                                 
                             # Posición final en carrera
-                            pos_ final_val = df_p_carr["Posición"].values[0]
+                            pos_final_val = df_p_carr["Posición"].values[0]
                             auto_val = df_p_carr["Auto"].values[0] if "Auto" in df_p_carr.columns else "-"
                             
                             # Buscamos la posición de salida en la clasificación de este mismo circuito y piloto
