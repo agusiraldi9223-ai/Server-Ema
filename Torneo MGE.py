@@ -1999,79 +1999,87 @@ elif seccion_menu == "⚔️ Premios Especiales":
         pass
 
 # -------------------------------------------------------------
-    # 3. EL REY DE LA REMONTADA Y PODIOS (Lógica original unificada)
+    # 3. EL REY DE LA REMONTADA Y PODIOS (Con diagnóstico)
     # -------------------------------------------------------------
     df_rem_sum = pd.DataFrame()
     conteo_podios = pd.DataFrame()
-    try:
-        if 'df_global' in locals() and not df_global.empty:
-            remontadas_list = []
-            podios_list = []
-            
-            # Filtramos las carreras principales excluyendo Sprints, Clasificaciones y extras
-            df_carreras = df_global[
-                ~df_global["Tipo"].astype(str).str.lower().str.contains("sprint|clasif|quali|pole|vuelta|vr", na=False)
-            ].copy()
-            
-            if not df_carreras.empty:
-                for circuito_curr, df_circ in df_carreras.groupby("Circuito"):
-                    # Ordenamos la carrera por tiempo/vueltas o por la posición almacenada para asegurar P1, P2...
-                    df_c = df_circ.copy()
-                    if "_Tiempo_ms" in df_c.columns:
-                        df_c["_tiempo_orden"] = df_c["_Tiempo_ms"].apply(lambda x: float(x) if pd.notnull(x) and float(x) > 0 else float('inf'))
-                        if "Vueltas" in df_c.columns:
-                            df_c = df_c.sort_values(by=["Vueltas", "_tiempo_orden"], ascending=[False, True])
+    
+    if 'df_global' in locals() and not df_global.empty:
+        # 🔍 DEBUG: Imprimimos información sobre df_global para entender la estructura
+        st.write("--- 🛠️ INICIO DIAGNÓSTICO REMONTADAS ---")
+        st.write("1. Columnas en df_global:", list(df_global.columns))
+        st.write("2. Valores únicos de 'Tipo':", df_global["Tipo"].unique() if "Tipo" in df_global.columns else "No existe 'Tipo'")
+        if "Sesion" in df_global.columns:
+            st.write("   Valores únicos de 'Sesion':", df_global["Sesion"].unique())
+        
+        remontadas_list = []
+        podios_list = []
+        
+        df_carreras = df_global[
+            ~df_global["Tipo"].astype(str).str.lower().str.contains("sprint|clasif|quali|pole|vuelta|vr", na=False)
+        ].copy()
+        
+        st.write(f"3. Filas encontradas para Carreras Principales: {len(df_carreras)}")
+        
+        if not df_carreras.empty:
+            for circuito_curr, df_circ in df_carreras.groupby("Circuito"):
+                df_c = df_circ.copy()
+                if "_Tiempo_ms" in df_c.columns:
+                    df_c["_tiempo_orden"] = df_c["_Tiempo_ms"].apply(lambda x: float(x) if pd.notnull(x) and float(x) > 0 else float('inf'))
+                    if "Vueltas" in df_c.columns:
+                        df_c = df_c.sort_values(by=["Vueltas", "_tiempo_orden"], ascending=[False, True])
+                    else:
+                        df_c = df_c.sort_values(by="_tiempo_orden", ascending=True)
+                    df_c = df_c.drop(columns=["_tiempo_orden"], errors="ignore")
+                
+                df_c = df_c.reset_index(drop=True)
+                df_c["Posicion_Real_Llegada"] = range(1, len(df_c) + 1)
+                
+                st.write(f"🏁 Circuito: **{circuito_curr}** ({len(df_c)} pilotos en carrera)")
+                
+                for _, row_c in df_c.iterrows():
+                    pil = row_c["Piloto"]
+                    pos_carrera = row_c["Posicion_Real_Llegada"]
+                    
+                    if pos_carrera <= 3:
+                        podios_list.append({"Piloto": pil})
+                    
+                    # Buscamos clasificación
+                    df_clasif_piloto = df_global[
+                        (df_global["Circuito"] == circuito_curr) & 
+                        (df_global["Piloto"] == pil) & 
+                        (
+                            df_global["Tipo"].astype(str).str.lower().str.contains("clasif|quali|q1|q2|q3", na=False) |
+                            (df_global["Sesion"].astype(str).str.lower().str.contains("clasif|quali", na=False) if "Sesion" in df_global.columns else False)
+                        )
+                    ]
+                    
+                    if df_clasif_piloto.empty:
+                        st.write(f"   ⚠️ NO encontró clasificación para piloto **'{pil}'** en circuito **'{circuito_curr}'**")
+                    else:
+                        p_sal = df_clasif_piloto["Posición"].min()
+                        import re
+                        nums = re.findall(r'\d+', str(p_sal))
+                        if nums:
+                            pos_salida = int(nums[0])
+                            rem = pos_salida - int(pos_carrera)
+                            remontadas_list.append({"Piloto": pil, "Remontada": rem})
+                            st.write(f"   ✅ **{pil}**: Salida P{pos_salida} ➔ Llegada P{pos_carrera} (Remontada: {rem})")
                         else:
-                            df_c = df_c.sort_values(by="_tiempo_orden", ascending=True)
-                        df_c = df_c.drop(columns=["_tiempo_orden"], errors="ignore")
-                    
-                    df_c = df_c.reset_index(drop=True)
-                    # Posición de llegada real basada en la tabla de carrera
-                    df_c["Posicion_Real_Llegada"] = range(1, len(df_c) + 1)
-                    
-                    for _, row_c in df_c.iterrows():
-                        pil = row_c["Piloto"]
-                        pos_carrera = row_c["Posicion_Real_Llegada"]
-                        
-                        # Podios (Top 3 de carrera)
-                        if pos_carrera <= 3:
-                            podios_list.append({"Piloto": pil})
-                        
-                        # Buscamos la posición de salida en la Clasificación del mismo circuito
-                        df_clasif_piloto = df_global[
-                            (df_global["Circuito"] == circuito_curr) & 
-                            (df_global["Piloto"] == pil) & 
-                            (
-                                df_global["Tipo"].astype(str).str.lower().str.contains("clasif|quali|q1|q2|q3", na=False) |
-                                (df_global["Sesion"].astype(str).str.lower().str.contains("clasif|quali", na=False) if "Sesion" in df_global.columns else False)
-                            )
-                        ]
-                        
-                        if not df_clasif_piloto.empty:
-                            p_sal = df_clasif_piloto["Posición"].min()
-                            try:
-                                import re
-                                # Extraemos solo el número por si viene como "P1", "P01", etc.
-                                nums = re.findall(r'\d+', str(p_sal))
-                                if nums:
-                                    pos_salida = int(nums[0])
-                                    rem = pos_salida - int(pos_carrera)
-                                    remontadas_list.append({"Piloto": pil, "Remontada": rem})
-                            except:
-                                pass
+                            st.write(f"   ⚠️ Encontró clasif para **'{pil}'** pero no pudo extraer número de posición de: '{p_sal}'")
+
+        if remontadas_list:
+            df_r_temp = pd.DataFrame(remontadas_list)
+            df_rem_sum = df_r_temp.groupby("Piloto")["Remontada"].sum().reset_index()
+            df_rem_sum = df_rem_sum.sort_values(by="Remontada", ascending=False).reset_index(drop=True)
+            df_rem_sum.columns = ["Piloto", "Balance Puestos"]
+        
+        if podios_list:
+            df_p_temp = pd.DataFrame(podios_list)
+            conteo_podios = df_p_temp.groupby("Piloto").size().reset_index(name="Podios")
+            conteo_podios = conteo_podios.sort_values(by="Podios", ascending=False).reset_index(drop=True)
             
-            if remontadas_list:
-                df_r_temp = pd.DataFrame(remontadas_list)
-                df_rem_sum = df_r_temp.groupby("Piloto")["Remontada"].sum().reset_index()
-                df_rem_sum = df_rem_sum.sort_values(by="Remontada", ascending=False).reset_index(drop=True)
-                df_rem_sum.columns = ["Piloto", "Balance Puestos"]
-            
-            if podios_list:
-                df_p_temp = pd.DataFrame(podios_list)
-                conteo_podios = df_p_temp.groupby("Piloto").size().reset_index(name="Podios")
-                conteo_podios = conteo_podios.sort_values(by="Podios", ascending=False).reset_index(drop=True)
-    except Exception as e:
-        st.caption(f"Error procesando estadísticas: {e}")
+        st.write("--- 🛠️ FIN DIAGNÓSTICO ---")
     # -------------------------------------------------------------
     # RENDERIZADO EN PANTALLA (Columnas de Streamlit)
     # -------------------------------------------------------------
