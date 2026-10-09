@@ -2120,7 +2120,6 @@ elif seccion_menu == "⚔️ Premios Especiales":
                         reg_clasif = circuito_data.get("Clasificación", [])
                         reg_carrera = circuito_data.get("Carrera", [])
                         
-                        # 1. Mapear posición de salida desde la Clasificación normalizando el nombre
                         pos_salida_dict = {}
                         nombre_original_dict = {}
                         for reg in reg_clasif:
@@ -2129,7 +2128,6 @@ elif seccion_menu == "⚔️ Premios Especiales":
                                 if "—" in texto_pos:
                                     partes = texto_pos.split("—")
                                     nombre_p = partes[-1].strip()
-                                    
                                     import re
                                     nums = re.findall(r'\d+', partes[0])
                                     if nums:
@@ -2138,7 +2136,6 @@ elif seccion_menu == "⚔️ Premios Especiales":
                                         pos_salida_dict[p_key] = p_num
                                         nombre_original_dict[p_key] = nombre_p
                                         
-                        # 2. Mapear posición final desde la Carrera normalizando el nombre
                         pos_carrera_dict = {}
                         for reg in reg_carrera:
                             if isinstance(reg, dict):
@@ -2146,7 +2143,6 @@ elif seccion_menu == "⚔️ Premios Especiales":
                                 if "—" in texto_pos:
                                     partes = texto_pos.split("—")
                                     nombre_p = partes[-1].strip()
-                                    
                                     import re
                                     nums = re.findall(r'\d+', partes[0])
                                     if nums:
@@ -2154,15 +2150,17 @@ elif seccion_menu == "⚔️ Premios Especiales":
                                         p_key = nombre_p.lower().strip()
                                         pos_carrera_dict[p_key] = p_num
                                         
-                        # 3. Cálculo correcto: Posición de Salida - Posición de Llegada
-                        # Si salió 6 y llegó 5 -> 6 - 5 = +1
-                        # Si salió 1 y llegó 3 -> 1 - 3 = -2
                         for p_key, p_sal in pos_salida_dict.items():
                             if p_key in pos_carrera_dict:
                                 p_car = pos_carrera_dict[p_key]
                                 nom_piloto = nombre_original_dict.get(p_key, p_key)
                                 
                                 rem = p_sal - p_car
+                                
+                                # --- DEPURACIÓN EN VIVO ---
+                                if "gaspar" in p_key:
+                                    st.write(f"🔍 [DEBUG] Fecha/Circuito: {circuito_name} | Piloto: {nom_piloto} | Salida: {p_sal} | Llegada: {p_car} | Resta (Salida - Llegada): {rem}")
+                                # -------------------------
                                 
                                 remontadas_list.append({
                                     "Circuito": circuito_name,
@@ -2174,8 +2172,6 @@ elif seccion_menu == "⚔️ Premios Especiales":
                                 
                     if remontadas_list:
                         df_r_temp = pd.DataFrame(remontadas_list)
-                        
-                        # Agrupamos sumando el balance total en el campeonato
                         df_rem_sum = df_r_temp.groupby("Piloto")["Remontada"].sum().reset_index()
                         df_rem_sum = df_rem_sum.sort_values(by="Remontada", ascending=False).reset_index(drop=True)
                         df_rem_sum.columns = ["Piloto", "Balance Puestos"]
@@ -2192,11 +2188,6 @@ elif seccion_menu == "⚔️ Premios Especiales":
                 val_top = int(top_rem['Balance Puestos'])
                 simbolo = "+" if val_top > 0 else ""
                 st.success(f"🏆 **{top_rem['Piloto']}** lidera el balance con un total de **{simbolo}{val_top}** puestos netos.")
-                
-                if 'df_detalle_rem' in locals() and not df_detalle_rem.empty:
-                    max_single = df_detalle_rem.iloc[0]
-                    if max_single['Remontada'] > 0:
-                        st.info(f"🔥 **Mayor avance en una sola fecha:** {max_single['Piloto']} en **{max_single['Circuito']}** (Salió P{max_single['Salida']} ➔ Llegó P{max_single['Llegada']} | **+{max_single['Remontada']} puestos**).")
             else:
                 st.info("Datos de posiciones pendientes de sincronización.")
     with col4:
