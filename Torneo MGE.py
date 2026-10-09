@@ -2121,7 +2121,7 @@ elif seccion_menu == "⚔️ Premios Especiales":
                         reg_clasif = circuito_data.get("Clasificación", [])
                         reg_carrera = circuito_data.get("Carrera", [])
                         
-                        # 1. Extraemos con precisión milimétrica la posición de salida de la clasificación
+                        # 1. Mapear posición de salida desde la Clasificación
                         pos_salida_dict = {}
                         nombre_original_dict = {}
                         for reg in reg_clasif:
@@ -2132,7 +2132,6 @@ elif seccion_menu == "⚔️ Premios Especiales":
                                     nombre_p = partes[-1].strip()
                                     
                                     import re
-                                    # Buscamos el número exacto que está después del '#' y antes del guion
                                     nums = re.findall(r'#(\d+)', partes[0])
                                     if not nums:
                                         nums = re.findall(r'\d+', partes[0])
@@ -2143,7 +2142,7 @@ elif seccion_menu == "⚔️ Premios Especiales":
                                         pos_salida_dict[p_lower] = p_num
                                         nombre_original_dict[p_lower] = nombre_p
 
-                        # 2. Extraemos la posición final de la carrera
+                        # 2. Mapear posición de llegada REAL desde el texto del diccionario de Carrera
                         pos_carrera_dict = {}
                         auto_carrera_dict = {}
                         for reg in reg_carrera:
@@ -2154,6 +2153,7 @@ elif seccion_menu == "⚔️ Premios Especiales":
                                     nombre_p = partes[-1].strip()
                                     
                                     import re
+                                    # Extraemos el número real que indica su posición final de carrera en el texto (ej. "#5")
                                     nums = re.findall(r'#(\d+)', partes[0])
                                     if not nums:
                                         nums = re.findall(r'\d+', partes[0])
@@ -2164,13 +2164,13 @@ elif seccion_menu == "⚔️ Premios Especiales":
                                         pos_carrera_dict[p_lower] = p_num
                                         auto_carrera_dict[p_lower] = reg.get("Auto", "-")
 
-                        # 3. Calculamos la remontada real: Salida - Llegada
+                        # 3. Calcular la remontada real: Salida - Llegada
                         for p_lower, p_sal in pos_salida_dict.items():
                             if p_lower in pos_carrera_dict:
                                 p_car = pos_carrera_dict[p_lower]
                                 nom_piloto = nombre_original_dict.get(p_lower, p_lower)
                                 
-                                rem = p_sal - p_car  # Ej: Salió 8 - Llegó 5 = +3
+                                rem = p_sal - p_car  # Ej: Salió 8 - Llegó 5 = +3 puestos
                                 auto_p = auto_carrera_dict.get(p_lower, "-")
                                 
                                 remontadas_list.append({
@@ -2185,7 +2185,7 @@ elif seccion_menu == "⚔️ Premios Especiales":
                     if remontadas_list:
                         df_r_temp = pd.DataFrame(remontadas_list)
                         
-                        # Acumulamos por piloto
+                        # Agrupamos sumando el total en el campeonato
                         df_rem_sum = df_r_temp.groupby("Piloto")["Remontada"].sum().reset_index()
                         df_rem_sum = df_rem_sum.sort_values(by="Remontada", ascending=False).reset_index(drop=True)
                         df_rem_sum.columns = ["Piloto", "Total Puestos Ganados"]
