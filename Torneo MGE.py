@@ -2116,12 +2116,22 @@ elif seccion_menu == "⚔️ Premios Especiales":
             try:
                 if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos:
                     remontadas_list = []
+                    
+                    def extraer_posicion_limpia(texto_pos):
+                        import re
+                        # Limpiamos el texto antes del guion para sacar únicamente el número de posición
+                        partes = str(texto_pos).split("—")
+                        if len(partes) > 0:
+                            nums = re.findall(r'\d+', partes[0])
+                            if nums:
+                                return int(nums[0])
+                        return None
+
                     for circuito_name, circuito_data in datos_comparativa_tiempos.items():
-                        # Obtenemos clasificación y carrera de este circuito
                         reg_clasif = circuito_data.get("Clasificación", [])
                         reg_carrera = circuito_data.get("Carrera", [])
                         
-                        # Mapear posición de salida (Clasificación) y nombre original por piloto
+                        # Mapear posición de salida (Clasificación)
                         pos_salida_dict = {}
                         nombre_original_dict = {}
                         for reg in reg_clasif:
@@ -2129,14 +2139,13 @@ elif seccion_menu == "⚔️ Premios Especiales":
                             if "—" in texto_pos:
                                 partes = texto_pos.split("—")
                                 nombre_p = partes[-1].strip()
-                                import re
-                                nums = re.findall(r'\d+', partes[0])
-                                if nums:
+                                p_num = extraer_posicion_limpia(texto_pos)
+                                if p_num is not None:
                                     p_lower = nombre_p.lower()
-                                    pos_salida_dict[p_lower] = int(nums[0])
+                                    pos_salida_dict[p_lower] = p_num
                                     nombre_original_dict[p_lower] = nombre_p
                                     
-                        # Mapear posición final (Carrera) y auto por piloto
+                        # Mapear posición final (Carrera)
                         pos_carrera_dict = {}
                         auto_carrera_dict = {}
                         for reg in reg_carrera:
@@ -2144,10 +2153,9 @@ elif seccion_menu == "⚔️ Premios Especiales":
                             if "—" in texto_pos:
                                 partes = texto_pos.split("—")
                                 nombre_p = partes[-1].strip()
-                                nums = re.findall(r'\d+', partes[0])
-                                if nums:
+                                p_num = extraer_posicion_limpia(texto_pos)
+                                if p_num is not None:
                                     p_lower = nombre_p.lower()
-                                    p_num = int(nums[0])
                                     pos_carrera_dict[p_lower] = p_num
                                     auto_val = reg.get("Auto", "-") if isinstance(reg, dict) else "-"
                                     auto_carrera_dict[p_lower] = auto_val
@@ -2157,7 +2165,7 @@ elif seccion_menu == "⚔️ Premios Especiales":
                             if p_lower in pos_carrera_dict:
                                 p_car = pos_carrera_dict[p_lower]
                                 nom_piloto = nombre_original_dict.get(p_lower, p_lower)
-                                rem = p_sal - p_car  # Positivo si avanzó, negativo si retrocedió
+                                rem = p_sal - p_car  # Positivo si avanzó (Ej: Salió 2, llegó 1 -> 2 - 1 = +1)
                                 auto_p = auto_carrera_dict.get(p_lower, "-")
                                 
                                 remontadas_list.append({
@@ -2177,7 +2185,6 @@ elif seccion_menu == "⚔️ Premios Especiales":
                         df_rem_sum = df_rem_sum.sort_values(by="Remontada", ascending=False).reset_index(drop=True)
                         df_rem_sum.columns = ["Piloto", "Total Puestos Ganados"]
                         
-                        # Guardamos el detalle completo para la mayor hazaña individual
                         df_detalle_rem = df_r_temp.sort_values(by="Remontada", ascending=False)
             except Exception as e:
                 st.caption(f"Error al calcular remontadas: {e}")
