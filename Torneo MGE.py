@@ -2106,40 +2106,31 @@ elif seccion_menu == "⚔️ Premios Especiales":
 
     st.markdown("---")
     
-    col3, col4 = st.columns(2)
-    with col3:
-        st.markdown("### 🧗 El Rey de la Remontada")
-        st.caption("Balance de posiciones (Clasificación vs. Bandera a cuadros en carrera).")
-        
-        # Usamos directamente el df_rem_sum calculado de forma global arriba
-        if 'df_rem_sum' in locals() and not df_rem_sum.empty:
-            df_rem_view = df_rem_sum.copy()
-            if "Remontada" in df_rem_view.columns:
-                df_rem_view.columns = ["Piloto", "Balance Puestos"]
+        col3, col4 = st.columns(2)
+        with col3:
+            st.markdown("### 🧗 El Rey de la Remontada")
+            st.caption("Balance de posiciones (Clasificación vs. Bandera a cuadros en carrera).")
             
-            st.dataframe(df_rem_view, use_container_width=True, hide_index=True)
-            
-            top_rem = df_rem_view.iloc[0]
-            val_top = int(top_rem['Balance Puestos'])
-            simbolo = "+" if val_top > 0 else ""
-            st.success(f"🏆 **{top_rem['Piloto']}** lidera el balance con un total de **{simbolo}{val_top}** puestos netos.")
-        else:
-            st.info("Datos de posiciones pendientes de sincronización.")
+            # Usamos directamente el df_rem_sum calculado de forma global arriba
+            if 'df_rem_sum' in locals() and not df_rem_sum.empty:
+                df_rem_view = df_rem_sum.copy()
+                if "Remontada" in df_rem_view.columns:
+                    df_rem_view.columns = ["Piloto", "Balance Puestos"]
+                
+                st.dataframe(df_rem_view, use_container_width=True, hide_index=True)
+                
+                top_rem = df_rem_view.iloc[0]
+                val_top = int(top_rem['Balance Puestos'])
+                simbolo = "+" if val_top > 0 else ""
+                st.success(f"🏆 **{top_rem['Piloto']}** lidera el balance con un total de **{simbolo}{val_top}** puestos netos.")
+            else:
+                st.info("Datos de posiciones pendientes de sincronización.")
 
     with col4:
         st.markdown("### 🍾 El Imán de Podios")
         st.caption("Pilotos con mayor cantidad de presencias en el podio (Top 3 de carrera).")
         if 'conteo_podios' in locals() and not conteo_podios.empty:
             st.dataframe(conteo_podios, use_container_width=True, hide_index=True)
-            top_podio = conteo_podios.iloc[0]
-            st.success(f"🏆 **{top_podio['Piloto']}** lidera los podios con **{int(top_podio['Podios'])}** visitas al estrado.")
-        else:
-            st.info("Cargando datos de podios...")
-    with col4:
-        st.markdown("### 🍾 El Imán de Podios")
-        st.caption("Pilotos con mayor cantidad de presencias en el podio (Top 3 de carrera).")
-        if not conteo_podios.empty:
-            st.dataframe(conteo_podios, use_container_width=True)
             top_podio = conteo_podios.iloc[0]
             st.success(f"🏆 **{top_podio['Piloto']}** lidera los podios con **{int(top_podio['Podios'])}** visitas al estrado.")
         else:
