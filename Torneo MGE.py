@@ -1999,43 +1999,68 @@ elif seccion_menu == "⚔️ Premios Especiales":
         pass
 
 # -------------------------------------------------------------
-    # 3. EL REY DE LA REMONTADA Y PODIOS (Usando df_global con Debug)
+    # 3. EL REY DE LA REMONTADA Y PODIOS (Lógica unificada y robusta)
     # -------------------------------------------------------------
     df_rem_sum = pd.DataFrame()
     conteo_podios = pd.DataFrame()
     try:
         if 'df_global' in locals() and not df_global.empty:
-            # Filtramos carreras principales
-            df_carreras = df_global[~df_global["Tipo"].astype(str).str.lower().str.contains("sprint|clasif|quali|pole|vuelta|vr", na=False)].copy()
-            
             remontadas_list = []
             podios_list = []
             
-            for circuito, df_circ in df_carreras.groupby("Circuito"):
-                for pil in df_circ["Piloto"].unique():
-                    df_p_c = df_circ[df_circ["Piloto"] == pil]
-                    if df_p_c.empty:
-                        continue
-                    pos_carrera = df_p_c["Posición"].values[0]
+            # Obtenemos los circuitos únicos del df_global
+            circuitos_disponibles = df_global["Circuito"].unique()
+            
+            for circuito_curr in circuitos_disponibles:
+                # 1. Filtramos la carrera principal de este circuito (igual que en el desglose)
+                df_carrera_curr = df_global[
+                    (df_global["Circuito"] == circuito_curr) & 
+                    (~df_global["Tipo"].astype(str).str.lower().str.contains("sprint|clasif|quali|pole|vuelta|vr", na=False))
+                ]
+                
+                if df_carrera_curr.empty:
+                    continue
+                
+                # Ordenamos y asignamos la posición real de llegada (igual que el desglose)
+                df_c = df_carrera_curr.copy()
+                if "_Tiempo_ms" in df_c.columns:
+                    df_c["_tiempo_orden"] = df_c["_Tiempo_ms"].apply(lambda x: float(x) if pd.notnull(x) and float(x) > 0 else float('inf'))
+                    if "Vueltas" in df_c.columns:
+                        df_c = df_c.sort_values(by=["Vueltas", "_tiempo_orden"], ascending=[False, True])
+                    else:
+                        df_c = df_c.sort_values(by="_tiempo_orden", ascending=True)
+                    df_c = df_c.drop(columns=["_tiempo_orden"], errors="ignore")
+                
+                df_c = df_c.reset_index(drop=True)
+                df_c["Posicion_Real_Llegada"] = range(1, len(df_c) + 1)
+                
+                # 2. Iteramos por cada piloto en la carrera de este circuito
+                for _, row_c in df_c.iterrows():
+                    pil = row_c["Piloto"]
+                    pos_carrera = row_c["Posicion_Real_Llegada"]
                     
-                    # Buscamos su posición de salida en la clasificación de este circuito de forma más amplia
+                    # 3. Buscamos su clasificación exactamente igual a cómo lo hace tu "Desglose por Fecha"
                     df_clasif_piloto = df_global[
-                        (df_global["Circuito"] == circuito) & 
+                        (df_global["Circuito"] == circuito_curr) & 
                         (df_global["Piloto"] == pil) & 
                         (
-                            df_global["Tipo"].astype(str).str.lower().str.contains("clasif|quali|q1|q2|q3|grid|salida", na=False) |
+                            df_global["Tipo"].astype(str).str.lower().str.contains("clasif|quali|q1|q2|q3", na=False) |
                             (df_global["Sesion"].astype(str).str.lower().str.contains("clasif|quali", na=False) if "Sesion" in df_global.columns else False)
                         )
                     ]
                     
                     if not df_clasif_piloto.empty:
-                        pos_salida = df_clasif_piloto["Posición"].min()
-                        try:
-                            rem = int(pos_salida) - int(pos_carrera)
-                            remontadas_list.append({"Piloto": pil, "Remontada": rem})
-                        except:
-                            pass
+                        p_sal = df_clasif_piloto["Posición"].min()
+                        if not pd.isna(p_sal):
+                            try:
+                                pos_salida = int(p_sal)
+                                # Resta: Salida - Llegada (Suma si avanza, resta si retrocede)
+                                rem = pos_salida - int(pos_carrera)
+                                remontadas_list.append({"Piloto": pil, "Remontada": rem})
+                            except:
+                                pass
                     
+                    # Podios (Top 3 de carrera)
                     try:
                         if int(pos_carrera) <= 3:
                             podios_list.append({"Piloto": pil})
@@ -2052,7 +2077,7 @@ elif seccion_menu == "⚔️ Premios Especiales":
                 conteo_podios = df_p_temp.groupby("Piloto").size().reset_index(name="Podios")
                 conteo_podios = conteo_podios.sort_values(by="Podios", ascending=False).reset_index(drop=True)
     except Exception as e:
-        st.error(f"Error en procesamiento global: {e}")
+        st.caption(f"Error general en remontadas: {e}")
     # -------------------------------------------------------------
     # RENDERIZADO EN PANTALLA (Columnas de Streamlit)
     # -------------------------------------------------------------
