@@ -2116,7 +2116,7 @@ elif seccion_menu == "⚔️ Premios Especiales":
                 if 'df_global' in locals() and not df_global.empty:
                     remontadas_list = []
                     
-                    # Obtenemos los circuitos en orden
+                    # Respetamos el orden cronológico de las fechas
                     if 'fechas_reales' in locals() and fechas_reales:
                         circuitos_lista = [f for f in fechas_reales if f in df_global["Circuito"].unique()]
                         restantes = [c for c in df_global["Circuito"].unique() if c not in circuitos_lista]
@@ -2125,22 +2125,34 @@ elif seccion_menu == "⚔️ Premios Especiales":
                         circuitos_lista = sorted(df_global["Circuito"].unique())
                     
                     for circuito_curr in circuitos_lista:
-                        # 1. Obtenemos la carrera principal de este circuito
+                        # 1. Obtenemos la carrera principal del circuito
                         df_carrera_curr = df_global[
                             (df_global["Circuito"] == circuito_curr) & 
                             (~df_global["Tipo"].astype(str).str.lower().str.contains("sprint|clasif|quali|pole|vuelta|vr", na=False))
                         ]
                         
-                        for pil in df_carrera_curr["Piloto"].unique():
-                            df_p_carr = df_carrera_curr[df_carrera_curr["Piloto"] == pil]
-                            if df_p_carr.empty:
-                                continue
-                                
-                            # Posición de llegada (la que muestra la tabla de carrera)
-                            reg_pos = df_p_carr[~df_p_carr["Tipo"].astype(str).str.lower().str.contains("pole|vuelta|vr", na=False)]
-                            pos_final_val = reg_pos["Posición"].values[0] if not reg_pos.empty else df_p_carr["Posición"].values[0]
+                        if df_carrera_curr.empty:
+                            continue
+                        
+                        # 2. Aplicamos la misma lógica exacta de ordenamiento y numeración de posición final
+                        df_c = df_carrera_curr.copy()
+                        if "_Tiempo_ms" in df_c.columns:
+                            df_c["_tiempo_orden"] = df_c["_Tiempo_ms"].apply(lambda x: float(x) if pd.notnull(x) and float(x) > 0 else float('inf'))
+                            if "Vueltas" in df_c.columns:
+                                df_c = df_c.sort_values(by=["Vueltas", "_tiempo_orden"], ascending=[False, True])
+                            else:
+                                df_c = df_c.sort_values(by="_tiempo_orden", ascending=True)
+                            df_c = df_c.drop(columns=["_tiempo_orden"], errors="ignore")
+                        
+                        # Asignamos la posición de llegada real por orden estricto de llegada
+                        df_c = df_c.reset_index(drop=True)
+                        df_c["Posicion_Real_Llegada"] = range(1, len(df_c) + 1)
+                        
+                        # 3. Cruzamos con la posición de salida de la Clasificación para cada piloto
+                        for _, row_c in df_c.iterrows():
+                            pil = row_c["Piloto"]
+                            pos_final_val = row_c["Posicion_Real_Llegada"]
                             
-                            # 2. Obtenemos la posición de salida de la clasificación para este circuito y piloto
                             df_clasif_piloto = df_global[
                                 (df_global["Circuito"] == circuito_curr) & 
                                 (df_global["Piloto"] == pil) & 
@@ -2157,7 +2169,7 @@ elif seccion_menu == "⚔️ Premios Especiales":
                                     pos_s = int(p_sal)
                                     pos_f = int(pos_final_val)
                                     
-                                    # 3. Resta exacta: Salida - Llegada
+                                    # Salida - Llegada (Suma si avanza, resta si retrocede)
                                     rem = pos_s - pos_f
                                     
                                     remontadas_list.append({
@@ -2172,6 +2184,7 @@ elif seccion_menu == "⚔️ Premios Especiales":
                                     
                     if remontadas_list:
                         df_r_temp = pd.DataFrame(remontadas_list)
+                        
                         df_rem_sum = df_r_temp.groupby("Piloto")["Remontada"].sum().reset_index()
                         df_rem_sum = df_rem_sum.sort_values(by="Remontada", ascending=False).reset_index(drop=True)
                         df_rem_sum.columns = ["Piloto", "Balance Puestos"]
