@@ -2108,6 +2108,11 @@ elif seccion_menu == "⚔️ Premios Especiales":
     
     col3, col4 = st.columns(2)
 
+# --- DEPURACIÓN RÁPIDA ---
+if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos:
+    primer_circuito = list(datos_comparativa_tiempos.keys())[0]
+    st.write("DEBUG - Estructura de Clasificación:", datos_comparativa_tiempos[primer_circuito].get("Clasificación", []))
+    st.write("DEBUG - Estructura de Carrera:", datos_comparativa_tiempos[primer_circuito].get("Carrera", []))
     with col3:
             st.markdown("### 🧗 El Rey de la Remontada")
             st.caption("Mayor avance de posiciones desde la clasificación hasta la bandera a cuadros en carrera.")
