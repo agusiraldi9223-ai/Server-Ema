@@ -2104,110 +2104,37 @@ elif seccion_menu == "⚔️ Premios Especiales":
             else:
                 st.info("No se encontraron registros de poles en la comparativa de tiempos.")
 
-    st.markdown("---")
+st.markdown("---")
     
     col3, col4 = st.columns(2)
     with col3:
-            st.markdown("### 🧗 El Rey de la Remontada")
-            st.caption("Balance de posiciones (Clasificación vs. Bandera a cuadros en carrera).")
+        st.markdown("### 🧗 El Rey de la Remontada")
+        st.caption("Balance de posiciones (Clasificación vs. Bandera a cuadros en carrera).")
+        
+        # Usamos directamente el df_rem_sum calculado de forma global arriba
+        if 'df_rem_sum' in locals() and not df_rem_sum.empty:
+            df_rem_view = df_rem_sum.copy()
+            if "Remontada" in df_rem_view.columns:
+                df_rem_view.columns = ["Piloto", "Balance Puestos"]
             
-            df_rem_sum = pd.DataFrame()
-            try:
-                if 'df_global' in locals() and not df_global.empty:
-                    remontadas_list = []
-                    
-                    # Respetamos el orden cronológico de las fechas
-                    if 'fechas_reales' in locals() and fechas_reales:
-                        circuitos_lista = [f for f in fechas_reales if f in df_global["Circuito"].unique()]
-                        restantes = [c for c in df_global["Circuito"].unique() if c not in circuitos_lista]
-                        circuitos_lista.extend(restantes)
-                    else:
-                        circuitos_lista = sorted(df_global["Circuito"].unique())
-                    
-                    for circuito_curr in circuitos_lista:
-                        # 1. Obtenemos la carrera principal del circuito
-                        df_carrera_curr = df_global[
-                            (df_global["Circuito"] == circuito_curr) & 
-                            (~df_global["Tipo"].astype(str).str.lower().str.contains("sprint|clasif|quali|pole|vuelta|vr", na=False))
-                        ]
-                        
-                        if df_carrera_curr.empty:
-                            continue
-                        
-                        # 2. Aplicamos la misma lógica exacta de ordenamiento y numeración de posición final
-                        df_c = df_carrera_curr.copy()
-                        if "_Tiempo_ms" in df_c.columns:
-                            df_c["_tiempo_orden"] = df_c["_Tiempo_ms"].apply(lambda x: float(x) if pd.notnull(x) and float(x) > 0 else float('inf'))
-                            if "Vueltas" in df_c.columns:
-                                df_c = df_c.sort_values(by=["Vueltas", "_tiempo_orden"], ascending=[False, True])
-                            else:
-                                df_c = df_c.sort_values(by="_tiempo_orden", ascending=True)
-                            df_c = df_c.drop(columns=["_tiempo_orden"], errors="ignore")
-                        
-                        # Asignamos la posición de llegada real por orden estricto de llegada
-                        df_c = df_c.reset_index(drop=True)
-                        df_c["Posicion_Real_Llegada"] = range(1, len(df_c) + 1)
-                        
-                        # 3. Cruzamos con la posición de salida de la Clasificación para cada piloto
-                        for _, row_c in df_c.iterrows():
-                            pil = row_c["Piloto"]
-                            pos_final_val = row_c["Posicion_Real_Llegada"]
-                            
-                            df_clasif_piloto = df_global[
-                                (df_global["Circuito"] == circuito_curr) & 
-                                (df_global["Piloto"] == pil) & 
-                                (
-                                    df_global["Tipo"].astype(str).str.lower().str.contains("clasif|quali|q1|q2|q3", na=False) |
-                                    (df_global["Sesion"].astype(str).str.lower().str.contains("clasif|quali", na=False) if "Sesion" in df_global.columns else False)
-                                )
-                            ]
-                            
-                            if not df_clasif_piloto.empty:
-                                p_sal = df_clasif_piloto["Posición"].min()
-                                
-                                try:
-                                    pos_s = int(p_sal)
-                                    pos_f = int(pos_final_val)
-                                    
-                                    # Salida - Llegada (Suma si avanza, resta si retrocede)
-                                    rem = pos_s - pos_f
-                                    
-                                    remontadas_list.append({
-                                        "Circuito": circuito_curr,
-                                        "Piloto": pil,
-                                        "Salida": pos_s,
-                                        "Llegada": pos_f,
-                                        "Remontada": rem
-                                    })
-                                except:
-                                    pass
-                                    
-                    if remontadas_list:
-                        df_r_temp = pd.DataFrame(remontadas_list)
-                        
-                        df_rem_sum = df_r_temp.groupby("Piloto")["Remontada"].sum().reset_index()
-                        df_rem_sum = df_rem_sum.sort_values(by="Remontada", ascending=False).reset_index(drop=True)
-                        df_rem_sum.columns = ["Piloto", "Balance Puestos"]
-                        
-                        df_detalle_rem = df_r_temp.sort_values(by="Remontada", ascending=False)
-            except Exception as e:
-                st.caption(f"Error al calcular balance de posiciones: {e}")
+            st.dataframe(df_rem_view, use_container_width=True, hide_index=True)
+            
+            top_rem = df_rem_view.iloc[0]
+            val_top = int(top_rem['Balance Puestos'])
+            simbolo = "+" if val_top > 0 else ""
+            st.success(f"🏆 **{top_rem['Piloto']}** lidera el balance con un total de **{simbolo}{val_top}** puestos netos.")
+        else:
+            st.info("Datos de posiciones pendientes de sincronización.")
 
-            if not df_rem_sum.empty:
-                st.markdown("#### 📊 Balance en el Campeonato")
-                st.dataframe(df_rem_sum, use_container_width=True, hide_index=True)
-                
-                top_rem = df_rem_sum.iloc[0]
-                val_top = int(top_rem['Balance Puestos'])
-                simbolo = "+" if val_top > 0 else ""
-                st.success(f"🏆 **{top_rem['Piloto']}** lidera el balance con un total de **{simbolo}{val_top}** puestos netos.")
-                
-                if 'df_detalle_rem' in locals() and not df_detalle_rem.empty:
-                    max_single = df_detalle_rem.iloc[0]
-                    if max_single['Remontada'] > 0:
-                        st.info(f"🔥 **Mayor avance en una sola fecha:** {max_single['Piloto']} en **{max_single['Circuito']}** (Salió P{max_single['Salida']} ➔ Llegó P{max_single['Llegada']} | **+{max_single['Remontada']} puestos**).")
-            else:
-                st.info("Datos de posiciones pendientes de sincronización.")
+    with col4:
+        st.markdown("### 🍾 El Imán de Podios")
+        st.caption("Pilotos con mayor cantidad de presencias en el podio (Top 3 de carrera).")
+        if 'conteo_podios' in locals() and not conteo_podios.empty:
+            st.dataframe(conteo_podios, use_container_width=True, hide_index=True)
+            top_podio = conteo_podios.iloc[0]
+            st.success(f"🏆 **{top_podio['Piloto']}** lidera los podios con **{int(top_podio['Podios'])}** visitas al estrado.")
+        else:
+            st.info("Cargando datos de podios...")
     with col4:
         st.markdown("### 🍾 El Imán de Podios")
         st.caption("Pilotos con mayor cantidad de presencias en el podio (Top 3 de carrera).")
