@@ -369,6 +369,11 @@ if archivos_json:
                     df_c = df_c.sort_values(by=["Vueltas", "_tiempo_orden"], ascending=[False, True]).drop(columns=["_tiempo_orden"]).reset_index(drop=True)
                     df_c["Posición"] = range(1, len(df_c) + 1)
 
+                    # --- APLICACIÓN DE LA REGLA DEL 75% ---
+                    vueltas_ganador = df_c.loc[0, "Vueltas"] if not df_c.empty else 0
+                    vueltas_minimas_requeridas = vueltas_ganador * 0.75
+                    # --------------------------------------
+
                     dict_sesion_h2h = {}
                     for idx, row in df_c.iterrows():
                         dict_sesion_h2h[row["Piloto"]] = row["Posición"]
@@ -401,13 +406,24 @@ if archivos_json:
                     tabla_pts = PUNTOS_SPRINT if tipo_tipo == "Sprint" else PUNTOS_CARRERA
                     for idx, row in df_c.iterrows():
                         pos = row["Posición"]
-                        pts = tabla_pts.get(pos, 0)
+                        vueltas_piloto = row["Vueltas"]
+                        
+                        # --- VALIDACIÓN DE PUNTOS SEGÚN SESIÓN Y VUELTAS ---
+                        if tipo_tipo == "Carrera":
+                            if vueltas_piloto >= vueltas_minimas_requeridas:
+                                pts = tabla_pts.get(pos, 0)
+                            else:
+                                pts = 0  # Cero puntos si no completó el 75% (ej. dieron 1 sola vuelta)
+                        else:
+                            pts = tabla_pts.get(pos, 0)  # Para el Sprint queda igual
+                        # ---------------------------------------------------
+
                         todos_los_resultados.append({
                             "Fecha": circuito,
                             "Circuito": circuito,
                             "Piloto": row["Piloto"],
                             "Auto": row["Auto"],
-                            "Vueltas": row["Vueltas"],
+                            "Vueltas": vueltas_piloto,
                             "_Tiempo_ms": row["_Tiempo_ms"],
                             "Posición": pos,
                             "Puntos": pts,
