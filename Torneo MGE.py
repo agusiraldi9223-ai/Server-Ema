@@ -539,7 +539,7 @@ if seccion_menu == "Resumen General":
         if not df_global.empty:
             # --- UNIFICACIÓN DE NOMBRES ALTERNATIVOS ---
             mapeo_nombres = {
-                "Fede Oris": "Federico Oris", "Alan Lasserre": "Alan245",
+                "Fede Oris": "Federico Oris", "Alan Lasserre": "Alan245","rubdri": "Rubdri",
             }
             df_global["Piloto"] = df_global["Piloto"].replace(mapeo_nombres)
 
@@ -1072,7 +1072,7 @@ elif seccion_menu == "Comparativa de Tiempos":
         
         # Diccionario para unificar nombres duplicados
         equivalencias_nombres = {
-            "Fede Oris": "Federico Oris", "Alan Lasserre": "Alan245",
+            "Fede Oris": "Federico Oris", "Alan Lasserre": "Alan245","rubdri": "Rubdri",
         }
         
         def normalizar_nombre(nombre):
