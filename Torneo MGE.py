@@ -844,10 +844,8 @@ if seccion_menu == "Resumen General":
         st.markdown("---")
         st.subheader("📅 Desglose por Fecha / Circuito")
         
-        # Usamos fechas_reales si existe para mantener el orden cronológico estricto, o respaldamos con circuitos
         if 'fechas_reales' in locals() and fechas_reales:
             circuitos_disponibles = [f for f in fechas_reales if f in df_global["Circuito"].unique()]
-            # Por si quedó alguna fuera
             restantes = [c for c in df_global["Circuito"].unique() if c not in circuitos_disponibles]
             circuitos_disponibles.extend(sorted(restantes))
         else:
@@ -911,6 +909,13 @@ if seccion_menu == "Resumen General":
                     except:
                         pos_int = 999
 
+                    # --- DETECCIÓN VISUAL DE NO PUNTUAR POR 75% ---
+                    # Si quedó en posición de carrera pero sus puntos de posición son 0 y no entró al podio/zona de puntos habitual
+                    aviso_no_puntua = ""
+                    if es_carrera_principal and pos_int <= 20 and puntos_totales_sesion == 0 and not extras_txt:
+                        aviso_no_puntua = " (No puntúa < 75%)"
+                    # ---------------------------------------------
+
                     item_dict = {
                         "Pos_Sort": pos_int,
                         "Posición": pos_int if pos_int != 999 else "-",
@@ -920,7 +925,7 @@ if seccion_menu == "Resumen General":
                     if es_carrera_principal:
                         item_dict["Clasificación (Salida)"] = pos_salida_val
                     
-                    item_dict["Puntos"] = f"{int(puntos_totales_sesion) if puntos_totales_sesion.is_integer() else puntos_totales_sesion}{detalles_extras_str}"
+                    item_dict["Puntos"] = f"{int(puntos_totales_sesion) if puntos_totales_sesion.is_integer() else puntos_totales_sesion}{detalles_extras_str}{aviso_no_puntua}"
                     agrupados.append(item_dict)
                 
                 df_res = pd.DataFrame(agrupados)
@@ -951,7 +956,6 @@ if seccion_menu == "Resumen General":
                         st.caption("No hay registros de Carrera para este circuito.")
                 except Exception as e_carrera:
                     st.caption(f"Error al cargar Carrera: {e_carrera}")
-
 # --- EVOLUCIÓN DE POSICIONES DE CLASIFICACIÓN (SALIDA - 10 FECHAS) ---
     if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos and 'todos_pilotos' in locals() and todos_pilotos:
         st.markdown("---")
