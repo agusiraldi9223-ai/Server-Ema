@@ -694,9 +694,19 @@ if seccion_menu == "Resumen General":
                 for piloto in todos_pilotos:
                     df_piloto_f = df_f[df_f["Piloto"] == piloto] if not df_f.empty else pd.DataFrame()
                     if not df_piloto_f.empty:
+                        # Suma los puntos de la fecha (si dio < 75%, 'Puntos' ya viene en 0 gracias al filtro anterior)
                         puntos_fecha = float(df_piloto_f["Puntos"].sum())
                         res_carrera = df_piloto_f[df_piloto_f["Tipo"] == "Carrera"]
-                        resultado_txt = f"P{int(res_carrera['Posición'].values[0])}" if not res_carrera.empty else "Puntos extra"
+                        
+                        if not res_carrera.empty:
+                            pos_c = res_carrera['Posición'].values[0]
+                            # Si la posición es válida pero los puntos son 0, indicamos que no sumó por el 75%
+                            if puntos_fecha == 0 and pos_c > 0:
+                                resultado_txt = f"P{int(pos_c)} (No puntúa)"
+                            else:
+                                resultado_txt = f"P{int(pos_c)}"
+                        else:
+                            resultado_txt = "Puntos extra"
                     else:
                         puntos_fecha = 0.0
                         resultado_txt = "-"
@@ -721,7 +731,7 @@ if seccion_menu == "Resumen General":
 
             cantidad_fechas_disputadas = len(fechas_reales)
 
-            # 2. Recorrido acumulando y descontando únicamente la peor fecha (sea con puntos bajos o 0 por ausencia)
+            # 2. Recorrido acumulando y descontando únicamente la peor fecha
             for idx, f_real in enumerate(fechas_reales):
                 num_fecha = idx + 1
                 nombre_fecha_eje_x = f"Fecha {num_fecha}"
@@ -730,10 +740,7 @@ if seccion_menu == "Resumen General":
                     pts_hasta_aqui = [puntos_por_piloto_fecha.get(piloto, {}).get(f_n, 0.0) for f_n in range(1, num_fecha + 1)]
                     
                     if aplicar_descarte:
-                        # Tomamos todas las fechas registradas hasta el momento (incluyendo 0s si faltó)
                         fechas_totales = pts_hasta_aqui
-                        
-                        # Si tiene al menos 2 fechas jugadas/registradas, descarta la menor (el 0 o la peor carrera)
                         if len(fechas_totales) >= 2:
                             peor_fecha_valida = min(fechas_totales)
                             total_actual = sum(fechas_totales) - peor_fecha_valida
