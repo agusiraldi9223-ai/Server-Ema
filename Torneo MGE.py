@@ -617,38 +617,65 @@ if seccion_menu == "Resumen General":
                         if p_g in lastre_actual_sim:
                             lastre_actual_sim[p_g] = min(50, lastre_actual_sim[p_g] + 10)
 
-        # --- TABLA CAMPEONATO (AJUSTADA CON AUSENCIAS EN 0) ---
-        # Aseguramos que todos los pilotos tengan filas para todas las fechas reales del campeonato
+        # --- TABLA CAMPEONATO (EVALUACIÓN PRECISA DE CEROS DESCARTABLES) ---
         if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
             registros_completos_tabla = []
+            
             for f_real in fechas_reales:
                 df_f = df_global[df_global["Fecha"] == f_real] if "Fecha" in df_global.columns else pd.DataFrame()
+                
+                # Vueltas del ganador de la carrera para calcular el 75%
+                df_carrera_f = df_f[df_f["Tipo"] == "Carrera"]
+                ganador_f = df_carrera_f[df_carrera_f["Posición"] == 1]
+                vueltas_ganador_f = ganador_f["Vueltas"].values[0] if not ganador_f.empty else 0
+                vueltas_min_f = vueltas_ganador_f * 0.75
+
                 for piloto in todos_pilotos:
                     df_piloto_f = df_f[df_f["Piloto"] == piloto] if not df_f.empty else pd.DataFrame()
                     pts_f = float(df_piloto_f["Puntos"].sum()) if not df_piloto_f.empty else 0.0
+                    
+                    # REGLA DE ELEGIBILIDAD PARA EL DESCARTE
+                    if df_piloto_f.empty:
+                        descartable = True  # Ausencia -> SÍ se puede descartar
+                    else:
+                        df_carrera_p = df_piloto_f[df_piloto_f["Tipo"] == "Carrera"]
+                        if df_carrera_p.empty:
+                            descartable = True  # No corrió la carrera principal -> SÍ descartable
+                        else:
+                            vueltas_p = df_carrera_p["Vueltas"].values[0]
+                            # Si dio al menos 1 vuelta pero NO llegó al 75% -> NO SE PUEDE DESCARTAR (Protegido)
+                            if pts_f == 0 and vueltas_p > 0 and vueltas_p < vueltas_min_f:
+                                descartable = False 
+                            else:
+                                descartable = True   # Sumó puntos, ausente, o llegó al 75% (0 legítimo) -> SÍ descartable
+
                     registros_completos_tabla.append({
                         "Piloto": piloto,
                         "Fecha": f_real,
-                        "Puntos": pts_f
+                        "Puntos": pts_f,
+                        "Descartable": descartable
                     })
+            
             df_campeonato_completo = pd.DataFrame(registros_completos_tabla)
         else:
             df_campeonato_completo = df_global.copy()
 
         col_fecha = "Fecha" if "Fecha" in df_campeonato_completo.columns else "Circuito"
 
-        if aplicar_descarte:
-            puntos_por_ronda = df_campeonato_completo.groupby(["Piloto", col_fecha])["Puntos"].sum().reset_index()
-            
-            # Descontamos la peor ronda de cada piloto (si tiene 2 o más fechas registradas)
+        if aplicar_descarte and "Descartable" in df_campeonato_completo.columns:
             tabla_campeonato_list = []
-            for piloto, grupo in puntos_por_ronda.groupby("Piloto"):
-                puntos_fechas_piloto = grupo["Puntos"].tolist()
-                suma_total = sum(puntos_fechas_piloto)
+            for piloto, grupo in df_campeonato_completo.groupby("Piloto"):
+                suma_total = grupo["Puntos"].sum()
                 
-                if len(puntos_fechas_piloto) >= 2:
-                    peor_val = min(puntos_fechas_piloto)
-                    puntos_netos = suma_total - peor_val
+                if len(grupo) >= 2:
+                    # Filtramos únicamente las fechas habilitadas para descartarse
+                    fechas_descartables = grupo[grupo["Descartable"] == True]
+                    
+                    if not fechas_descartables.empty:
+                        peor_val = fechas_descartables["Puntos"].min()
+                        puntos_netos = suma_total - peor_val
+                    else:
+                        puntos_netos = suma_total
                 else:
                     puntos_netos = suma_total
                     
@@ -658,38 +685,43 @@ if seccion_menu == "Resumen General":
         else:
             tabla_campeonato = df_campeonato_completo.groupby("Piloto")["Puntos"].sum().reset_index()
 
-        tabla_campeonato = pd.merge(tabla_campeonato, df_autos, on="Piloto", how="left")
+        # Mapeo de modelos de auto
+        mapa_autos = df_global.groupby("Piloto")["Auto"].agg(lambda x: x.iloc[0] if not x.empty else "-").to_dict() if "Auto" in df_global.columns else {}
+        if "Auto" not in tabla_campeonato.columns:
+            tabla_campeonato["Auto"] = tabla_campeonato["Piloto"].map(lambda p: mapa_autos.get(p, "BMW"))
+
         tabla_campeonato = tabla_campeonato.sort_values(by="Puntos", ascending=False).reset_index(drop=True)
-        tabla_campeonato["Lastre Acumulado"] = tabla_campeonato["Piloto"].map(lambda p: f"{lastre_actual_sim.get(p, 0)} Kg")
+        tabla_campeonato["Lastre Acumulado"] = tabla_campeonato["Piloto"].map(lambda p: f"{lastre_actual_sim.get(p, 0)} Kg" if 'lastre_actual_sim' in locals() else "0 Kg")
         tabla_campeonato.insert(0, "Pos", range(1, len(tabla_campeonato) + 1))
         
         # --- TABLA HTML ORIGINAL ---
-        html_table = '<div style="overflow-x: auto; background-color: #111827; padding: 20px; border-radius: 12px; border: 1px solid #1f2937;">'
-        html_table += '<table style="width: 100%; border-collapse: collapse; color: #ffffff; font-family: sans-serif; font-size: 14px;">'
-        html_table += '<thead><tr style="border-bottom: 2px solid #374151; text-align: left; background-color: #1f2937;">'
-        html_table += '<th style="padding: 12px; font-weight: 600;">Pos</th>'
-        html_table += '<th style="padding: 12px; font-weight: 600;">Piloto</th>'
-        html_table += '<th style="padding: 12px; font-weight: 600;">Modelo</th>'
-        html_table += '<th style="padding: 12px; font-weight: 600;">Puntos</th>'
-        html_table += '<th style="padding: 12px; font-weight: 600;">Lastre Acumulado</th>'
-        html_table += '</tr></thead><tbody>'
-        
-        for idx, row in tabla_campeonato.iterrows():
-            bg_color = "#111827" if idx % 2 == 0 else "#1a2332"
-            html_table += f'<tr style="border-bottom: 1px solid #1f2937; background-color: {bg_color};">'
-            html_table += f'<td style="padding: 12px;">#{row["Pos"]}</td>'
-            html_table += f'<td style="padding: 12px; font-weight: 500;">{row["Piloto"]}</td>'
-            html_table += f'<td style="padding: 12px; color: #94a3b8;">{row["Auto"]}</td>'
-            html_table += f'<td style="padding: 12px; font-weight: bold; color: #3b82f6;">{row["Puntos"]}</td>'
-            html_table += f'<td style="padding: 12px;">{row["Lastre Acumulado"]}</td>'
-            html_table += '</tr>'
-        
-        html_table += '</tbody></table></div>'
-        st.markdown(html_table, unsafe_allow_html=True)
-    else:
-        st.info("Sube archivos de resultados para ver el campeonato.")
+        if not tabla_campeonato.empty:
+            html_table = '<div style="overflow-x: auto; background-color: #111827; padding: 20px; border-radius: 12px; border: 1px solid #1f2937;">'
+            html_table += '<table style="width: 100%; border-collapse: collapse; color: #ffffff; font-family: sans-serif; font-size: 14px;">'
+            html_table += '<thead><tr style="border-bottom: 2px solid #374151; text-align: left; background-color: #1f2937;">'
+            html_table += '<th style="padding: 12px; font-weight: 600;">Pos</th>'
+            html_table += '<th style="padding: 12px; font-weight: 600;">Piloto</th>'
+            html_table += '<th style="padding: 12px; font-weight: 600;">Modelo</th>'
+            html_table += '<th style="padding: 12px; font-weight: 600;">Puntos</th>'
+            html_table += '<th style="padding: 12px; font-weight: 600;">Lastre Acumulado</th>'
+            html_table += '</tr></thead><tbody>'
+            
+            for idx, row in tabla_campeonato.iterrows():
+                bg_color = "#111827" if idx % 2 == 0 else "#1a2332"
+                html_table += f'<tr style="border-bottom: 1px solid #1f2937; background-color: {bg_color};">'
+                html_table += f'<td style="padding: 12px;">#{row["Pos"]}</td>'
+                html_table += f'<td style="padding: 12px; font-weight: 500;">{row["Piloto"]}</td>'
+                html_table += f'<td style="padding: 12px; color: #94a3b8;">{row["Auto"]}</td>'
+                html_table += f'<td style="padding: 12px; font-weight: bold; color: #3b82f6;">{row["Puntos"]}</td>'
+                html_table += f'<td style="padding: 12px;">{row["Lastre Acumulado"]}</td>'
+                html_table += '</tr>'
+            
+            html_table += '</tbody></table></div>'
+            st.markdown(html_table, unsafe_allow_html=True)
+        else:
+            st.info("Sube archivos de resultados para ver el campeonato.")
 
-    # --- EVOLUCIÓN DEL CAMPEONATO (DESCARTE DE LA PEOR FECHA INCLUYENDO AUSENCIAS) ---
+    # --- EVOLUCIÓN DEL CAMPEONATO (GRÁFICO CON REGLA DE CEROS NO DESCARTABLES) ---
     if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
         st.markdown("---")
         with st.container():
@@ -700,69 +732,83 @@ if seccion_menu == "Resumen General":
             mapa_autos_df = df_global.groupby("Piloto")["Auto"].agg(lambda x: x.iloc[0] if not x.empty else "-").to_dict() if "Auto" in df_global.columns else {}
 
             puntos_por_piloto_fecha = {}
+            descartable_por_piloto_fecha = {}
             resultados_info = {}
             
             for f_idx, f_real in enumerate(fechas_reales):
                 num_fecha = f_idx + 1
                 df_f = df_global[df_global["Fecha"] == f_real] if "Fecha" in df_global.columns else pd.DataFrame()
                 
+                df_carrera_f = df_f[df_f["Tipo"] == "Carrera"]
+                ganador_f = df_carrera_f[df_carrera_f["Posición"] == 1]
+                vueltas_ganador_f = ganador_f["Vueltas"].values[0] if not ganador_f.empty else 0
+                vueltas_min_f = vueltas_ganador_f * 0.75
+
                 for piloto in todos_pilotos:
                     df_piloto_f = df_f[df_f["Piloto"] == piloto] if not df_f.empty else pd.DataFrame()
                     if not df_piloto_f.empty:
-                        # Suma los puntos de la fecha (si dio < 75%, 'Puntos' ya viene en 0 gracias al filtro anterior)
                         puntos_fecha = float(df_piloto_f["Puntos"].sum())
                         res_carrera = df_piloto_f[df_piloto_f["Tipo"] == "Carrera"]
                         
                         if not res_carrera.empty:
                             pos_c = res_carrera['Posición'].values[0]
-                            # Si la posición es válida pero los puntos son 0, indicamos que no sumó por el 75%
-                            if puntos_fecha == 0 and pos_c > 0:
-                                resultado_txt = f"P{int(pos_c)} (No puntúa)"
+                            vueltas_p = res_carrera['Vueltas'].values[0]
+                            
+                            if puntos_fecha == 0 and vueltas_p > 0 and vueltas_p < vueltas_min_f:
+                                resultado_txt = f"P{int(pos_c)} (No puntúa < 75%)"
+                                descartable = False  # Abandono temprano -> Bloqueado para descarte
                             else:
                                 resultado_txt = f"P{int(pos_c)}"
+                                descartable = True   # SÍ descartable
                         else:
                             resultado_txt = "Puntos extra"
+                            descartable = True
                     else:
                         puntos_fecha = 0.0
                         resultado_txt = "-"
+                        descartable = True  # Ausencia -> SÍ descartable
                     
                     puntos_por_piloto_fecha.setdefault(piloto, {})[num_fecha] = puntos_fecha
+                    descartable_por_piloto_fecha.setdefault(piloto, {})[num_fecha] = descartable
                     resultados_info.setdefault(piloto, {})[num_fecha] = resultado_txt
 
             # 1. Punto de partida en 0 para todos
             for p in todos_pilotos:
                 auto_p = mapa_autos_df.get(p, "-")
                 datos_evolucion_limpios.append({
-                    "Piloto": p, 
-                    "FechaNum": 0, 
-                    "Gran Premio": "0. Inicio",
-                    "Puntos Acumulados": 0.0,
-                    "Circuito": "Inicio", 
-                    "Resultado": "-", 
-                    "LastreInicial": "0 Kg", 
-                    "Auto": auto_p,
-                    "TextoPuntos": ""
+                    "Piloto": p, "FechaNum": 0, "Gran Premio": "0. Inicio",
+                    "Puntos Acumulados": 0.0, "Circuito": "Inicio", "Resultado": "-", 
+                    "LastreInicial": "0 Kg", "Auto": auto_p, "TextoPuntos": ""
                 })
 
             cantidad_fechas_disputadas = len(fechas_reales)
 
-            # 2. Recorrido acumulando y descontando únicamente la peor fecha
+            # 2. Acumular fecha a fecha aplicando el descarte filtrado
             for idx, f_real in enumerate(fechas_reales):
                 num_fecha = idx + 1
                 nombre_fecha_eje_x = f"Fecha {num_fecha}"
                 
                 for piloto in todos_pilotos:
-                    pts_hasta_aqui = [puntos_por_piloto_fecha.get(piloto, {}).get(f_n, 0.0) for f_n in range(1, num_fecha + 1)]
+                    fechas_hasta_aqui = []
+                    for f_n in range(1, num_fecha + 1):
+                        pts = puntos_por_piloto_fecha.get(piloto, {}).get(f_n, 0.0)
+                        desc = descartable_por_piloto_fecha.get(piloto, {}).get(f_n, True)
+                        fechas_hasta_aqui.append({"puntos": pts, "descartable": desc})
                     
+                    suma_hasta_aqui = sum(item["puntos"] for item in fechas_hasta_aqui)
+
                     if aplicar_descarte:
-                        fechas_totales = pts_hasta_aqui
-                        if len(fechas_totales) >= 2:
-                            peor_fecha_valida = min(fechas_totales)
-                            total_actual = sum(fechas_totales) - peor_fecha_valida
+                        if len(fechas_hasta_aqui) >= 2:
+                            descartables_validas = [item for item in fechas_hasta_aqui if item["descartable"]]
+                            if descartables_validas:
+                                peor_val = min(item["puntos"] for item in descartables_validas)
+                                total_actual = suma_hasta_aqui - peor_val
+                            else:
+                                total_actual = suma_hasta_aqui
                         else:
-                            total_actual = sum(fechas_totales)
+                            total_actual = suma_hasta_aqui
                     else:
-                        total_actual = sum(pts_hasta_aqui)
+                        total_actual = suma_hasta_aqui
 
                     if total_actual > max_puntaje_detectado:
                         max_puntaje_detectado = total_actual
@@ -772,14 +818,9 @@ if seccion_menu == "Resumen General":
                     auto_p = mapa_autos_df.get(piloto, "-")
                     
                     datos_evolucion_limpios.append({
-                        "Piloto": piloto, 
-                        "FechaNum": num_fecha,
-                        "Gran Premio": nombre_fecha_eje_x, 
-                        "Puntos Acumulados": total_actual,
-                        "Circuito": f_real, 
-                        "Resultado": resultado_txt, 
-                        "LastreInicial": f"{lastre_val} Kg",
-                        "Auto": auto_p,
+                        "Piloto": piloto, "FechaNum": num_fecha, "Gran Premio": nombre_fecha_eje_x, 
+                        "Puntos Acumulados": total_actual, "Circuito": f_real, "Resultado": resultado_txt, 
+                        "LastreInicial": f"{lastre_val} Kg", "Auto": auto_p,
                         "TextoPuntos": str(int(total_actual)) if total_actual > 0 else ""
                     })
 
@@ -789,15 +830,9 @@ if seccion_menu == "Resumen General":
                 for piloto in todos_pilotos:
                     auto_p = mapa_autos_df.get(piloto, "-")
                     datos_evolucion_limpios.append({
-                        "Piloto": piloto, 
-                        "FechaNum": i,
-                        "Gran Premio": nombre_fecha_eje_x, 
-                        "Puntos Acumulados": None, 
-                        "Circuito": "Pendiente", 
-                        "Resultado": "-", 
-                        "LastreInicial": "0 Kg", 
-                        "Auto": auto_p,
-                        "TextoPuntos": ""
+                        "Piloto": piloto, "FechaNum": i, "Gran Premio": nombre_fecha_eje_x, 
+                        "Puntos Acumulados": None, "Circuito": "Pendiente", "Resultado": "-", 
+                        "LastreInicial": "0 Kg", "Auto": auto_p, "TextoPuntos": ""
                     })
 
             df_melted_evolucion = pd.DataFrame(datos_evolucion_limpios)
