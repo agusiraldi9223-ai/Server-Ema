@@ -602,10 +602,10 @@ if seccion_menu == "Resumen General":
         aplicar_descarte = st.session_state.descontar_peor
         col_fecha = "Fecha" if "Fecha" in df_global.columns else "Circuito"
 
-        # --- CÁLCULO DE LASTRES (ACUMULADO POR VICTORIAS) ---
+        # --- CÁLCULO DE LASTRES POR FECHA Y ACUMULADO ---
         lastre_por_piloto_por_fecha = {}
         lastre_actual_sim = {p: 0 for p in todos_pilotos} if 'todos_pilotos' in locals() else {}
-        
+
         if 'fechas_reales' in locals() and fechas_reales and 'df_global' in locals() and not df_global.empty:
             for idx_f, f_real in enumerate(fechas_reales):
                 lastre_por_piloto_por_fecha[(idx_f + 1)] = lastre_actual_sim.copy()
@@ -617,7 +617,7 @@ if seccion_menu == "Resumen General":
                         if p_g in lastre_actual_sim:
                             lastre_actual_sim[p_g] = min(50, lastre_actual_sim[p_g] + 10)
 
-        # --- TABLA CAMPEONATO (EVALUACIÓN PRECISA DE CEROS DESCARTABLES) ---
+        # --- TABLA CAMPEONATO (EVALUACIÓN PRECISA DE CEROS DESCARTABLES Y LASTRES) ---
         if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
             registros_completos_tabla = []
             
@@ -636,18 +636,18 @@ if seccion_menu == "Resumen General":
                     
                     # REGLA DE ELEGIBILIDAD PARA EL DESCARTE
                     if df_piloto_f.empty:
-                        descartable = True  # Ausencia -> SÍ se puede descartar
+                        descartable = True  # Ausencia -> SÍ descartable
                     else:
                         df_carrera_p = df_piloto_f[df_piloto_f["Tipo"] == "Carrera"]
                         if df_carrera_p.empty:
                             descartable = True  # No corrió la carrera principal -> SÍ descartable
                         else:
                             vueltas_p = df_carrera_p["Vueltas"].values[0]
-                            # Si dio al menos 1 vuelta pero NO llegó al 75% -> NO SE PUEDE DESCARTAR (Protegido)
+                            # Si dio al menos 1 vuelta pero NO llegó al 75% -> NO SE PUEDE DESCARTAR
                             if pts_f == 0 and vueltas_p > 0 and vueltas_p < vueltas_min_f:
                                 descartable = False 
                             else:
-                                descartable = True   # Sumó puntos, ausente, o llegó al 75% (0 legítimo) -> SÍ descartable
+                                descartable = True   # Sumó puntos, ausente, o llegó al 75% -> SÍ descartable
 
                     registros_completos_tabla.append({
                         "Piloto": piloto,
@@ -668,9 +668,7 @@ if seccion_menu == "Resumen General":
                 suma_total = grupo["Puntos"].sum()
                 
                 if len(grupo) >= 2:
-                    # Filtramos únicamente las fechas habilitadas para descartarse
                     fechas_descartables = grupo[grupo["Descartable"] == True]
-                    
                     if not fechas_descartables.empty:
                         peor_val = fechas_descartables["Puntos"].min()
                         puntos_netos = suma_total - peor_val
@@ -688,10 +686,10 @@ if seccion_menu == "Resumen General":
         # Mapeo de modelos de auto
         mapa_autos = df_global.groupby("Piloto")["Auto"].agg(lambda x: x.iloc[0] if not x.empty else "-").to_dict() if "Auto" in df_global.columns else {}
         if "Auto" not in tabla_campeonato.columns:
-            tabla_campeonato["Auto"] = tabla_campeonato["Piloto"].map(lambda p: mapa_autos.get(p, "BMW"))
+            tabla_campeonato["Auto"] = tabla_campeonato["Piloto"].map(lambda p: mapa_autos.get(p, "-"))
 
         tabla_campeonato = tabla_campeonato.sort_values(by="Puntos", ascending=False).reset_index(drop=True)
-        tabla_campeonato["Lastre Acumulado"] = tabla_campeonato["Piloto"].map(lambda p: f"{lastre_actual_sim.get(p, 0)} Kg" if 'lastre_actual_sim' in locals() else "0 Kg")
+        tabla_campeonato["Lastre Acumulado"] = tabla_campeonato["Piloto"].map(lambda p: f"{lastre_actual_sim.get(p, 0)} Kg")
         tabla_campeonato.insert(0, "Pos", range(1, len(tabla_campeonato) + 1))
         
         # --- TABLA HTML ORIGINAL ---
@@ -721,7 +719,7 @@ if seccion_menu == "Resumen General":
         else:
             st.info("Sube archivos de resultados para ver el campeonato.")
 
-    # --- EVOLUCIÓN DEL CAMPEONATO (GRÁFICO CON REGLA DE CEROS NO DESCARTABLES) ---
+    # --- EVOLUCIÓN DEL CAMPEONATO (GRÁFICO CON CEROS NO DESCARTABLES Y LASTRES HISTÓRICOS) ---
     if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
         st.markdown("---")
         with st.container():
@@ -756,17 +754,17 @@ if seccion_menu == "Resumen General":
                             
                             if puntos_fecha == 0 and vueltas_p > 0 and vueltas_p < vueltas_min_f:
                                 resultado_txt = f"P{int(pos_c)} (No puntúa < 75%)"
-                                descartable = False  # Abandono temprano -> Bloqueado para descarte
+                                descartable = False
                             else:
                                 resultado_txt = f"P{int(pos_c)}"
-                                descartable = True   # SÍ descartable
+                                descartable = True
                         else:
                             resultado_txt = "Puntos extra"
                             descartable = True
                     else:
                         puntos_fecha = 0.0
                         resultado_txt = "-"
-                        descartable = True  # Ausencia -> SÍ descartable
+                        descartable = True
                     
                     puntos_por_piloto_fecha.setdefault(piloto, {})[num_fecha] = puntos_fecha
                     descartable_por_piloto_fecha.setdefault(piloto, {})[num_fecha] = descartable
@@ -783,7 +781,7 @@ if seccion_menu == "Resumen General":
 
             cantidad_fechas_disputadas = len(fechas_reales)
 
-            # 2. Acumular fecha a fecha aplicando el descarte filtrado
+            # 2. Acumular fecha a fecha aplicando la regla de descarte
             for idx, f_real in enumerate(fechas_reales):
                 num_fecha = idx + 1
                 nombre_fecha_eje_x = f"Fecha {num_fecha}"
