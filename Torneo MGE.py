@@ -603,6 +603,7 @@ if seccion_menu == "Resumen General":
         col_fecha = "Fecha" if "Fecha" in df_global.columns else "Circuito"
 
         # --- TABLA CAMPEONATO (EVALUACIÓN PRECISA DE CEROS DESCARTABLES) ---
+# --- TABLA CAMPEONATO (EVALUACIÓN PRECISA DE CEROS DESCARTABLES) ---
         if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
             registros_completos_tabla = []
             
@@ -653,7 +654,7 @@ if seccion_menu == "Resumen General":
                 suma_total = grupo["Puntos"].sum()
                 
                 if len(grupo) >= 2:
-                    # Filtramos únicamente las fechas que están habilitadas para descartarse
+                    # Filtramos únicamente las fechas habilitadas para descartarse
                     fechas_descartables = grupo[grupo["Descartable"] == True]
                     
                     if not fechas_descartables.empty:
@@ -670,7 +671,7 @@ if seccion_menu == "Resumen General":
         else:
             tabla_campeonato = df_campeonato_completo.groupby("Piloto")["Puntos"].sum().reset_index()
 
-        # Aseguramos el mapeo de autos para evitar errores
+        # Mapeo de modelos de auto
         mapa_autos = df_global.groupby("Piloto")["Auto"].agg(lambda x: x.iloc[0] if not x.empty else "-").to_dict() if "Auto" in df_global.columns else {}
         if "Auto" not in tabla_campeonato.columns:
             tabla_campeonato["Auto"] = tabla_campeonato["Piloto"].map(lambda p: mapa_autos.get(p, "BMW"))
@@ -680,30 +681,31 @@ if seccion_menu == "Resumen General":
         tabla_campeonato.insert(0, "Pos", range(1, len(tabla_campeonato) + 1))
         
         # --- TABLA HTML ORIGINAL ---
-        html_table = '<div style="overflow-x: auto; background-color: #111827; padding: 20px; border-radius: 12px; border: 1px solid #1f2937;">'
-        html_table += '<table style="width: 100%; border-collapse: collapse; color: #ffffff; font-family: sans-serif; font-size: 14px;">'
-        html_table += '<thead><tr style="border-bottom: 2px solid #374151; text-align: left; background-color: #1f2937;">'
-        html_table += '<th style="padding: 12px; font-weight: 600;">Pos</th>'
-        html_table += '<th style="padding: 12px; font-weight: 600;">Piloto</th>'
-        html_table += '<th style="padding: 12px; font-weight: 600;">Modelo</th>'
-        html_table += '<th style="padding: 12px; font-weight: 600;">Puntos</th>'
-        html_table += '<th style="padding: 12px; font-weight: 600;">Lastre Acumulado</th>'
-        html_table += '</tr></thead><tbody>'
-        
-        for idx, row in tabla_campeonato.iterrows():
-            bg_color = "#111827" if idx % 2 == 0 else "#1a2332"
-            html_table += f'<tr style="border-bottom: 1px solid #1f2937; background-color: {bg_color};">'
-            html_table += f'<td style="padding: 12px;">#{row["Pos"]}</td>'
-            html_table += f'<td style="padding: 12px; font-weight: 500;">{row["Piloto"]}</td>'
-            html_table += f'<td style="padding: 12px; color: #94a3b8;">{row["Auto"]}</td>'
-            html_table += f'<td style="padding: 12px; font-weight: bold; color: #3b82f6;">{row["Puntos"]}</td>'
-            html_table += f'<td style="padding: 12px;">{row["Lastre Acumulado"]}</td>'
-            html_table += '</tr>'
-        
-        html_table += '</tbody></table></div>'
-        st.markdown(html_table, unsafe_allow_html=True)
-    else:
-        st.info("Sube archivos de resultados para ver el campeonato.")
+        if not tabla_campeonato.empty:
+            html_table = '<div style="overflow-x: auto; background-color: #111827; padding: 20px; border-radius: 12px; border: 1px solid #1f2937;">'
+            html_table += '<table style="width: 100%; border-collapse: collapse; color: #ffffff; font-family: sans-serif; font-size: 14px;">'
+            html_table += '<thead><tr style="border-bottom: 2px solid #374151; text-align: left; background-color: #1f2937;">'
+            html_table += '<th style="padding: 12px; font-weight: 600;">Pos</th>'
+            html_table += '<th style="padding: 12px; font-weight: 600;">Piloto</th>'
+            html_table += '<th style="padding: 12px; font-weight: 600;">Modelo</th>'
+            html_table += '<th style="padding: 12px; font-weight: 600;">Puntos</th>'
+            html_table += '<th style="padding: 12px; font-weight: 600;">Lastre Acumulado</th>'
+            html_table += '</tr></thead><tbody>'
+            
+            for idx, row in tabla_campeonato.iterrows():
+                bg_color = "#111827" if idx % 2 == 0 else "#1a2332"
+                html_table += f'<tr style="border-bottom: 1px solid #1f2937; background-color: {bg_color};">'
+                html_table += f'<td style="padding: 12px;">#{row["Pos"]}</td>'
+                html_table += f'<td style="padding: 12px; font-weight: 500;">{row["Piloto"]}</td>'
+                html_table += f'<td style="padding: 12px; color: #94a3b8;">{row["Auto"]}</td>'
+                html_table += f'<td style="padding: 12px; font-weight: bold; color: #3b82f6;">{row["Puntos"]}</td>'
+                html_table += f'<td style="padding: 12px;">{row["Lastre Acumulado"]}</td>'
+                html_table += '</tr>'
+            
+            html_table += '</tbody></table></div>'
+            st.markdown(html_table, unsafe_allow_html=True)
+        else:
+            st.info("Sube archivos de resultados para ver el campeonato.")
 
     # --- EVOLUCIÓN DEL CAMPEONATO (GRÁFICO CON REGLA DE CEROS NO DESCARTABLES) ---
     if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
