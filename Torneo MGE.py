@@ -581,7 +581,21 @@ if seccion_menu == "Resumen General":
                 df_autos["Auto"] = df_autos.apply(
                     lambda row: correccion_definitiva.get(row["Piloto"], row["Auto"]), axis=1
                 )
-
+# --- CÁLCULO DE LASTRES POR FECHA Y ACUMULADO ---
+    lastre_por_piloto_por_fecha = {}
+    lastre_actual_sim = {p: 0 for p in todos_pilotos} if 'todos_pilotos' in locals() else {}
+    
+    if 'fechas_reales' in locals() and fechas_reales and 'df_global' in locals() and not df_global.empty:
+        for idx_f, f_real in enumerate(fechas_reales):
+            lastre_por_piloto_por_fecha[(idx_f + 1)] = lastre_actual_sim.copy()
+            df_f = df_global[(df_global["Fecha"] == f_real) & (df_global["Tipo"] == "Carrera")]
+            if not df_f.empty and "Posición" in df_f.columns:
+                ganadores = df_f[df_f["Posición"] == 1]
+                for _, g_row in ganadores.iterrows():
+                    p_g = g_row["Piloto"]
+                    if p_g in lastre_actual_sim:
+                        lastre_actual_sim[p_g] = min(50, lastre_actual_sim[p_g] + 10)
+                        
 # --- ESTADO PARA EL BOTÓN DE DESCARTE ---
         if "descontar_peor" not in st.session_state:
             st.session_state.descontar_peor = False
