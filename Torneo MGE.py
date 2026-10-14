@@ -927,38 +927,6 @@ if seccion_menu == "Resumen General":
                     hovertemplate="<br><b>Piloto:</b> %{customdata[3]}<br>🚗 <b>Modelo:</b> %{customdata[4]}<br>📍 <b>Circuito:</b> %{customdata[0]}<br>🏁 <b>Resultado:</b> %{customdata[1]}<br>⚖️ <b>Lastre:</b> %{customdata[2]} <br>🏆 <b>Puntos Acumulados:</b> %{y} pts<extra></extra>"
                 )
                 
-                fig_evolucion.update_layout(
-                    hovermode="closest", 
-                    plot_bgcolor="#111827", 
-                    paper_bgcolor="#111827", 
-                    margin=dict(l=20, r=140, t=30, b=20), 
-                    height=500,
-                    xaxis=dict(
-                        tickmode="array",
-                        tickvals=tickvals_x,
-                        ticktext=ticktext_x,
-                        range=[-0.1, 10.2], 
-                        showgrid=True,
-                        gridcolor='rgba(255, 255, 255, 0.08)'
-                    ),
-                    yaxis=dict(
-                        range=[0, max(50, int(max_puntaje_detectado * 1.15))], 
-                        autorange=False,
-                        showgrid=True,
-                        gridcolor='rgba(255, 255, 255, 0.08)'
-                    ),
-                    legend=dict(
-                        title=dict(text="<b>Pilotos</b>", font=dict(size=13, color="white")),
-                        font=dict(size=12, color="white"),
-                        bgcolor="rgba(17, 24, 39, 0.8)",
-                        bordercolor="rgba(255, 255, 255, 0.2)",
-                        borderwidth=1,
-                        x=1.02, y=1, xanchor="left", yanchor="top"
-                    )
-                )
-                st.plotly_chart(fig_evolucion, use_container_width=True)
-            else:
-                st.info("No hay datos disponibles para mostrar en el gráfico de evolución del campeonato.")
     # --- DESGLOSE POR FECHA / CIRCUITO (ORDENADO CRONOLÓGICAMENTE) ---
     if 'df_global' in locals() and not df_global.empty:
         st.markdown("---")
