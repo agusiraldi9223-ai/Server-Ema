@@ -617,9 +617,10 @@ if seccion_menu == "Resumen General":
                         if p_g in lastre_actual_sim:
                             lastre_actual_sim[p_g] = min(50, lastre_actual_sim[p_g] + 10)
 
-        # --- TABLA CAMPEONATO (EVALUACIÓN PRECISA DE CEROS DESCARTABLES Y LASTRES) ---
+        # --- TABLA CAMPEONATO (EVALUACIÓN PRECISA DE CEROS Y ÚLTIMA FECHA NO DESCARTABLE) ---
         if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
             registros_completos_tabla = []
+            ultima_fecha_real = fechas_reales[-1]  # Identificamos la última fecha cargada
             
             for f_real in fechas_reales:
                 df_f = df_global[df_global["Fecha"] == f_real] if "Fecha" in df_global.columns else pd.DataFrame()
@@ -635,15 +636,17 @@ if seccion_menu == "Resumen General":
                     pts_f = float(df_piloto_f["Puntos"].sum()) if not df_piloto_f.empty else 0.0
                     
                     # REGLA DE ELEGIBILIDAD PARA EL DESCARTE
-                    if df_piloto_f.empty:
-                        descartable = True  # Ausencia -> SÍ descartable
+                    if f_real == ultima_fecha_real:
+                        descartable = False  # ⚠️ La última fecha NUNCA se puede descartar
+                    elif df_piloto_f.empty:
+                        descartable = True   # Ausencia en fechas previas -> SÍ descartable
                     else:
                         df_carrera_p = df_piloto_f[df_piloto_f["Tipo"] == "Carrera"]
                         if df_carrera_p.empty:
                             descartable = True  # No corrió la carrera principal -> SÍ descartable
                         else:
                             vueltas_p = df_carrera_p["Vueltas"].values[0]
-                            # Si dio al menos 1 vuelta pero NO llegó al 75% -> NO SE PUEDE DESCARTAR
+                            # Si dio al menos 1 vuelta pero NO llegó al 75% -> NO SE PUEDE DESCARTAR (Protegido)
                             if pts_f == 0 and vueltas_p > 0 and vueltas_p < vueltas_min_f:
                                 descartable = False 
                             else:
@@ -719,7 +722,7 @@ if seccion_menu == "Resumen General":
         else:
             st.info("Sube archivos de resultados para ver el campeonato.")
 
-    # --- EVOLUCIÓN DEL CAMPEONATO (GRÁFICO CON CEROS NO DESCARTABLES Y LASTRES HISTÓRICOS) ---
+    # --- EVOLUCIÓN DEL CAMPEONATO (GRÁFICO CON REGLAS DE DESCARTE Y ÚLTIMA FECHA PROTEGIDA) ---
     if 'todos_pilotos' in locals() and todos_pilotos and 'fechas_reales' in locals() and fechas_reales:
         st.markdown("---")
         with st.container():
@@ -732,6 +735,7 @@ if seccion_menu == "Resumen General":
             puntos_por_piloto_fecha = {}
             descartable_por_piloto_fecha = {}
             resultados_info = {}
+            ultima_fecha_real = fechas_reales[-1]
             
             for f_idx, f_real in enumerate(fechas_reales):
                 num_fecha = f_idx + 1
@@ -752,19 +756,22 @@ if seccion_menu == "Resumen General":
                             pos_c = res_carrera['Posición'].values[0]
                             vueltas_p = res_carrera['Vueltas'].values[0]
                             
-                            if puntos_fecha == 0 and vueltas_p > 0 and vueltas_p < vueltas_min_f:
+                            if f_real == ultima_fecha_real:
+                                resultado_txt = f"P{int(pos_c)}"
+                                descartable = False  # ⚠️ La última fecha no es descartable
+                            elif puntos_fecha == 0 and vueltas_p > 0 and vueltas_p < vueltas_min_f:
                                 resultado_txt = f"P{int(pos_c)} (No puntúa < 75%)"
-                                descartable = False
+                                descartable = False  # Abandono temprano -> No descartable
                             else:
                                 resultado_txt = f"P{int(pos_c)}"
                                 descartable = True
                         else:
                             resultado_txt = "Puntos extra"
-                            descartable = True
+                            descartable = False if f_real == ultima_fecha_real else True
                     else:
                         puntos_fecha = 0.0
                         resultado_txt = "-"
-                        descartable = True
+                        descartable = False if f_real == ultima_fecha_real else True
                     
                     puntos_por_piloto_fecha.setdefault(piloto, {})[num_fecha] = puntos_fecha
                     descartable_por_piloto_fecha.setdefault(piloto, {})[num_fecha] = descartable
