@@ -1921,7 +1921,7 @@ elif seccion_menu == "Perfil de Circuitos":
             "Autódromo de Rafaela": "Veloces", "Rafaela": "Veloces",
             "Autódromo de Rafaela (Variante Óvalo Puro sin chicanas)": "Veloces",
             "Autódromo Toay / Ciudad de Santa Rosa": "Veloces", "Toay": "Veloces",
-            "Autódromo Internacional Termas de Río Hondo": "Veloces", "Termas de Río Hondo": "Veloces",
+            "Autódromo Termas": "Veloces", "Termas": "Veloces",
             "Autódromo de San Nicolás": "Veloces", "San Nicolás": "Veloces",
             "Autódromo Rubén Luis Di Palma": "Veloces", "Mar de Ajó": "Veloces",
             "Autódromo Ciudad de Nueve de Julio": "Veloces", "Nueve de Julio": "Veloces",
