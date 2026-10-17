@@ -1,0 +1,1543 @@
+{
+  "Version": 7,
+  "Cars": [
+    {
+      "BallastKG": 0,
+      "CarId": 0,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "24_raptor_pacecar_rabipmods",
+      "Restrictor": 0,
+      "Skin": "MGE ARG",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 10,
+      "CarId": 1,
+      "Driver": {
+        "Guid": "76561198741668026",
+        "GuidsList": [
+          "76561198741668026"
+        ],
+        "Name": "agus_iraldi92",
+        "Nation": "PLA",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_camaro2026",
+      "Restrictor": 0,
+      "Skin": "#TC 07 Agustin Iraldi",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 12,
+      "MaxPing": 28
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 2,
+      "Driver": {
+        "Guid": "76561199040949937",
+        "GuidsList": [
+          "76561199040949937"
+        ],
+        "Name": "Pablo Merino",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_camaro2026",
+      "Restrictor": 0,
+      "Skin": "#TC 98 Lucas Horisberger",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 12,
+      "MaxPing": 200
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 3,
+      "Driver": {
+        "Guid": "76561198746317397",
+        "GuidsList": [
+          "76561198746317397"
+        ],
+        "Name": "rubdri",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_camaro2026",
+      "Restrictor": 0,
+      "Skin": "#TC 35 Rubdri",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 23,
+      "MaxPing": 41
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 4,
+      "Driver": {
+        "Guid": "76561198712783418",
+        "GuidsList": [
+          "76561198712783418"
+        ],
+        "Name": "Ale Charvey",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_camaro2026",
+      "Restrictor": 0,
+      "Skin": "#TC 22 Ale Charvey",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 5,
+      "Driver": {
+        "Guid": "76561198978609321",
+        "GuidsList": [
+          "76561198978609321"
+        ],
+        "Name": "lucas echegaray",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_camaro2026",
+      "Restrictor": 0,
+      "Skin": "#TC 77 Lucas Echegaray",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 6,
+      "Driver": {
+        "Guid": "76561198293153434",
+        "GuidsList": [
+          "76561198293153434"
+        ],
+        "Name": "Emanuel Grasso",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_m42026",
+      "Restrictor": 0,
+      "Skin": "#TC Test",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 10,
+      "CarId": 7,
+      "Driver": {
+        "Guid": "76561199040949937",
+        "GuidsList": [
+          "76561199040949937",
+          "76561199086379901"
+        ],
+        "Name": "Pablo Merino",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_m42026",
+      "Restrictor": 0,
+      "Skin": "#TC 92 Franco Domina",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 14,
+      "MaxPing": 45
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 8,
+      "Driver": {
+        "Guid": "76561198967244855",
+        "GuidsList": [
+          "76561198967244855"
+        ],
+        "Name": "Pablo Figueroa",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_m42026",
+      "Restrictor": 0,
+      "Skin": "#TC 89 Pablo Figueroa",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 9,
+      "Driver": {
+        "Guid": "76561199512809064",
+        "GuidsList": [
+          "76561199512809064"
+        ],
+        "Name": "Exequiel Martinez",
+        "Nation": "ITA",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_m42026",
+      "Restrictor": 0,
+      "Skin": "#TC Test",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 26,
+      "MaxPing": 999
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 10,
+      "Driver": {
+        "Guid": "76561199042594701",
+        "GuidsList": [
+          "76561199042594701"
+        ],
+        "Name": "MARIANO.M",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_m42026",
+      "Restrictor": 0,
+      "Skin": "#TC Test",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 10,
+      "CarId": 11,
+      "Driver": {
+        "Guid": "76561199122456473",
+        "GuidsList": [
+          "76561199122456473"
+        ],
+        "Name": "Gaspar Celeste",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_challenger2026",
+      "Restrictor": 0,
+      "Skin": "#TC 24 Gaspar Celeste",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 12,
+      "Driver": {
+        "Guid": "76561199068734403",
+        "GuidsList": [
+          "76561199068734403"
+        ],
+        "Name": "Facu Gallardo",
+        "Nation": "ITA",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_challenger2026",
+      "Restrictor": 0,
+      "Skin": "#TC Test",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 50,
+      "MaxPing": 52
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 13,
+      "Driver": {
+        "Guid": "76561199122456473",
+        "GuidsList": [
+          "76561199122456473"
+        ],
+        "Name": "Gaspar Celeste",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_challenger2026",
+      "Restrictor": 0,
+      "Skin": "#TC Test",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 32,
+      "MaxPing": 3071
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 14,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_challenger2026",
+      "Restrictor": 0,
+      "Skin": "#TC Test",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 15,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_challenger2026",
+      "Restrictor": 0,
+      "Skin": "#TC Test",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 10,
+      "CarId": 16,
+      "Driver": {
+        "Guid": "76561199549412877",
+        "GuidsList": [
+          "76561199549412877"
+        ],
+        "Name": "juanchii",
+        "Nation": "ITA",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_mercedes2026",
+      "Restrictor": 0,
+      "Skin": "#TC 10 Juanchi Oustry",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 34,
+      "MaxPing": 1488
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 17,
+      "Driver": {
+        "Guid": "76561199512809064",
+        "GuidsList": [
+          "76561199512809064"
+        ],
+        "Name": "Exequiel Martinez",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_mustang2026",
+      "Restrictor": 0,
+      "Skin": "# Test",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 18,
+      "Driver": {
+        "Guid": "76561199391672713",
+        "GuidsList": [
+          "76561199391672713"
+        ],
+        "Name": "Alan245",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_mustang2026",
+      "Restrictor": 0,
+      "Skin": "#25 Alan Lasserre",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 17,
+      "MaxPing": 4859
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 19,
+      "Driver": {
+        "Guid": "76561199591997903",
+        "GuidsList": [
+          "76561199591997903"
+        ],
+        "Name": "Ivan Lasserre",
+        "Nation": "PLA",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_mustang2026",
+      "Restrictor": 0,
+      "Skin": "#33 Ivan Lasserre",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 14,
+      "MaxPing": 30
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 20,
+      "Driver": {
+        "Guid": "76561199481977607",
+        "GuidsList": [
+          "76561199481977607"
+        ],
+        "Name": "Juan Martin Hernandez",
+        "Nation": "PLA",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_mustang2026",
+      "Restrictor": 0,
+      "Skin": "# Test",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 25,
+      "MaxPing": 41
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 21,
+      "Driver": {
+        "Guid": "76561198841536193",
+        "GuidsList": [
+          "76561198841536193"
+        ],
+        "Name": "Fede Oris",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_torino2026",
+      "Restrictor": 0,
+      "Skin": "#TC 146 Federico Oris",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 22,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_torino2026",
+      "Restrictor": 0,
+      "Skin": "# Test",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 23,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_torino2026",
+      "Restrictor": 0,
+      "Skin": "# Test",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 24,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_torino2026",
+      "Restrictor": 0,
+      "Skin": "# Test",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 25,
+      "Driver": {
+        "Guid": "76561199512809064",
+        "GuidsList": [
+          "76561199512809064"
+        ],
+        "Name": "Exequiel Martinez",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_mercedes2026",
+      "Restrictor": 0,
+      "Skin": "#TC 17 Exequiel Martinez",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 26,
+      "Driver": {
+        "Guid": "76561199042594701",
+        "GuidsList": [
+          "76561199042594701"
+        ],
+        "Name": "MARIANO.M",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_mercedes2026",
+      "Restrictor": 0,
+      "Skin": "#TC Test",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 27,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_mercedes2026",
+      "Restrictor": 0,
+      "Skin": "#TC Test",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 28,
+      "Driver": {
+        "Guid": "76561199042594701",
+        "GuidsList": [
+          "76561199042594701"
+        ],
+        "Name": "MARIANO.M",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_mustang2026",
+      "Restrictor": 0,
+      "Skin": "# Test",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 35,
+      "MaxPing": 45
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 29,
+      "Driver": {
+        "Guid": "76561198293153434",
+        "GuidsList": [
+          "76561198293153434"
+        ],
+        "Name": "Emanuel Grasso",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_camry2026",
+      "Restrictor": 0,
+      "Skin": "#TC 11 Emanuel Grasso",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 31,
+      "MaxPing": 1221
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 30,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_camry2026",
+      "Restrictor": 0,
+      "Skin": "#TC Test",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 31,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_camry2026",
+      "Restrictor": 0,
+      "Skin": "#TC Test",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 32,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_torino2026",
+      "Restrictor": 0,
+      "Skin": "#TC 193 Castro",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 33,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_mercedes2026",
+      "Restrictor": 0,
+      "Skin": "#TC 231 Urcera",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 34,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_camry2026",
+      "Restrictor": 0,
+      "Skin": "#TC 119",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 35,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_camry2026",
+      "Restrictor": 0,
+      "Skin": "#TC24 Di Palma",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 36,
+      "Driver": {
+        "Guid": "76561199577506857",
+        "GuidsList": [
+          "76561199577506857"
+        ],
+        "Name": "Hugo Cabot",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "asm_camaro2026",
+      "Restrictor": 0,
+      "Skin": "#TC 45 Hugo Cabot",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 11,
+      "MaxPing": 983
+    }
+  ],
+  "Events": [
+    {
+      "CarId": 2,
+      "Driver": {
+        "Guid": "76561199040949937",
+        "GuidsList": [
+          "76561199040949937",
+          "76561199056404582",
+          "76561198741668026"
+        ],
+        "Name": "Pablo Merino",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "ImpactSpeed": 71.13496,
+      "OtherCarId": 0,
+      "OtherDriver": {
+        "Guid": "",
+        "GuidsList": null,
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "RelPosition": {
+        "X": 0.88232994,
+        "Y": -0.32849225,
+        "Z": 1.792318
+      },
+      "Type": "COLLISION_WITH_ENV",
+      "WorldPosition": {
+        "X": 97.113914,
+        "Y": 0.007018527,
+        "Z": 253.004
+      },
+      "Timestamp": 1792203658,
+      "AfterSessionEnd": false,
+      "ReplayURL": ""
+    },
+    {
+      "CarId": 13,
+      "Driver": {
+        "Guid": "76561199122456473",
+        "GuidsList": [
+          "76561199122456473"
+        ],
+        "Name": "Gaspar Celeste",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "ImpactSpeed": 42.276917,
+      "OtherCarId": 0,
+      "OtherDriver": {
+        "Guid": "",
+        "GuidsList": null,
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "RelPosition": {
+        "X": -0.8316076,
+        "Y": -0.35444275,
+        "Z": 2.1643083
+      },
+      "Type": "COLLISION_WITH_ENV",
+      "WorldPosition": {
+        "X": -328.77768,
+        "Y": -0.6988681,
+        "Z": 290.17313
+      },
+      "Timestamp": 1792203748,
+      "AfterSessionEnd": true,
+      "ReplayURL": ""
+    }
+  ],
+  "Laps": [
+    {
+      "BallastKG": 0,
+      "CarId": 18,
+      "CarModel": "asm_mustang2026",
+      "Cuts": 0,
+      "DriverGuid": "76561199391672713",
+      "DriverName": "Alan245",
+      "LapTime": 168852,
+      "Restrictor": 0,
+      "Sectors": [
+        105006,
+        37597,
+        26249
+      ],
+      "Timestamp": 1792203302,
+      "Tyre": "S",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 11,
+        "WindDirection": 36,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 36,
+      "CarModel": "asm_camaro2026",
+      "Cuts": 0,
+      "DriverGuid": "76561199577506857",
+      "DriverName": "Hugo Cabot",
+      "LapTime": 275593,
+      "Restrictor": 0,
+      "Sectors": [
+        213948,
+        35613,
+        26032
+      ],
+      "Timestamp": 1792203401,
+      "Tyre": "S",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 11,
+        "WindDirection": 36,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 18,
+      "CarModel": "asm_mustang2026",
+      "Cuts": 0,
+      "DriverGuid": "76561199391672713",
+      "DriverName": "Alan245",
+      "LapTime": 106722,
+      "Restrictor": 0,
+      "Sectors": [
+        47241,
+        33957,
+        25524
+      ],
+      "Timestamp": 1792203408,
+      "Tyre": "S",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 11,
+        "WindDirection": 36,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 19,
+      "CarModel": "asm_mustang2026",
+      "Cuts": 0,
+      "DriverGuid": "76561199591997903",
+      "DriverName": "Ivan Lasserre",
+      "LapTime": 293430,
+      "Restrictor": 0,
+      "Sectors": [
+        230929,
+        35046,
+        27455
+      ],
+      "Timestamp": 1792203418,
+      "Tyre": "S",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 11,
+        "WindDirection": 36,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 29,
+      "CarModel": "asm_camry2026",
+      "Cuts": 0,
+      "DriverGuid": "76561198293153434",
+      "DriverName": "Emanuel Grasso",
+      "LapTime": 305542,
+      "Restrictor": 0,
+      "Sectors": [
+        243033,
+        34298,
+        28211
+      ],
+      "Timestamp": 1792203432,
+      "Tyre": "S",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 11,
+        "WindDirection": 36,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 10,
+      "CarId": 16,
+      "CarModel": "asm_mercedes2026",
+      "Cuts": 0,
+      "DriverGuid": "76561199549412877",
+      "DriverName": "juanchii",
+      "LapTime": 319921,
+      "Restrictor": 0,
+      "Sectors": [
+        261210,
+        33417,
+        25294
+      ],
+      "Timestamp": 1792203445,
+      "Tyre": "S",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 11,
+        "WindDirection": 36,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 36,
+      "CarModel": "asm_camaro2026",
+      "Cuts": 0,
+      "DriverGuid": "76561199577506857",
+      "DriverName": "Hugo Cabot",
+      "LapTime": 109554,
+      "Restrictor": 0,
+      "Sectors": [
+        48137,
+        35672,
+        25745
+      ],
+      "Timestamp": 1792203511,
+      "Tyre": "S",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 11,
+        "WindDirection": 36,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 19,
+      "CarModel": "asm_mustang2026",
+      "Cuts": 0,
+      "DriverGuid": "76561199591997903",
+      "DriverName": "Ivan Lasserre",
+      "LapTime": 114182,
+      "Restrictor": 0,
+      "Sectors": [
+        51938,
+        35326,
+        26918
+      ],
+      "Timestamp": 1792203532,
+      "Tyre": "S",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 11,
+        "WindDirection": 36,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 29,
+      "CarModel": "asm_camry2026",
+      "Cuts": 0,
+      "DriverGuid": "76561198293153434",
+      "DriverName": "Emanuel Grasso",
+      "LapTime": 105234,
+      "Restrictor": 0,
+      "Sectors": [
+        46652,
+        33418,
+        25164
+      ],
+      "Timestamp": 1792203537,
+      "Tyre": "S",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 11,
+        "WindDirection": 36,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 10,
+      "CarId": 16,
+      "CarModel": "asm_mercedes2026",
+      "Cuts": 0,
+      "DriverGuid": "76561199549412877",
+      "DriverName": "juanchii",
+      "LapTime": 106620,
+      "Restrictor": 0,
+      "Sectors": [
+        47732,
+        33589,
+        25299
+      ],
+      "Timestamp": 1792203551,
+      "Tyre": "S",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 11,
+        "WindDirection": 36,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 2,
+      "CarModel": "asm_camaro2026",
+      "Cuts": 0,
+      "DriverGuid": "76561199040949937",
+      "DriverName": "Pablo Merino",
+      "LapTime": 432461,
+      "Restrictor": 0,
+      "Sectors": [
+        371293,
+        35577,
+        25591
+      ],
+      "Timestamp": 1792203557,
+      "Tyre": "S",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 11,
+        "WindDirection": 36,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 9,
+      "CarModel": "asm_m42026",
+      "Cuts": 0,
+      "DriverGuid": "76561199512809064",
+      "DriverName": "Exequiel Martinez",
+      "LapTime": 484268,
+      "Restrictor": 0,
+      "Sectors": [
+        423950,
+        34057,
+        26261
+      ],
+      "Timestamp": 1792203610,
+      "Tyre": "S",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 11,
+        "WindDirection": 36,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 13,
+      "CarModel": "asm_challenger2026",
+      "Cuts": 0,
+      "DriverGuid": "76561199122456473",
+      "DriverName": "Gaspar Celeste",
+      "LapTime": 504136,
+      "Restrictor": 0,
+      "Sectors": [
+        432483,
+        38605,
+        33048
+      ],
+      "Timestamp": 1792203632,
+      "Tyre": "S",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 11,
+        "WindDirection": 36,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 2,
+      "CarModel": "asm_camaro2026",
+      "Cuts": 0,
+      "DriverGuid": "76561199040949937",
+      "DriverName": "Pablo Merino",
+      "LapTime": 113483,
+      "Restrictor": 0,
+      "Sectors": [
+        50105,
+        34596,
+        28782
+      ],
+      "Timestamp": 1792203670,
+      "Tyre": "S",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 11,
+        "WindDirection": 36,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 10,
+      "CarId": 1,
+      "CarModel": "asm_camaro2026",
+      "Cuts": 0,
+      "DriverGuid": "76561198741668026",
+      "DriverName": "agus_iraldi92",
+      "LapTime": 562630,
+      "Restrictor": 0,
+      "Sectors": [
+        503595,
+        33889,
+        25146
+      ],
+      "Timestamp": 1792203687,
+      "Tyre": "S",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 11,
+        "WindDirection": 36,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 9,
+      "CarModel": "asm_m42026",
+      "Cuts": 0,
+      "DriverGuid": "76561199512809064",
+      "DriverName": "Exequiel Martinez",
+      "LapTime": 104933,
+      "Restrictor": 0,
+      "Sectors": [
+        46299,
+        33957,
+        24677
+      ],
+      "Timestamp": 1792203715,
+      "Tyre": "S",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 11,
+        "WindDirection": 36,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 13,
+      "CarModel": "asm_challenger2026",
+      "Cuts": 0,
+      "DriverGuid": "76561199122456473",
+      "DriverName": "Gaspar Celeste",
+      "LapTime": 104649,
+      "Restrictor": 0,
+      "Sectors": [
+        46783,
+        33363,
+        24503
+      ],
+      "Timestamp": 1792203737,
+      "Tyre": "S",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 11,
+        "WindDirection": 36,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 10,
+      "CarId": 1,
+      "CarModel": "asm_camaro2026",
+      "Cuts": 0,
+      "DriverGuid": "76561198741668026",
+      "DriverName": "agus_iraldi92",
+      "LapTime": 106997,
+      "Restrictor": 0,
+      "Sectors": [
+        47373,
+        33866,
+        25758
+      ],
+      "Timestamp": 1792203794,
+      "Tyre": "S",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 11,
+        "WindDirection": 36,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    }
+  ],
+  "Result": [
+    {
+      "BallastKG": 0,
+      "BestLap": 104649,
+      "CarId": 13,
+      "CarModel": "asm_challenger2026",
+      "DriverGuid": "76561199122456473",
+      "DriverName": "Gaspar Celeste",
+      "Restrictor": 0,
+      "TotalTime": 612510,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 2
+    },
+    {
+      "BallastKG": 0,
+      "BestLap": 104933,
+      "CarId": 9,
+      "CarModel": "asm_m42026",
+      "DriverGuid": "76561199512809064",
+      "DriverName": "Exequiel Martinez",
+      "Restrictor": 0,
+      "TotalTime": 590450,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 3
+    },
+    {
+      "BallastKG": 0,
+      "BestLap": 105234,
+      "CarId": 29,
+      "CarModel": "asm_camry2026",
+      "DriverGuid": "76561198293153434",
+      "DriverName": "Emanuel Grasso",
+      "Restrictor": 0,
+      "TotalTime": 412356,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 6
+    },
+    {
+      "BallastKG": 10,
+      "BestLap": 106620,
+      "CarId": 16,
+      "CarModel": "asm_mercedes2026",
+      "DriverGuid": "76561199549412877",
+      "DriverName": "juanchii",
+      "Restrictor": 0,
+      "TotalTime": 426567,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 7
+    },
+    {
+      "BallastKG": 0,
+      "BestLap": 106722,
+      "CarId": 18,
+      "CarModel": "asm_mustang2026",
+      "DriverGuid": "76561199391672713",
+      "DriverName": "Alan245",
+      "Restrictor": 0,
+      "TotalTime": 283995,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 4
+    },
+    {
+      "BallastKG": 10,
+      "BestLap": 106997,
+      "CarId": 1,
+      "CarModel": "asm_camaro2026",
+      "DriverGuid": "76561198741668026",
+      "DriverName": "agus_iraldi92",
+      "Restrictor": 0,
+      "TotalTime": 669612,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 5
+    },
+    {
+      "BallastKG": 0,
+      "BestLap": 109554,
+      "CarId": 36,
+      "CarModel": "asm_camaro2026",
+      "DriverGuid": "76561199577506857",
+      "DriverName": "Hugo Cabot",
+      "Restrictor": 0,
+      "TotalTime": 386268,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 9
+    },
+    {
+      "BallastKG": 0,
+      "BestLap": 113483,
+      "CarId": 2,
+      "CarModel": "asm_camaro2026",
+      "DriverGuid": "76561199040949937",
+      "DriverName": "Pablo Merino",
+      "Restrictor": 0,
+      "TotalTime": 545967,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 10
+    },
+    {
+      "BallastKG": 0,
+      "BestLap": 114182,
+      "CarId": 19,
+      "CarModel": "asm_mustang2026",
+      "DriverGuid": "76561199591997903",
+      "DriverName": "Ivan Lasserre",
+      "Restrictor": 0,
+      "TotalTime": 407638,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 11
+    }
+  ],
+  "Penalties": null,
+  "TrackConfig": "termas_2022_h22",
+  "TrackName": "termas_2022_h22",
+  "Type": "QUALIFY",
+  "Date": "2026-10-16T23:24:00-03:00",
+  "SessionFile": "2026_10_16_23_24_QUALIFY",
+  "SessionConfig": {
+    "session_type": 2,
+    "name": "Qualifying",
+    "time": 10,
+    "laps": 0,
+    "is_open": 1,
+    "wait_time": 0,
+    "visibility_mode": 0,
+    "qualifying_type": 3,
+    "qualifying_number_of_laps_to_average": 0,
+    "count_out_lap": false,
+    "disable_push_to_pass": false
+  },
+  "ChampionshipID": "",
+  "RaceWeekendID": "",
+  "EventName": "TC26"
+}
