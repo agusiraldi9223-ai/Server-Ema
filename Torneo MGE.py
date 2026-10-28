@@ -1580,71 +1580,111 @@ elif seccion_menu == "Estadísticas":
             ganador_ritmo = df_resumen_ritmo.iloc[0] if not df_resumen_ritmo.empty else None
             ganador_reg = df_resumen_reg.iloc[0] if not df_resumen_reg.empty else None
 
-            # --- TRES TARJETAS PRINCIPALES ---
-            col_t1, col_t2, col_t3 = st.columns(3)
+# --- REGLA DEL 75%: Filtrar pilotos que no completaron la distancia mínima ---
+        vueltas_ganador = df_analisis["Vueltas"].max() if "Vueltas" in df_analisis.columns else (df_analisis["Vuelta"].max() if "Vuelta" in df_analisis.columns else 0)
+        vueltas_minimas_75 = vueltas_ganador * 0.75
+
+        resumen_pilotos = []
+        for p in pilotos_disponibles:
+            df_p = df_analisis[df_analisis["Piloto"] == p]
+            vueltas_piloto = df_p["Vueltas"].max() if "Vueltas" in df_p.columns else (df_p["Vuelta"].max() if "Vuelta" in df_p.columns else 0)
             
-            piloto_rec = ganador_record['Piloto'] if ganador_record is not None else '-'
-            tiempo_rec = convertir_a_min_seg(ganador_record['MejorMs']) if ganador_record is not None else '-'
-
-            piloto_rit = ganador_ritmo['Piloto'] if ganador_ritmo is not None else '-'
-            tiempo_rit = convertir_a_min_seg(ganador_ritmo['PromMs']) if ganador_ritmo is not None else '-'
-
-            piloto_reg = ganador_reg['Piloto'] if ganador_reg is not None else '-'
-            val_reg = f"±{ganador_reg['RegMs']/1000:.3f}s" if ganador_reg is not None else "N/A"
-            ref_reg = convertir_a_min_seg(ganador_reg['PromMs']) if ganador_reg is not None else '-'
-
-            with col_t1:
-                st.markdown(f"""
-                    <div style="background-color: #1e1e2f; padding: 18px; border-radius: 10px; border-left: 5px solid #ffc107; text-align: center;">
-                        <span style="font-size: 13px; color: #ffecb3; font-weight: bold;">🏁 RÉCORD DE VUELTA</span>
-                        <div style="color: #ffffff; font-size: 22px; font-weight: bold; margin: 12px 0 6px 0;">{piloto_rec}</div>
-                        <div style="color: #ffc107; font-size: 18px; font-weight: bold;">{tiempo_rec}</div>
-                        <div style="color: #94a3b8; font-size: 11px; margin-top: 6px; line-height: 1.2;">Vuelta más rápida absoluta de la sesión.</div>
-                    </div>
-                """, unsafe_allow_html=True)
+            # 💡 Si no llega al 75% del ganador (abandonos tempranos), se excluye de las estadísticas
+            if vueltas_ganador > 0 and vueltas_piloto < vueltas_minimas_75:
+                continue
                 
-            with col_t2:
-                st.markdown(f"""
-                    <div style="background-color: #1e1e2f; padding: 18px; border-radius: 10px; border-left: 5px solid #28a745; text-align: center;">
-                        <span style="font-size: 13px; color: #d4edda; font-weight: bold;">⏱️ MEJOR RITMO (VELOCIDAD)</span>
-                        <div style="color: #ffffff; font-size: 22px; font-weight: bold; margin: 12px 0 6px 0;">{piloto_rit}</div>
-                        <div style="color: #28a745; font-size: 18px; font-weight: bold;">{tiempo_rit}</div>
-                        <div style="color: #94a3b8; font-size: 11px; margin-top: 6px; line-height: 1.2;">Mide la <b>velocidad pura (promedio de todos los tiempos de vuelta validos)</b>.</div>
-                    </div>
-                """, unsafe_allow_html=True)
-                
-            with col_t3:
-                st.markdown(f"""
-                    <div style="background-color: #1e1e2f; padding: 18px; border-radius: 10px; border-left: 5px solid #17a2b8; text-align: center;">
-                        <span style="font-size: 13px; color: #d1ecf1; font-weight: bold;">📊 MEJOR REGULARIDAD (CONSISTENCIA)</span>
-                        <div style="color: #ffffff; font-size: 22px; font-weight: bold; margin: 12px 0 6px 0;">{piloto_reg}</div>
-                        <div style="color: #17a2b8; font-size: 18px; font-weight: bold;">{val_reg}</div>
-                        <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">Ref: {ref_reg}</div>
-                        <div style="color: #94a3b8; font-size: 11px; margin-top: 4px; line-height: 1.2;">Mide la <b>estabilidad (menor variacion/desvío entre vueltas)</b>.</div>
-                    </div>
-                """, unsafe_allow_html=True)
-
-            st.markdown("<br>", unsafe_allow_html=True)
-
-            # --- DESPLEGABLES DEBAJO DE LAS TARJETAS ---
-            col_d1, col_d2, col_d3 = st.columns(3)
+            df_reg_p = df_p[(df_p["Vuelta"] > 2) & (~df_p["Vuelta"].isin(vueltas_pace_car))]
             
-            with col_d2:
-                with st.expander("📋 Ver tabla completa de Ritmo"):
-                    if not df_resumen_ritmo.empty:
-                        ref_ritmo_ms = df_resumen_ritmo.iloc[0]["PromMs"]
-                        for idx, row in df_resumen_ritmo.iterrows():
-                            dif_ms = row["PromMs"] - ref_ritmo_ms
-                            dif_str = f"+{dif_ms/1000:.3f}s" if idx > 0 else "Líder"
-                            st.markdown(f"**{idx+1}. {row['Piloto']}** — {convertir_a_min_seg(row['PromMs'])} <span style='color: #94a3b8; font-size: 12px;'>({dif_str})</span>", unsafe_allow_html=True)
-                            
-            with col_d3:
-                with st.expander("📋 Ver tabla de Regularidad"):
-                    if not df_resumen_reg.empty:
-                        for idx, row in df_resumen_reg.iterrows():
-                            st.markdown(f"**{idx+1}. {row['Piloto']}** — ±{row['RegMs']/1000:.3f}s <span style='color: #94a3b8; font-size: 12px;'>(Ref: {convertir_a_min_seg(row['PromMs'])})</span>", unsafe_allow_html=True)
+            mejor_p = df_p["TiempoMs"].min() if not df_p.empty else float('inf')
+            prom_p = df_p["TiempoMs"].mean() if not df_p.empty else float('inf')
+            reg_p = df_reg_p["TiempoMs"].std() if not df_reg_p.empty and len(df_reg_p) > 1 else 0.0
+            if pd.isna(reg_p): reg_p = 0.0
+            
+            resumen_pilotos.append({
+                "Piloto": p,
+                "MejorMs": mejor_p,
+                "PromMs": prom_p,
+                "RegMs": reg_p
+            })
+        
+        df_resumen = pd.DataFrame(resumen_pilotos)
+        
+        df_resumen_ritmo = df_resumen[df_resumen["PromMs"] != float('inf')].sort_values(by="PromMs", ascending=True).reset_index(drop=True) if not df_resumen.empty else pd.DataFrame()
+        df_resumen_reg = df_resumen[df_resumen["RegMs"] != float('inf')].sort_values(by="RegMs", ascending=True).reset_index(drop=True) if not df_resumen.empty else pd.DataFrame()
 
-            st.markdown("<br>", unsafe_allow_html=True)
+        ganador_record = df_resumen.loc[df_resumen["MejorMs"].idxmin()] if not df_resumen.empty and df_resumen["MejorMs"].min() != float('inf') else None
+        ganador_ritmo = df_resumen_ritmo.iloc[0] if not df_resumen_ritmo.empty else None
+        ganador_reg = df_resumen_reg.iloc[0] if not df_resumen_reg.empty else None
+
+        # --- TRES TARJETAS PRINCIPALES ---
+        col_t1, col_t2, col_t3 = st.columns(3)
+        
+        piloto_rec = ganador_record['Piloto'] if ganador_record is not None else '-'
+        tiempo_rec = convertir_a_min_seg(ganador_record['MejorMs']) if ganador_record is not None else '-'
+
+        piloto_rit = ganador_ritmo['Piloto'] if ganador_ritmo is not None else '-'
+        tiempo_rit = convertir_a_min_seg(ganador_ritmo['PromMs']) if ganador_ritmo is not None else '-'
+
+        piloto_reg = ganador_reg['Piloto'] if ganador_reg is not None else '-'
+        val_reg = f"±{ganador_reg['RegMs']/1000:.3f}s" if ganador_reg is not None else "N/A"
+        ref_reg = convertir_a_min_seg(ganador_reg['PromMs']) if ganador_reg is not None else '-'
+
+        with col_t1:
+            st.markdown(f"""
+                <div style="background-color: #1e1e2f; padding: 18px; border-radius: 10px; border-left: 5px solid #ffc107; text-align: center;">
+                    <span style="font-size: 13px; color: #ffecb3; font-weight: bold;">🏁 RÉCORD DE VUELTA</span>
+                    <div style="color: #ffffff; font-size: 22px; font-weight: bold; margin: 12px 0 6px 0;">{piloto_rec}</div>
+                    <div style="color: #ffc107; font-size: 18px; font-weight: bold;">{tiempo_rec}</div>
+                    <div style="color: #94a3b8; font-size: 11px; margin-top: 6px; line-height: 1.2;">Vuelta más rápida absoluta de la sesión.</div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+        with col_t2:
+            st.markdown(f"""
+                <div style="background-color: #1e1e2f; padding: 18px; border-radius: 10px; border-left: 5px solid #28a745; text-align: center;">
+                    <span style="font-size: 13px; color: #d4edda; font-weight: bold;">⏱️ MEJOR RITMO (VELOCIDAD)</span>
+                    <div style="color: #ffffff; font-size: 22px; font-weight: bold; margin: 12px 0 6px 0;">{piloto_rit}</div>
+                    <div style="color: #28a745; font-size: 18px; font-weight: bold;">{tiempo_rit}</div>
+                    <div style="color: #94a3b8; font-size: 11px; margin-top: 6px; line-height: 1.2;">Mide la <b>velocidad pura (promedio de todos los tiempos de vuelta validos)</b>.</div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+        with col_t3:
+            st.markdown(f"""
+                <div style="background-color: #1e1e2f; padding: 18px; border-radius: 10px; border-left: 5px solid #17a2b8; text-align: center;">
+                    <span style="font-size: 13px; color: #d1ecf1; font-weight: bold;">📊 MEJOR REGULARIDAD (CONSISTENCIA)</span>
+                    <div style="color: #ffffff; font-size: 22px; font-weight: bold; margin: 12px 0 6px 0;">{piloto_reg}</div>
+                    <div style="color: #17a2b8; font-size: 18px; font-weight: bold;">{val_reg}</div>
+                    <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">Ref: {ref_reg}</div>
+                    <div style="color: #94a3b8; font-size: 11px; margin-top: 4px; line-height: 1.2;">Mide la <b>estabilidad (menor variacion/desvío entre vueltas)</b>.</div>
+                </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # --- DESPLEGABLES DEBAJO DE LAS TARJETAS ---
+        col_d1, col_d2, col_d3 = st.columns(3)
+        
+        with col_d2:
+            with st.expander("📋 Ver tabla completa de Ritmo"):
+                if not df_resumen_ritmo.empty:
+                    ref_ritmo_ms = df_resumen_ritmo.iloc[0]["PromMs"]
+                    for idx, row in df_resumen_ritmo.iterrows():
+                        dif_ms = row["PromMs"] - ref_ritmo_ms
+                        dif_str = f"+{dif_ms/1000:.3f}s" if idx > 0 else "Líder"
+                        st.markdown(f"**{idx+1}. {row['Piloto']}** — {convertir_a_min_seg(row['PromMs'])} <span style='color: #94a3b8; font-size: 12px;'>({dif_str})</span>", unsafe_allow_html=True)
+                else:
+                    st.caption("No hay pilotos que cumplan con el 75% en esta sesión.")
+                    
+        with col_d3:
+            with st.expander("📋 Ver tabla de Regularidad"):
+                if not df_resumen_reg.empty:
+                    for idx, row in df_resumen_reg.iterrows():
+                        st.markdown(f"**{idx+1}. {row['Piloto']}** — ±{row['RegMs']/1000:.3f}s <span style='color: #94a3b8; font-size: 12px;'>(Ref: {convertir_a_min_seg(row['PromMs'])})</span>", unsafe_allow_html=True)
+                else:
+                    st.caption("No hay pilotos que cumplan con el 75% en esta sesión.")
+
+        st.markdown("<br>", unsafe_allow_html=True)
 
             # --- GRÁFICO DE EVOLUCIÓN DE RITMO ---
             import plotly.express as px
