@@ -695,38 +695,28 @@ if seccion_menu == "Resumen General":
         tabla_campeonato["Lastre Acumulado"] = tabla_campeonato["Piloto"].map(lambda p: f"{lastre_actual_sim.get(p, 0)} Kg")
         tabla_campeonato.insert(0, "Pos", range(1, len(tabla_campeonato) + 1))
         
-        # --- TABLA HTML ESTILO MODERNO / ESPORTS ---
+        # --- TABLA HTML CON EFECTO TARJETA 3D / SOMBRA ---
         if not tabla_campeonato.empty:
             filas_html = ""
             for idx, row in tabla_campeonato.iterrows():
-                pos = row["Pos"]
-                # Estilo especial para el podio (Top 3)
-                if pos == 1:
-                    pos_style = "color: #f59e0b; background: rgba(245, 158, 11, 0.1); border-radius: 6px; padding: 4px 8px; font-weight: 700;"
-                elif pos == 2:
-                    pos_style = "color: #94a3b8; background: rgba(148, 163, 184, 0.1); border-radius: 6px; padding: 4px 8px; font-weight: 700;"
-                elif pos == 3:
-                    pos_style = "color: #d97706; background: rgba(217, 119, 6, 0.1); border-radius: 6px; padding: 4px 8px; font-weight: 700;"
-                else:
-                    pos_style = "color: #64748b; font-weight: 600;"
-
-                filas_html += f"""<tr style="transition: background-color 0.2s ease;">
-<td style="padding: 16px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.04);"><span style="{pos_style}">#{pos}</span></td>
-<td style="padding: 16px 20px; font-weight: 600; color: #f8fafc; border-bottom: 1px solid rgba(255, 255, 255, 0.04);">{row["Piloto"]}</td>
-<td style="padding: 16px 20px; color: #94a3b8; font-size: 13px; border-bottom: 1px solid rgba(255, 255, 255, 0.04);">{row["Auto"]}</td>
-<td style="padding: 16px 20px; font-weight: 700; color: #38bdf8; font-size: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.04);">{row["Puntos"]}</td>
-<td style="padding: 16px 20px; color: #cbd5e1; font-size: 13px; border-bottom: 1px solid rgba(255, 255, 255, 0.04);">{row["Lastre Acumulado"]}</td>
+                bg_row = "#0f172a" if idx % 2 == 0 else "#1e293b"
+                filas_html += f"""<tr style="background-color: {bg_row};">
+<td style="padding: 14px 18px; color: #f1f5f9; border-bottom: 1px solid #334155;">#{row["Pos"]}</td>
+<td style="padding: 14px 18px; color: #f1f5f9; font-weight: 500; border-bottom: 1px solid #334155;">{row["Piloto"]}</td>
+<td style="padding: 14px 18px; color: #94a3b8; border-bottom: 1px solid #334155;">{row["Auto"]}</td>
+<td style="padding: 14px 18px; font-weight: bold; color: #38bdf8; border-bottom: 1px solid #334155;">{row["Puntos"]}</td>
+<td style="padding: 14px 18px; color: #f1f5f9; border-bottom: 1px solid #334155;">{row["Lastre Acumulado"]}</td>
 </tr>"""
 
-            html_table = f"""<div style="overflow-x: auto; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); background: linear-gradient(145deg, #090d16, #111827); margin-top: 12px;">
-<table style="width: 100%; border-collapse: collapse; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; text-align: left;">
+            html_table = f"""<div style="overflow-x: auto; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5); background-color: #0f172a; margin-top: 15px;">
+<table style="width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 14px; text-align: left;">
 <thead>
-<tr style="background: rgba(17, 24, 39, 0.95); border-bottom: 2px solid rgba(255, 255, 255, 0.08);">
-<th style="padding: 18px 20px; font-weight: 600; color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; width: 10%;">Pos</th>
-<th style="padding: 18px 20px; font-weight: 600; color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; width: 34%;">Piloto</th>
-<th style="padding: 18px 20px; font-weight: 600; color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; width: 22%;">Modelo</th>
-<th style="padding: 18px 20px; font-weight: 600; color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; width: 17%;">Puntos</th>
-<th style="padding: 18px 20px; font-weight: 600; color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; width: 17%;">Lastre Acumulado</th>
+<tr style="background-color: #1e293b; border-bottom: 2px solid #475569;">
+<th style="padding: 14px 18px; font-weight: 600; color: #cbd5e1; width: 8%;">Pos</th>
+<th style="padding: 14px 18px; font-weight: 600; color: #cbd5e1; width: 36%;">Piloto</th>
+<th style="padding: 14px 18px; font-weight: 600; color: #cbd5e1; width: 24%;">Modelo</th>
+<th style="padding: 14px 18px; font-weight: 600; color: #cbd5e1; width: 16%;">Puntos</th>
+<th style="padding: 14px 18px; font-weight: 600; color: #cbd5e1; width: 16%;">Lastre Acumulado</th>
 </tr>
 </thead>
 <tbody>
