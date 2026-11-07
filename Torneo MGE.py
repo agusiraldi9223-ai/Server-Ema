@@ -695,26 +695,27 @@ if seccion_menu == "Resumen General":
         tabla_campeonato["Lastre Acumulado"] = tabla_campeonato["Piloto"].map(lambda p: f"{lastre_actual_sim.get(p, 0)} Kg")
         tabla_campeonato.insert(0, "Pos", range(1, len(tabla_campeonato) + 1))
         
-        # --- TABLA HTML ESTILO PROFESIONAL (IDÉNTICA A LA SEGUNDA FOTO) ---
+        # --- TABLA HTML ESTILO UI MODERNO Y ELEGANTE ---
         if not tabla_campeonato.empty:
-            html_table = '<div style="overflow-x: auto; background-color: #0b0f19; padding: 0px; border-radius: 8px; border: 1px solid #1f2937;">'
-            html_table += '<table style="width: 100%; border-collapse: collapse; color: #f3f4f6; font-family: sans-serif; font-size: 14px;">'
-            html_table += '<thead><tr style="border-bottom: 2px solid #374151; text-align: left; background-color: #111827;">'
-            html_table += '<th style="padding: 14px 16px; font-weight: 600; color: #9ca3af; width: 8%;">Pos</th>'
-            html_table += '<th style="padding: 14px 16px; font-weight: 600; color: #9ca3af; width: 35%;">Piloto</th>'
-            html_table += '<th style="padding: 14px 16px; font-weight: 600; color: #9ca3af; width: 25%;">Modelo</th>'
-            html_table += '<th style="padding: 14px 16px; font-weight: 600; color: #9ca3af; width: 16%;">Puntos</th>'
-            html_table += '<th style="padding: 14px 16px; font-weight: 600; color: #9ca3af; width: 16%;">Lastre Acumulado</th>'
+            html_table = '<div style="overflow-x: auto; background-color: #0e131f; padding: 4px; border-radius: 12px; border: 1px solid #1f2937; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);">'
+            html_table += '<table style="width: 100%; border-collapse: collapse; color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif; font-size: 14px;">'
+            html_table += '<thead><tr style="border-bottom: 2px solid #374151; text-align: left; background-color: #172033;">'
+            html_table += '<th style="padding: 14px 18px; font-weight: 600; color: #93c5fd; letter-spacing: 0.5px;">Pos</th>'
+            html_table += '<th style="padding: 14px 18px; font-weight: 600; color: #93c5fd; letter-spacing: 0.5px;">Piloto</th>'
+            html_table += '<th style="padding: 14px 18px; font-weight: 600; color: #93c5fd; letter-spacing: 0.5px;">Modelo</th>'
+            html_table += '<th style="padding: 14px 18px; font-weight: 600; color: #93c5fd; letter-spacing: 0.5px;">Puntos</th>'
+            html_table += '<th style="padding: 14px 18px; font-weight: 600; color: #93c5fd; letter-spacing: 0.5px;">Lastre Acumulado</th>'
             html_table += '</tr></thead><tbody>'
             
             for idx, row in tabla_campeonato.iterrows():
-                bg_color = "#0b0f19" if idx % 2 == 0 else "#111827"
-                html_table += f'<tr style="border-bottom: 1px solid #1f2937; background-color: {bg_color};">'
-                html_table += f'<td style="padding: 14px 16px; color: #f3f4f6;">#{row["Pos"]}</td>'
-                html_table += f'<td style="padding: 14px 16px; font-weight: 500; color: #ffffff;">{row["Piloto"]}</td>'
-                html_table += f'<td style="padding: 14px 16px; color: #9ca3af;">{row["Auto"]}</td>'
-                html_table += f'<td style="padding: 14px 16px; font-weight: bold; color: #3b82f6;">{row["Puntos"]}</td>'
-                html_table += f'<td style="padding: 14px 16px; color: #f3f4f6;">{row["Lastre Acumulado"]}</td>'
+                bg_color = "#0e131f" if idx % 2 == 0 else "#141c2e"
+                # Destacar un poco las primeras 3 posiciones con un sutil borde o color
+                html_table += f'<tr style="border-bottom: 1px solid #1f2937; background-color: {bg_color}; transition: background-color 0.2s;">'
+                html_table += f'<td style="padding: 14px 18px; color: #cbd5e1; font-weight: 600;">#{row["Pos"]}</td>'
+                html_table += f'<td style="padding: 14px 18px; font-weight: 600; color: #ffffff;">{row["Piloto"]}</td>'
+                html_table += f'<td style="padding: 14px 18px; color: #94a3b8;">{row["Auto"]}</td>'
+                html_table += f'<td style="padding: 14px 18px; font-weight: bold; color: #60a5fa; font-size: 15px;">{row["Puntos"]}</td>'
+                html_table += f'<td style="padding: 14px 18px; color: #e2e8f0;">{row["Lastre Acumulado"]}</td>'
                 html_table += '</tr>'
             
             html_table += '</tbody></table></div>'
