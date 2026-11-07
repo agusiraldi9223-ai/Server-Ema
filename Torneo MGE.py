@@ -695,28 +695,28 @@ if seccion_menu == "Resumen General":
         tabla_campeonato["Lastre Acumulado"] = tabla_campeonato["Piloto"].map(lambda p: f"{lastre_actual_sim.get(p, 0)} Kg")
         tabla_campeonato.insert(0, "Pos", range(1, len(tabla_campeonato) + 1))
         
-        # --- TABLA HTML CON EFECTO TARJETA 3D / SOMBRA ---
+        # --- TABLA HTML ORIGINAL EXACTA ---
         if not tabla_campeonato.empty:
             filas_html = ""
             for idx, row in tabla_campeonato.iterrows():
-                bg_row = "#0f172a" if idx % 2 == 0 else "#1e293b"
-                filas_html += f"""<tr style="background-color: {bg_row};">
-<td style="padding: 14px 18px; color: #f1f5f9; border-bottom: 1px solid #334155;">#{row["Pos"]}</td>
-<td style="padding: 14px 18px; color: #f1f5f9; font-weight: 500; border-bottom: 1px solid #334155;">{row["Piloto"]}</td>
-<td style="padding: 14px 18px; color: #94a3b8; border-bottom: 1px solid #334155;">{row["Auto"]}</td>
-<td style="padding: 14px 18px; font-weight: bold; color: #38bdf8; border-bottom: 1px solid #334155;">{row["Puntos"]}</td>
-<td style="padding: 14px 18px; color: #f1f5f9; border-bottom: 1px solid #334155;">{row["Lastre Acumulado"]}</td>
+                bg_color = "#111827" if idx % 2 == 0 else "#1a2332"
+                filas_html += f"""<tr style="border-bottom: 1px solid #1f2937; background-color: {bg_color};">
+<td style="padding: 12px;">#{row["Pos"]}</td>
+<td style="padding: 12px; font-weight: 500;">{row["Piloto"]}</td>
+<td style="padding: 12px; color: #94a3b8;">{row["Auto"]}</td>
+<td style="padding: 12px; font-weight: bold; color: #3b82f6;">{row["Puntos"]}</td>
+<td style="padding: 12px;">{row["Lastre Acumulado"]}</td>
 </tr>"""
 
-            html_table = f"""<div style="overflow-x: auto; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5); background-color: #0f172a; margin-top: 15px;">
-<table style="width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 14px; text-align: left;">
+            html_table = f"""<div style="overflow-x: auto; background-color: #111827; padding: 20px; border-radius: 12px; border: 1px solid #1f2937;">
+<table style="width: 100%; border-collapse: collapse; color: #ffffff; font-family: sans-serif; font-size: 14px;">
 <thead>
-<tr style="background-color: #1e293b; border-bottom: 2px solid #475569;">
-<th style="padding: 14px 18px; font-weight: 600; color: #cbd5e1; width: 8%;">Pos</th>
-<th style="padding: 14px 18px; font-weight: 600; color: #cbd5e1; width: 36%;">Piloto</th>
-<th style="padding: 14px 18px; font-weight: 600; color: #cbd5e1; width: 24%;">Modelo</th>
-<th style="padding: 14px 18px; font-weight: 600; color: #cbd5e1; width: 16%;">Puntos</th>
-<th style="padding: 14px 18px; font-weight: 600; color: #cbd5e1; width: 16%;">Lastre Acumulado</th>
+<tr style="border-bottom: 2px solid #374151; text-align: left; background-color: #1f2937;">
+<th style="padding: 12px; font-weight: 600;">Pos</th>
+<th style="padding: 12px; font-weight: 600;">Piloto</th>
+<th style="padding: 12px; font-weight: 600;">Modelo</th>
+<th style="padding: 12px; font-weight: 600;">Puntos</th>
+<th style="padding: 12px; font-weight: 600;">Lastre Acumulado</th>
 </tr>
 </thead>
 <tbody>
