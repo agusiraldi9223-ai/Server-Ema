@@ -1521,7 +1521,8 @@ elif seccion_menu == "Estadísticas":
             st.caption(f"ℹ️ Sesión única detectada para este circuito: **{sesion_elegida_ui}**")
         else:
             sesion_elegida_ui = "Carrera"
-
+st.write("Columnas disponibles:", df_analisis.columns.tolist())
+st.write("Cantidad de filas:", len(df_analisis))
         # --- OBTENCIÓN Y FILTRADO DEL DATAFRAME ---
         df_analisis = pd.DataFrame()
         if not df_analisis_global.empty:
