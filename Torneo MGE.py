@@ -1521,11 +1521,16 @@ elif seccion_menu == "Estadísticas":
         else:
             sesion_elegida_ui = "Carrera"
 
-        # --- OBTENCIÓN Y FILTRADO DEL DATAFRAME ---
+        # --- OBTENCIÓN Y FILTRADO DEL DATAFRAME (TOLERANTE A NOMBRES) ---
         df_analisis = pd.DataFrame()
         if not df_analisis_global.empty:
             if "Circuito" in df_analisis_global.columns:
-                df_analisis = df_analisis_global[df_analisis_global["Circuito"] == circuito_seleccionado]
+                c_sel_clean = str(circuito_seleccionado).strip().lower()
+                df_analisis = df_analisis_global[
+                    df_analisis_global["Circuito"].astype(str).str.strip().str.lower() == c_sel_clean
+                ]
+                if df_analisis.empty:
+                    df_analisis = df_analisis_global.copy()
             else:
                 df_analisis = df_analisis_global.copy()
             
