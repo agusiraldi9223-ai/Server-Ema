@@ -1521,21 +1521,20 @@ elif seccion_menu == "Estadísticas":
         else:
             sesion_elegida_ui = "Carrera"
 
-        # --- OBTENCIÓN Y FILTRADO DEL DATAFRAME (TOLERANTE A NOMBRES) ---
+        # --- OBTENCIÓN Y FILTRADO ESTRICTO DEL DATAFRAME ---
         df_analisis = pd.DataFrame()
         if not df_analisis_global.empty:
             if "Circuito" in df_analisis_global.columns:
                 c_sel_clean = str(circuito_seleccionado).strip().lower()
+                # Filtro estricto: si no coincide el circuito, queda vacío (CERO mezclas)
                 df_analisis = df_analisis_global[
                     df_analisis_global["Circuito"].astype(str).str.strip().str.lower() == c_sel_clean
-                ]
-                if df_analisis.empty:
-                    df_analisis = df_analisis_global.copy()
+                ].copy()
             else:
                 df_analisis = df_analisis_global.copy()
             
             # FILTRADO EXCLUSIVO PARA CARRERA O SPRINT (IGNORANDO CLASIFICACIÓN)
-            if "Tipo" in df_analisis.columns:
+            if "Tipo" in df_analisis.columns and not df_analisis.empty:
                 if sesion_elegida_ui == "Sprint":
                     df_filtrado_tipo = df_analisis[df_analisis["Tipo"].astype(str).str.lower().str.contains("sprint", na=False)]
                 else:
@@ -1543,6 +1542,8 @@ elif seccion_menu == "Estadísticas":
                 
                 if not df_filtrado_tipo.empty:
                     df_analisis = df_filtrado_tipo
+                else:
+                    df_analisis = pd.DataFrame()
 
         pilotos_disponibles = sorted(df_analisis["Piloto"].unique()) if not df_analisis.empty and "Piloto" in df_analisis.columns else []
         
@@ -1725,7 +1726,7 @@ elif seccion_menu == "Estadísticas":
 
             st.plotly_chart(fig, use_container_width=True, key="plotly_evolucion_ritmo_stats")
         else:
-            st.warning("No hay suficientes datos o pilotos cargados para esta sesión o falta la columna 'TiempoMs'.")
+            st.warning("No hay suficientes datos o pilotos cargados para esta sesión en este circuito.")
     else:
         st.info("No hay datos de comparativa ni de vueltas cargados.")
 
