@@ -1496,7 +1496,6 @@ elif seccion_menu == "Estadísticas":
         
         # --- 1. SELECTOR DE CIRCUITO (En orden cronológico) ---
         if tiene_datos_comp:
-            # Mantenemos el orden en el que vienen cargadas las fechas/circuitos en el diccionario
             circuitos_disponibles = list(datos_comparativa_tiempos.keys())
         else:
             circuitos_disponibles = df_analisis_global["Circuito"].unique().tolist() if "Circuito" in df_analisis_global.columns else ["General"]
@@ -1521,8 +1520,7 @@ elif seccion_menu == "Estadísticas":
             st.caption(f"ℹ️ Sesión única detectada para este circuito: **{sesion_elegida_ui}**")
         else:
             sesion_elegida_ui = "Carrera"
-        st.write("Columnas disponibles:", df_analisis.columns.tolist())
-        st.write("Cantidad de filas:", len(df_analisis))
+
         # --- OBTENCIÓN Y FILTRADO DEL DATAFRAME ---
         df_analisis = pd.DataFrame()
         if not df_analisis_global.empty:
@@ -1560,34 +1558,7 @@ elif seccion_menu == "Estadísticas":
             conteo_lentos_por_vuelta = df_analisis[df_analisis["TiempoMs"] > umbral_lento].groupby("Vuelta")["Piloto"].nunique()
             vueltas_pace_car = conteo_lentos_por_vuelta[conteo_lentos_por_vuelta > (total_pilotos / 2)].index.tolist()
 
-            # --- CALCULAR MÉTRICAS PARA TODOS LOS PILOTOS ---
-            resumen_pilotos = []
-            for p in pilotos_disponibles:
-                df_p = df_analisis[df_analisis["Piloto"] == p]
-                df_reg_p = df_p[(df_p["Vuelta"] > 2) & (~df_p["Vuelta"].isin(vueltas_pace_car))]
-                
-                mejor_p = df_p["TiempoMs"].min() if not df_p.empty else float('inf')
-                prom_p = df_p["TiempoMs"].mean() if not df_p.empty else float('inf')
-                reg_p = df_reg_p["TiempoMs"].std() if not df_reg_p.empty and len(df_reg_p) > 1 else 0.0
-                if pd.isna(reg_p): reg_p = 0.0
-                
-                resumen_pilotos.append({
-                    "Piloto": p,
-                    "MejorMs": mejor_p,
-                    "PromMs": prom_p,
-                    "RegMs": reg_p
-                })
-            
-            df_resumen = pd.DataFrame(resumen_pilotos)
-            
-            df_resumen_ritmo = df_resumen[df_resumen["PromMs"] != float('inf')].sort_values(by="PromMs", ascending=True).reset_index(drop=True)
-            df_resumen_reg = df_resumen[df_resumen["RegMs"] != float('inf')].sort_values(by="RegMs", ascending=True).reset_index(drop=True)
-
-            ganador_record = df_resumen.loc[df_resumen["MejorMs"].idxmin()] if not df_resumen.empty and df_resumen["MejorMs"].min() != float('inf') else None
-            ganador_ritmo = df_resumen_ritmo.iloc[0] if not df_resumen_ritmo.empty else None
-            ganador_reg = df_resumen_reg.iloc[0] if not df_resumen_reg.empty else None
-
-# --- REGLA DEL 75%: Filtrar pilotos que no completaron la distancia mínima ---
+            # --- REGLA DEL 75%: Filtrar pilotos que no completaron la distancia mínima ---
             vueltas_ganador = df_analisis["Vueltas"].max() if "Vueltas" in df_analisis.columns else (df_analisis["Vuelta"].max() if "Vuelta" in df_analisis.columns else 0)
             vueltas_minimas_75 = vueltas_ganador * 0.75
 
@@ -1596,7 +1567,6 @@ elif seccion_menu == "Estadísticas":
                 df_p = df_analisis[df_analisis["Piloto"] == p]
                 vueltas_piloto = df_p["Vueltas"].max() if "Vueltas" in df_p.columns else (df_p["Vuelta"].max() if "Vuelta" in df_p.columns else 0)
                 
-                # 💡 Si no llega al 75% del ganador (abandonos tempranos), se excluye de las estadísticas
                 if vueltas_ganador > 0 and vueltas_piloto < vueltas_minimas_75:
                     continue
                     
@@ -1750,7 +1720,7 @@ elif seccion_menu == "Estadísticas":
 
             st.plotly_chart(fig, use_container_width=True, key="plotly_evolucion_ritmo_stats")
         else:
-            st.warning("No hay suficientes datos o pilotos cargados para esta sesión.")
+            st.warning("No hay suficientes datos o pilotos cargados para esta sesión o falta la columna 'TiempoMs'.")
     else:
         st.info("No hay datos de comparativa ni de vueltas cargados.")
 
