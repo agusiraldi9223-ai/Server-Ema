@@ -695,30 +695,70 @@ if seccion_menu == "Resumen General":
         tabla_campeonato["Lastre Acumulado"] = tabla_campeonato["Piloto"].map(lambda p: f"{lastre_actual_sim.get(p, 0)} Kg")
         tabla_campeonato.insert(0, "Pos", range(1, len(tabla_campeonato) + 1))
         
-        # --- TABLA HTML ESTILO UI MODERNO Y ELEGANTE ---
+        # --- TABLA HTML CON ESTILOS CSS REFORZADOS (CERO ESTILO EXCEL) ---
         if not tabla_campeonato.empty:
-            html_table = '<div style="overflow-x: auto; background-color: #0e131f; padding: 4px; border-radius: 12px; border: 1px solid #1f2937; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);">'
-            html_table += '<table style="width: 100%; border-collapse: collapse; color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif; font-size: 14px;">'
-            html_table += '<thead><tr style="border-bottom: 2px solid #374151; text-align: left; background-color: #172033;">'
-            html_table += '<th style="padding: 14px 18px; font-weight: 600; color: #93c5fd; letter-spacing: 0.5px;">Pos</th>'
-            html_table += '<th style="padding: 14px 18px; font-weight: 600; color: #93c5fd; letter-spacing: 0.5px;">Piloto</th>'
-            html_table += '<th style="padding: 14px 18px; font-weight: 600; color: #93c5fd; letter-spacing: 0.5px;">Modelo</th>'
-            html_table += '<th style="padding: 14px 18px; font-weight: 600; color: #93c5fd; letter-spacing: 0.5px;">Puntos</th>'
-            html_table += '<th style="padding: 14px 18px; font-weight: 600; color: #93c5fd; letter-spacing: 0.5px;">Lastre Acumulado</th>'
-            html_table += '</tr></thead><tbody>'
+            html_table = """
+            <style>
+                .mge-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    font-size: 14px;
+                    color: #f3f4f6;
+                    background-color: #0d1117;
+                }
+                .mge-table th {
+                    background-color: #161b22;
+                    color: #58a6ff;
+                    font-weight: 600;
+                    text-align: left;
+                    padding: 14px 16px;
+                    border-bottom: 2px solid #30363d;
+                }
+                .mge-table td {
+                    padding: 14px 16px;
+                    border-bottom: 1px solid #21262d;
+                }
+                .mge-table tr:nth-child(even) {
+                    background-color: #11161d;
+                }
+                .mge-table tr:nth-child(odd) {
+                    background-color: #0d1117;
+                }
+                .mge-table tr:hover {
+                    background-color: #1f6feb1a;
+                }
+            </style>
+            <div style="overflow-x: auto; border-radius: 10px; border: 1px solid #30363d; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                <table class="mge-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%;">Pos</th>
+                            <th style="width: 36%;">Piloto</th>
+                            <th style="width: 24%;">Modelo</th>
+                            <th style="width: 16%;">Puntos</th>
+                            <th style="width: 16%;">Lastre Acumulado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            """
             
             for idx, row in tabla_campeonato.iterrows():
-                bg_color = "#0e131f" if idx % 2 == 0 else "#141c2e"
-                # Destacar un poco las primeras 3 posiciones con un sutil borde o color
-                html_table += f'<tr style="border-bottom: 1px solid #1f2937; background-color: {bg_color}; transition: background-color 0.2s;">'
-                html_table += f'<td style="padding: 14px 18px; color: #cbd5e1; font-weight: 600;">#{row["Pos"]}</td>'
-                html_table += f'<td style="padding: 14px 18px; font-weight: 600; color: #ffffff;">{row["Piloto"]}</td>'
-                html_table += f'<td style="padding: 14px 18px; color: #94a3b8;">{row["Auto"]}</td>'
-                html_table += f'<td style="padding: 14px 18px; font-weight: bold; color: #60a5fa; font-size: 15px;">{row["Puntos"]}</td>'
-                html_table += f'<td style="padding: 14px 18px; color: #e2e8f0;">{row["Lastre Acumulado"]}</td>'
-                html_table += '</tr>'
+                html_table += f"""
+                        <tr>
+                            <td style="color: #8b949e; font-weight: 600;">#{row["Pos"]}</td>
+                            <td style="font-weight: 600; color: #ffffff;">{row["Piloto"]}</td>
+                            <td style="color: #8b949e;">{row["Auto"]}</td>
+                            <td style="font-weight: bold; color: #58a6ff; font-size: 15px;">{row["Puntos"]}</td>
+                            <td style="color: #c9d1d9;">{row["Lastre Acumulado"]}</td>
+                        </tr>
+                """
             
-            html_table += '</tbody></table></div>'
+            html_table += """
+                    </tbody>
+                </table>
+            </div>
+            """
             st.markdown(html_table, unsafe_allow_html=True)
         else:
             st.info("Sube archivos de resultados para ver el campeonato.")
