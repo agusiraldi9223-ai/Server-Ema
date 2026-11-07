@@ -695,39 +695,38 @@ if seccion_menu == "Resumen General":
         tabla_campeonato["Lastre Acumulado"] = tabla_campeonato["Piloto"].map(lambda p: f"{lastre_actual_sim.get(p, 0)} Kg")
         tabla_campeonato.insert(0, "Pos", range(1, len(tabla_campeonato) + 1))
         
-        # --- TABLA HTML CON ESTILOS CSS REFORZADOS (CERO ESTILO EXCEL) ---
+        # --- TABLA HTML CON ACUMULADOR DE FILAS CORRECTO ---
         if not tabla_campeonato.empty:
-            html_table = """
+            filas_html = ""
+            for idx, row in tabla_campeonato.iterrows():
+                filas_html += f"""
+                    <tr>
+                        <td style="padding: 14px 16px; color: #8b949e; font-weight: 600; border-bottom: 1px solid #21262d;">#{row["Pos"]}</td>
+                        <td style="padding: 14px 16px; font-weight: 600; color: #ffffff; border-bottom: 1px solid #21262d;">{row["Piloto"]}</td>
+                        <td style="padding: 14px 16px; color: #8b949e; border-bottom: 1px solid #21262d;">{row["Auto"]}</td>
+                        <td style="padding: 14px 16px; font-weight: bold; color: #58a6ff; font-size: 15px; border-bottom: 1px solid #21262d;">{row["Puntos"]}</td>
+                        <td style="padding: 14px 16px; color: #c9d1d9; border-bottom: 1px solid #21262d;">{row["Lastre Acumulado"]}</td>
+                    </tr>
+                """
+
+            html_table = f"""
             <style>
-                .mge-table {
+                .mge-table {{
                     width: 100%;
                     border-collapse: collapse;
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                     font-size: 14px;
                     color: #f3f4f6;
                     background-color: #0d1117;
-                }
-                .mge-table th {
+                }}
+                .mge-table th {{
                     background-color: #161b22;
                     color: #58a6ff;
                     font-weight: 600;
                     text-align: left;
                     padding: 14px 16px;
                     border-bottom: 2px solid #30363d;
-                }
-                .mge-table td {
-                    padding: 14px 16px;
-                    border-bottom: 1px solid #21262d;
-                }
-                .mge-table tr:nth-child(even) {
-                    background-color: #11161d;
-                }
-                .mge-table tr:nth-child(odd) {
-                    background-color: #0d1117;
-                }
-                .mge-table tr:hover {
-                    background-color: #1f6feb1a;
-                }
+                }}
             </style>
             <div style="overflow-x: auto; border-radius: 10px; border: 1px solid #30363d; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
                 <table class="mge-table">
@@ -741,20 +740,7 @@ if seccion_menu == "Resumen General":
                         </tr>
                     </thead>
                     <tbody>
-            """
-            
-            for idx, row in tabla_campeonato.iterrows():
-                html_table += f"""
-                        <tr>
-                            <td style="color: #8b949e; font-weight: 600;">#{row["Pos"]}</td>
-                            <td style="font-weight: 600; color: #ffffff;">{row["Piloto"]}</td>
-                            <td style="color: #8b949e;">{row["Auto"]}</td>
-                            <td style="font-weight: bold; color: #58a6ff; font-size: 15px;">{row["Puntos"]}</td>
-                            <td style="color: #c9d1d9;">{row["Lastre Acumulado"]}</td>
-                        </tr>
-                """
-            
-            html_table += """
+                        {filas_html}
                     </tbody>
                 </table>
             </div>
