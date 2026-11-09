@@ -1526,14 +1526,14 @@ elif seccion_menu == "Estadísticas":
         if not df_analisis_global.empty:
             if "Circuito" in df_analisis_global.columns:
                 c_sel_clean = str(circuito_seleccionado).strip().lower()
-                # Filtro estricto: si no coincide el circuito, queda vacío (CERO mezclas)
+                # Filtro estricto por circuito
                 df_analisis = df_analisis_global[
                     df_analisis_global["Circuito"].astype(str).str.strip().str.lower() == c_sel_clean
                 ].copy()
             else:
                 df_analisis = df_analisis_global.copy()
             
-            # FILTRADO EXCLUSIVO PARA CARRERA O SPRINT (IGNORANDO CLASIFICACIÓN)
+            # FILTRADO EXCLUSIVO PARA CARRERA O SPRINT
             if "Tipo" in df_analisis.columns and not df_analisis.empty:
                 if sesion_elegida_ui == "Sprint":
                     df_filtrado_tipo = df_analisis[df_analisis["Tipo"].astype(str).str.lower().str.contains("sprint", na=False)]
@@ -1544,6 +1544,17 @@ elif seccion_menu == "Estadísticas":
                     df_analisis = df_filtrado_tipo
                 else:
                     df_analisis = pd.DataFrame()
+
+        # 🔍 --- PANEL DE DIAGNÓSTICO TEMPORAL ---
+        # Esto te mostrará en pantalla qué está pasando exactamente sin adivinar:
+        with st.expander("🛠️ Ver diagnóstico de datos para este circuito"):
+            st.write("Circuito seleccionado en UI:", repr(circuito_seleccionado))
+            st.write("Columnas disponibles en df_vueltas_global:", df_analisis_global.columns.tolist() if not df_analisis_global.empty else "Vacío")
+            if "Circuito" in df_analisis_global.columns:
+                st.write("Circuitos únicos reales en el DataFrame:", df_analisis_global["Circuito"].unique().tolist())
+            st.write("Filas resultantes en df_analisis tras filtrar:", len(df_analisis))
+            if not df_analisis.empty and "Tipo" in df_analisis.columns:
+                st.write("Tipos de sesión encontrados para este circuito:", df_analisis["Tipo"].unique().tolist())
 
         pilotos_disponibles = sorted(df_analisis["Piloto"].unique()) if not df_analisis.empty and "Piloto" in df_analisis.columns else []
         
@@ -1726,7 +1737,7 @@ elif seccion_menu == "Estadísticas":
 
             st.plotly_chart(fig, use_container_width=True, key="plotly_evolucion_ritmo_stats")
         else:
-            st.warning("No hay suficientes datos o pilotos cargados para esta sesión en este circuito.")
+            st.warning("⚠️ No hay suficientes datos o pilotos cargados para esta sesión en este circuito (o falta la columna 'TiempoMs').")
     else:
         st.info("No hay datos de comparativa ni de vueltas cargados.")
 
