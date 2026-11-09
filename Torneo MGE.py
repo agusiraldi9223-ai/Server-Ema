@@ -555,10 +555,10 @@ if archivos_vueltas_dir:
                 st.sidebar.error(f"Error al leer archivo de vueltas {archivo_v_name}: {e}")
 
 # --- CONVERSIÓN A DATAFRAME GLOBAL ---
-if datos_vueltas_detalle:
-    df_vueltas_global = pd.DataFrame(datos_vueltas_detalle)
-else:
-    df_vueltas_global = pd.DataFrame(columns=["Circuito", "Piloto", "Vuelta", "TiempoMs", "Tipo"])
+    if datos_vueltas_detalle:
+        df_vueltas_global = pd.DataFrame(datos_vueltas_detalle)
+    else:
+        df_vueltas_global = pd.DataFrame(columns=["Circuito", "Piloto", "Vuelta", "TiempoMs", "Tipo"])
 
 # --- ESTADO PARA EL BOTÓN DE DESCARTE ---
         if "descontar_peor" not in st.session_state:
