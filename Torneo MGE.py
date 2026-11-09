@@ -1540,6 +1540,13 @@ elif seccion_menu == "Estadísticas":
                     df_analisis = df_filtrado_tipo
 
         pilotos_disponibles = sorted(df_analisis["Piloto"].unique()) if not df_analisis.empty and "Piloto" in df_analisis.columns else []
+        # --- DIAGNÓSTICO EXACTO DEL MOTIVO DEL ERROR ---
+        if df_analisis.empty:
+            st.error(f"❌ DIAGNÓSTICO: El DataFrame 'df_analisis' está VACÍO para el circuito '{circuito_seleccionado}' y sesión '{sesion_elegida_ui}'. (Revisá si el nombre del circuito o el tipo de sesión coincide exactamente con los datos cargados).")
+        elif "TiempoMs" not in df_analisis.columns:
+            st.error(f"❌ DIAGNÓSTICO: El DataFrame tiene datos pero **falta la columna 'TiempoMs'**. Las columnas reales que llegaron son: {df_analisis.columns.tolist()}")
+        elif len(pilotos_disponibles) < 1:
+            st.error(f"❌ DIAGNÓSTICO: Hay datos y columna 'TiempoMs', pero no hay pilotos detectados. Pilotos encontrados: {pilotos_disponibles}")
         
         if len(pilotos_disponibles) >= 1 and "TiempoMs" in df_analisis.columns:
             def convertir_a_min_seg(ms):
