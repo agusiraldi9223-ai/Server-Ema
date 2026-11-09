@@ -459,6 +459,7 @@ if archivos_json:
                 if p_g in lastre_actual_sim:
                     lastre_actual_sim[p_g] = min(50, lastre_actual_sim[p_g] + 10)
 
+# --- LECTURA ROBUSTA DE VUELTAS (INCLUYENDO 9 DE JULIO) ---
 datos_vueltas_detalle = []
 archivos_vueltas_dir = [f for f in os.listdir(CARPETA_VUELTAS) if f.endswith(".json")]
 
@@ -466,24 +467,36 @@ if archivos_vueltas_dir:
     for archivo_v_name in archivos_vueltas_dir:
         ruta_archivo_vueltas = os.path.join(CARPETA_VUELTAS, archivo_v_name)
         circuito_vueltas = limpiar_nombre_circuito(archivo_v_name)
+        
         if os.path.exists(ruta_archivo_vueltas):
             try:
                 with open(ruta_archivo_vueltas, "r", encoding="utf-8") as f:
                     contenido_v = json.load(f)
                 
+                # Rastreador de vueltas extraídas por archivo para control
+                vueltas_agregadas_este_archivo = 0
+                
+                # Caso A: Viene como lista directa de vueltas/resultados
                 if isinstance(contenido_v, list):
                     for v_item in contenido_v:
                         p_nombre = v_item.get("Piloto") or v_item.get("Driver") or v_item.get("nombre") or v_item.get("DriverName")
-                        n_vuelta = v_item.get("Vuelta") or v_item.get("LapNumber") or v_item.get("Lap") or v_item.get("vuelta")
-                        t_milis = v_item.get("TiempoMs") or v_item.get("TimeMs") or v_item.get("LapTime") or v_item.get("tiempo_ms")
-                        if p_nombre is not None and n_vuelta is not None and t_milis is not None:
+                        if isinstance(p_nombre, dict):
+                            p_nombre = p_nombre.get("Name", "")
+                            
+                        n_vuelta = v_item.get("Vuelta") or v_item.get("LapNumber") or v_item.get("Lap") or v_item.get("vuelta") or v_item.get("Index")
+                        t_milis = v_item.get("TiempoMs") or v_item.get("TimeMs") or v_item.get("LapTime") or v_item.get("tiempo_ms") or v_item.get("Time")
+                        
+                        if p_nombre is not None and n_vuelta is not None and t_milis is not None and int(t_milis) > 0:
                             datos_vueltas_detalle.append({
                                 "Circuito": circuito_vueltas,
-                                "Piloto": str(p_nombre),
+                                "Piloto": str(p_nombre).strip(),
                                 "Vuelta": int(n_vuelta),
                                 "TiempoMs": int(t_milis),
                                 "Tipo": "Carrera"
                             })
+                            vueltas_agregadas_este_archivo += 1
+                            
+                # Caso B: Viene como diccionario estructurado (objeto JSON)
                 elif isinstance(contenido_v, dict):
                     tipo_v_detectado = "Sprint" if "sprint" in archivo_v_name.lower() else "Carrera"
                     vueltas_lista = (
@@ -492,6 +505,7 @@ if archivos_vueltas_dir:
                         contenido_v.get("Laps", []) or 
                         contenido_v.get("LapList", []) or 
                         contenido_v.get("Result", []) or 
+                        contenido_v.get("Leaderboard", []) or
                         contenido_v.get("Cars", [])
                     )
                     
@@ -504,83 +518,47 @@ if archivos_vueltas_dir:
                             
                             sub_laps = v_item.get("Laps") or v_item.get("vueltas") or v_item.get("LapList") or []
                             for idx_l, lap_val in enumerate(sub_laps):
-                                t_ms = lap_val if isinstance(lap_val, (int, float)) else (lap_val.get("LapTime") or lap_val.get("TiempoMs") or lap_val.get("TimeMs") or 0)
-                                if t_ms > 0:
+                                t_ms = lap_val if isinstance(lap_val, (int, float)) else (lap_val.get("LapTime") or lap_val.get("TiempoMs") or lap_val.get("TimeMs") or lap_val.get("Time") or 0)
+                                if int(t_ms) > 0:
                                     datos_vueltas_detalle.append({
                                         "Circuito": circuito_vueltas,
-                                        "Piloto": str(p_nombre),
+                                        "Piloto": str(p_nombre).strip(),
                                         "Vuelta": idx_l + 1,
                                         "TiempoMs": int(t_ms),
                                         "Tipo": tipo_v_detectado
                                     })
-                        else:
-                            p_nombre = v_item.get("Piloto") or v_item.get("Driver") or v_item.get("nombre") or v_item.get("DriverName")
-                            n_vuelta = v_item.get("Vuelta") or v_item.get("LapNumber") or v_item.get("Lap") or v_item.get("vuelta")
-                            t_milis = v_item.get("TiempoMs") or v_item.get("TimeMs") or v_item.get("LapTime") or v_item.get("tiempo_ms")
-                            if p_nombre is not None and n_vuelta is not None and t_milis is not None:
+                                    vueltas_agregadas_este_archivo += 1
+                        elif isinstance(v_item, dict):
+                            driver_info = v_item.get("Driver", {})
+                            p_nombre = driver_info.get("Name") if isinstance(driver_info, dict) else None
+                            if not p_nombre:
+                                p_nombre = v_item.get("Piloto") or v_item.get("Driver") or v_item.get("nombre") or v_item.get("DriverName")
+                                
+                            n_vuelta = v_item.get("Vuelta") or v_item.get("LapNumber") or v_item.get("Lap") or v_item.get("vuelta") or v_item.get("Index")
+                            t_milis = v_item.get("TiempoMs") or v_item.get("TimeMs") or v_item.get("LapTime") or v_item.get("tiempo_ms") or v_item.get("Time")
+                            
+                            if p_nombre is not None and n_vuelta is not None and t_milis is not None and int(t_milis) > 0:
                                 datos_vueltas_detalle.append({
                                     "Circuito": circuito_vueltas,
-                                    "Piloto": str(p_nombre),
+                                    "Piloto": str(p_nombre).strip(),
                                     "Vuelta": int(n_vuelta),
                                     "TiempoMs": int(t_milis),
                                     "Tipo": tipo_v_detectado
                                 })
-            except Exception as e:
-                st.sidebar.error(f"Error al leer archivo de vueltas: {e}")
+                                vueltas_agregadas_este_archivo += 1
+                
+                # Si el archivo de 9 de Julio viniera vacío o con claves que no reconoció, avisa en consola
+                if vueltas_agregadas_este_archivo == 0 and "9 de Julio" in circuito_vueltas:
+                    print(f"⚠️ Alerta: El archivo de 9 de Julio ({archivo_v_name}) se leyó pero no se pudieron extraer vueltas válidas. Claves detectadas: list({contenido_v.keys() if isinstance(contenido_v, dict) else 'Es lista'})")
 
-# --- CONVERSIÓN A DATAFRAME GLOBAL (ESTO ERA LO QUE FALTABA) ---
+            except Exception as e:
+                st.sidebar.error(f"Error al leer archivo de vueltas {archivo_v_name}: {e}")
+
+# --- CONVERSIÓN A DATAFRAME GLOBAL ---
 if datos_vueltas_detalle:
     df_vueltas_global = pd.DataFrame(datos_vueltas_detalle)
 else:
     df_vueltas_global = pd.DataFrame(columns=["Circuito", "Piloto", "Vuelta", "TiempoMs", "Tipo"])
-# --- VISTA: RESUMEN GENERAL ---
-if seccion_menu == "Resumen General":
-    with st.container():
-        if not df_global.empty:
-            # --- UNIFICACIÓN DE NOMBRES ALTERNATIVOS ---
-            mapeo_nombres = {
-                "Fede Oris": "Federico Oris", "Alan Lasserre": "Alan245","rubdri": "Rubdri",
-            }
-            df_global["Piloto"] = df_global["Piloto"].replace(mapeo_nombres)
-
-            def limpiar_modelo(nombre_modelo):
-                if not isinstance(nombre_modelo, str):
-                    return "-"
-                m = nombre_modelo.lower()
-                if "camaro" in m:
-                    return "Camaro"
-                elif "mustang" in m:
-                    return "Mustang"
-                elif "challenger" in m:
-                    return "Challenger"
-                elif "torino" in m:
-                    return "Torino"
-                elif "m4" in m or "bmw" in m:
-                    return "BMW"
-                elif "mercedes" in m or "amg" in m:
-                    return "Mercedes"
-                else:
-                    return nombre_modelo
-
-            if "Auto" in df_global.columns:
-                df_global["Auto"] = df_global["Auto"].apply(limpiar_modelo)
-                df_sesiones_reales = df_global[df_global["Tipo"].isin(["Carrera", "Sprint"])]
-                
-                def obtener_ultimo_auto(series):
-                    validos = [val for val in series if val != "-" and pd.notna(val)]
-                    return validos[-1] if validos else "-"
-
-                df_autos = df_sesiones_reales.groupby("Piloto")["Auto"].agg(obtener_ultimo_auto).reset_index()
-            else:
-                df_autos = pd.DataFrame({"Piloto": df_global["Piloto"].unique(), "Auto": "-"})
-
-            correccion_definitiva = {
-                "Gaspar Celeste": "Challenger",
-            }
-            if "Piloto" in df_autos.columns and "Auto" in df_autos.columns:
-                df_autos["Auto"] = df_autos.apply(
-                    lambda row: correccion_definitiva.get(row["Piloto"], row["Auto"]), axis=1
-                )
 
 # --- ESTADO PARA EL BOTÓN DE DESCARTE ---
         if "descontar_peor" not in st.session_state:
