@@ -1941,7 +1941,7 @@ elif seccion_menu == "Perfil de Circuitos":
             "Autódromo Termas": "Veloces", "Termas": "Veloces",
             "Autódromo de San Nicolás": "Veloces", "San Nicolás": "Veloces",
             "Autódromo Rubén Luis Di Palma": "Veloces", "Mar de Ajó": "Veloces",
-            "Autódromo Ciudad de Nueve de Julio": "Veloces", "Nueve de Julio": "Veloces",
+            "Autódromo Ciudad de 9 de Julio": "Veloces", "9 de Julio": "Veloces",
             "Autódromo Juan Manuel Fangio": "Veloces", "Balcarce": "Veloces",
             "Autódromo Ciudad de Viedma": "Veloces", "Viedma": "Veloces",
             "Autódromo Parque Centenario": "Veloces", "Neuquén": "Veloces",
@@ -1960,7 +1960,7 @@ elif seccion_menu == "Perfil de Circuitos":
             "Autódromo Ciudad de Paraná": "Mixtos / Equilibrados", "Paraná": "Mixtos / Equilibrados",
             "Autódromo de Concepción del Uruguay": "Mixtos / Equilibrados", "Concepción del Uruguay": "Mixtos / Equilibrados",
             "Autódromo Eusebio Marcilla": "Mixtos / Equilibrados", "Junín": "Mixtos / Equilibrados",
-            "Autódromo Oscar Cabalén": "Mixtos / Equilibrados", "Alta Gracia": "Mixtos / Equilibrados",
+            "Autódromo Oscar Cabalen": "Mixtos / Equilibrados", "Alta Gracia": "Mixtos / Equilibrados",
             "Autódromo Ciudad de Oberá": "Mixtos / Equilibrados", "Oberá": "Mixtos / Equilibrados",
             "Circuito Urbano La Pedrera": "Mixtos / Equilibrados", "Villa Mercedes": "Mixtos / Equilibrados",
 
