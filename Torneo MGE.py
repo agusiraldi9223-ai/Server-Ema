@@ -1494,11 +1494,13 @@ elif seccion_menu == "Estadísticas":
     
     if tiene_datos_comp or (not df_analisis_global.empty and "Piloto" in df_analisis_global.columns):
         
-        # --- 1. SELECTOR DE CIRCUITO (En orden cronológico) ---
+        # --- 1. SELECTOR DE CIRCUITO ---
         if tiene_datos_comp:
             circuitos_disponibles = list(datos_comparativa_tiempos.keys())
+        elif not df_analisis_global.empty and "Circuito" in df_analisis_global.columns:
+            circuitos_disponibles = df_analisis_global["Circuito"].dropna().unique().tolist()
         else:
-            circuitos_disponibles = df_analisis_global["Circuito"].unique().tolist() if "Circuito" in df_analisis_global.columns else ["General"]
+            circuitos_disponibles = ["General"]
             
         circuito_seleccionado = st.selectbox("🏁 Seleccionar Circuito:", circuitos_disponibles, key="select_circuito_stats")    
         
@@ -1521,16 +1523,34 @@ elif seccion_menu == "Estadísticas":
         else:
             sesion_elegida_ui = "Carrera"
 
-        # --- OBTENCIÓN Y FILTRADO DEL DATAFRAME ---
+        # --- OBTENCIÓN Y FILTRADO INTELIGENTE Y TOLERANTE DEL DATAFRAME ---
         df_analisis = pd.DataFrame()
         if not df_analisis_global.empty:
             if "Circuito" in df_analisis_global.columns:
-                df_analisis = df_analisis_global[df_analisis_global["Circuito"] == circuito_seleccionado]
+                c_sel_clean = str(circuito_seleccionado).strip().lower()
+                
+                # 1. Intentamos coincidencia exacta primero
+                df_analisis = df_analisis_global[
+                    df_analisis_global["Circuito"].astype(str).str.strip().str.lower() == c_sel_clean
+                ].copy()
+                
+                # 2. Si da vacío (por diferencia de nombres como "9 de Julio" vs "Nueve de Julio"), filtramos por aproximación
+                if df_analisis.empty:
+                    # Extraemos palabras clave (ej: "julio", "rafaela", "termas")
+                    palabras_clave = [p for p in c_sel_clean.split() if len(p) > 2]
+                    if palabras_clave:
+                        condicion = df_analisis_global["Circuito"].astype(str).str.lower()
+                        for palabra in palabras_clave:
+                            mask = condicion.str.contains(palabra, na=False)
+                            df_temp = df_analisis_global[mask]
+                            if not df_temp.empty:
+                                df_analisis = df_temp.copy()
+                                break
             else:
                 df_analisis = df_analisis_global.copy()
             
-            # FILTRADO EXCLUSIVO PARA CARRERA O SPRINT (IGNORANDO CLASIFICACIÓN)
-            if "Tipo" in df_analisis.columns:
+            # FILTRADO EXCLUSIVO PARA CARRERA O SPRINT
+            if "Tipo" in df_analisis.columns and not df_analisis.empty:
                 if sesion_elegida_ui == "Sprint":
                     df_filtrado_tipo = df_analisis[df_analisis["Tipo"].astype(str).str.lower().str.contains("sprint", na=False)]
                 else:
@@ -1540,13 +1560,6 @@ elif seccion_menu == "Estadísticas":
                     df_analisis = df_filtrado_tipo
 
         pilotos_disponibles = sorted(df_analisis["Piloto"].unique()) if not df_analisis.empty and "Piloto" in df_analisis.columns else []
-        # --- DIAGNÓSTICO EXACTO DEL MOTIVO DEL ERROR ---
-        if df_analisis.empty:
-            st.error(f"❌ DIAGNÓSTICO: El DataFrame 'df_analisis' está VACÍO para el circuito '{circuito_seleccionado}' y sesión '{sesion_elegida_ui}'. (Revisá si el nombre del circuito o el tipo de sesión coincide exactamente con los datos cargados).")
-        elif "TiempoMs" not in df_analisis.columns:
-            st.error(f"❌ DIAGNÓSTICO: El DataFrame tiene datos pero **falta la columna 'TiempoMs'**. Las columnas reales que llegaron son: {df_analisis.columns.tolist()}")
-        elif len(pilotos_disponibles) < 1:
-            st.error(f"❌ DIAGNÓSTICO: Hay datos y columna 'TiempoMs', pero no hay pilotos detectados. Pilotos encontrados: {pilotos_disponibles}")
         
         if len(pilotos_disponibles) >= 1 and "TiempoMs" in df_analisis.columns:
             def convertir_a_min_seg(ms):
@@ -1727,7 +1740,7 @@ elif seccion_menu == "Estadísticas":
 
             st.plotly_chart(fig, use_container_width=True, key="plotly_evolucion_ritmo_stats")
         else:
-            st.warning("No hay suficientes datos o pilotos cargados para esta sesión o falta la columna 'TiempoMs'.")
+            st.warning("⚠️ No hay suficientes datos o pilotos cargados para esta sesión en este circuito (o falta la columna 'TiempoMs').")
     else:
         st.info("No hay datos de comparativa ni de vueltas cargados.")
 
