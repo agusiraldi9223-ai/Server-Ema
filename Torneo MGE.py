@@ -1494,13 +1494,11 @@ elif seccion_menu == "Estadísticas":
     
     if tiene_datos_comp or (not df_analisis_global.empty and "Piloto" in df_analisis_global.columns):
         
-        # --- 1. SELECTOR DE CIRCUITO BASADO DIRECTAMENTE EN LOS DATOS DISPONIBLES ---
-        if not df_analisis_global.empty and "Circuito" in df_analisis_global.columns:
-            circuitos_disponibles = df_analisis_global["Circuito"].dropna().unique().tolist()
-        elif tiene_datos_comp:
+        # --- 1. SELECTOR DE CIRCUITO (En orden cronológico) ---
+        if tiene_datos_comp:
             circuitos_disponibles = list(datos_comparativa_tiempos.keys())
         else:
-            circuitos_disponibles = ["General"]
+            circuitos_disponibles = df_analisis_global["Circuito"].unique().tolist() if "Circuito" in df_analisis_global.columns else ["General"]
             
         circuito_seleccionado = st.selectbox("🏁 Seleccionar Circuito:", circuitos_disponibles, key="select_circuito_stats")    
         
@@ -1523,19 +1521,16 @@ elif seccion_menu == "Estadísticas":
         else:
             sesion_elegida_ui = "Carrera"
 
-        # --- OBTENCIÓN Y FILTRADO ESTRICTO DEL DATAFRAME ---
+        # --- OBTENCIÓN Y FILTRADO DEL DATAFRAME ---
         df_analisis = pd.DataFrame()
         if not df_analisis_global.empty:
             if "Circuito" in df_analisis_global.columns:
-                c_sel_clean = str(circuito_seleccionado).strip().lower()
-                df_analisis = df_analisis_global[
-                    df_analisis_global["Circuito"].astype(str).str.strip().str.lower() == c_sel_clean
-                ].copy()
+                df_analisis = df_analisis_global[df_analisis_global["Circuito"] == circuito_seleccionado]
             else:
                 df_analisis = df_analisis_global.copy()
             
-            # FILTRADO EXCLUSIVO PARA CARRERA O SPRINT
-            if "Tipo" in df_analisis.columns and not df_analisis.empty:
+            # FILTRADO EXCLUSIVO PARA CARRERA O SPRINT (IGNORANDO CLASIFICACIÓN)
+            if "Tipo" in df_analisis.columns:
                 if sesion_elegida_ui == "Sprint":
                     df_filtrado_tipo = df_analisis[df_analisis["Tipo"].astype(str).str.lower().str.contains("sprint", na=False)]
                 else:
@@ -1543,8 +1538,6 @@ elif seccion_menu == "Estadísticas":
                 
                 if not df_filtrado_tipo.empty:
                     df_analisis = df_filtrado_tipo
-                else:
-                    df_analisis = pd.DataFrame()
 
         pilotos_disponibles = sorted(df_analisis["Piloto"].unique()) if not df_analisis.empty and "Piloto" in df_analisis.columns else []
         
@@ -1727,7 +1720,7 @@ elif seccion_menu == "Estadísticas":
 
             st.plotly_chart(fig, use_container_width=True, key="plotly_evolucion_ritmo_stats")
         else:
-            st.warning("⚠️ No hay suficientes datos o pilotos cargados para esta sesión en este circuito.")
+            st.warning("No hay suficientes datos o pilotos cargados para esta sesión o falta la columna 'TiempoMs'.")
     else:
         st.info("No hay datos de comparativa ni de vueltas cargados.")
 
@@ -1948,7 +1941,7 @@ elif seccion_menu == "Perfil de Circuitos":
             "Autódromo Termas": "Veloces", "Termas": "Veloces",
             "Autódromo de San Nicolás": "Veloces", "San Nicolás": "Veloces",
             "Autódromo Rubén Luis Di Palma": "Veloces", "Mar de Ajó": "Veloces",
-            "Autódromo Ciudad de 9 de Julio": "Veloces", "9 de Julio": "Veloces",
+            "Autódromo Ciudad de Nueve de Julio": "Veloces", "Nueve de Julio": "Veloces",
             "Autódromo Juan Manuel Fangio": "Veloces", "Balcarce": "Veloces",
             "Autódromo Ciudad de Viedma": "Veloces", "Viedma": "Veloces",
             "Autódromo Parque Centenario": "Veloces", "Neuquén": "Veloces",
