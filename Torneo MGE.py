@@ -459,7 +459,7 @@ if archivos_json:
                 if p_g in lastre_actual_sim:
                     lastre_actual_sim[p_g] = min(50, lastre_actual_sim[p_g] + 10)
 
-# --- LECTURA ROBUSTA DE VUELTAS (EXTRACTOR UNIVERSAL) ---
+# --- LECTURA ROBUSTA DE VUELTAS (EXTRACTOR UNIVERSAL AVANZADO) ---
 datos_vueltas_detalle = []
 archivos_vueltas_dir = [f for f in os.listdir(CARPETA_VUELTAS) if f.endswith(".json")]
 
@@ -473,7 +473,7 @@ if archivos_vueltas_dir:
                 with open(ruta_archivo_vueltas, "r", encoding="utf-8") as f:
                     contenido_v = json.load(f)
                 
-                vueltas_agregadas = [0]  # Usamos lista mutable para el contador
+                vueltas_agregadas = [0]
                 tipo_v_detectado = "Sprint" if "sprint" in archivo_v_name.lower() else "Carrera"
                 
                 def extraer_vueltas_recursivo(obj, piloto_actual=None):
@@ -481,15 +481,16 @@ if archivos_vueltas_dir:
                         for item in obj:
                             extraer_vueltas_recursivo(item, piloto_actual)
                     elif isinstance(obj, dict):
+                        # Búsqueda ampliada de nombre de piloto
                         p_nombre = piloto_actual
-                        for k_p in ["Piloto", "Driver", "nombre", "DriverName", "Name", "Nick", "Player"]:
+                        for k_p in ["Piloto", "Driver", "nombre", "DriverName", "Name", "Nick", "Player", "DriverShortName", "NameKey", "FullName"]:
                             val = obj.get(k_p)
                             if val:
                                 if isinstance(val, dict):
-                                    p_nombre = val.get("Name") or val.get("name") or val.get("Nick")
-                                else:
-                                    p_nombre = val
-                                break
+                                    p_nombre = val.get("Name") or val.get("name") or val.get("Nick") or val.get("FullName")
+                                elif isinstance(val, str) and val.strip():
+                                    p_nombre = val.strip()
+                                    break
                         
                         n_vuelta = None
                         for k_v in ["Vuelta", "LapNumber", "Lap", "vuelta", "Index", "LapIndex", "LapNo"]:
@@ -503,7 +504,7 @@ if archivos_vueltas_dir:
                                 t_milis = obj.get(k_t)
                                 break
                         
-                        if p_nombre and t_milis is not None:
+                        if p_nombre and p_nombre.lower() != "desconocido" and t_milis is not None:
                             try:
                                 t_int = int(t_milis)
                                 if t_int > 0:
@@ -529,7 +530,7 @@ if archivos_vueltas_dir:
                                                 try:
                                                     t_int = int(t_ms)
                                                     if t_int > 0:
-                                                        p_usar = p_nombre or "Desconocido"
+                                                        p_usar = p_nombre or "Piloto"
                                                         datos_vueltas_detalle.append({
                                                             "Circuito": circuito_vueltas,
                                                             "Piloto": str(p_usar).strip(),
