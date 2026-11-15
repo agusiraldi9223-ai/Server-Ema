@@ -555,10 +555,10 @@ if archivos_vueltas_dir:
                 st.sidebar.error(f"Error al leer archivo de vueltas {archivo_v_name}: {e}")
 
 # --- CONVERSIÓN A DATAFRAME GLOBAL ---
-    if datos_vueltas_detalle:
-        df_vueltas_global = pd.DataFrame(datos_vueltas_detalle)
-    else:
-        df_vueltas_global = pd.DataFrame(columns=["Circuito", "Piloto", "Vuelta", "TiempoMs", "Tipo"])
+if datos_vueltas_detalle:
+    df_vueltas_global = pd.DataFrame(datos_vueltas_detalle)
+else:
+    df_vueltas_global = pd.DataFrame(columns=["Circuito", "Piloto", "Vuelta", "TiempoMs", "Tipo"])
 
 # --- ESTADO PARA EL BOTÓN DE DESCARTE ---
         if "descontar_peor" not in st.session_state:
@@ -2119,34 +2119,45 @@ elif seccion_menu == "⚔️ Premios Especiales":
                     kaiser_largada = kaiser_largada.sort_values(by="Puestos_Ganados", ascending=False).reset_index(drop=True)
 
     # -------------------------------------------------------------
-    # 2. EL REY DE LA POLE (Calculado desde df_global o datos_comparativa_tiempos)
+    # 2. EL REY DE LA POLE
     # -------------------------------------------------------------
     df_poles = pd.DataFrame()
     try:
-        if 'df_global' in locals() and not df_global.empty:
-            df_p_filt = df_global[
-                df_global["Tipo"].astype(str).str.lower().str.contains("clasif|quali|q1|q2|q3|pole", na=False) & 
-                (df_global["Posición"] == 1)
-            ]
-            if not df_p_filt.empty:
-                df_poles = df_p_filt.groupby("Piloto").size().reset_index(name="Poles")
+        if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos:
+            poles_list = []
+            for circuito_name, circuito_data in datos_comparativa_tiempos.items():
+                registros_clasif = circuito_data.get("Clasificación", [])
+                for reg in registros_clasif:
+                    texto_pos = str(reg.get("Pos", ""))
+                    if "—" in texto_pos:
+                        partes = texto_pos.split("—")
+                        nombre_p = partes[-1].strip()
+                        nums = re.findall(r'\d+', partes[0])
+                        if nums:
+                            p_num = int(nums[0])
+                            if p_num == 1:
+                                poles_list.append({"Piloto": nombre_p})
+            
+            if poles_list:
+                df_p_temp = pd.DataFrame(poles_list)
+                df_poles = df_p_temp.groupby("Piloto").size().reset_index(name="Poles")
                 df_poles = df_poles.sort_values(by="Poles", ascending=False).reset_index(drop=True)
     except Exception:
         pass
 
-# -------------------------------------------------------------
-    # 3. EL REY DE LA REMONTADA Y PODIOS (Solución Definitiva)
+    # -------------------------------------------------------------
+    # 3. EL REY DE LA REMONTADA Y PODIOS
     # -------------------------------------------------------------
     df_rem_sum = pd.DataFrame()
     conteo_podios = pd.DataFrame()
+    df_detalle_rem = pd.DataFrame()
     
     try:
         if 'df_global' in locals() and not df_global.empty:
             remontadas_list = []
             podios_list = []
             
-            # 1. Armamos un mapa con la Posición de Salida (Clasificación) desde datos_comparativa_tiempos
-            grid_salidas = {} # {(circuito, piloto): posicion_salida}
+            grid_salidas = {} 
             if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos:
                 for circuito_name, circuito_data in datos_comparativa_tiempos.items():
                     registros_clasif = circuito_data.get("Clasificación", [])
@@ -2155,13 +2166,11 @@ elif seccion_menu == "⚔️ Premios Especiales":
                         if "—" in texto_pos:
                             partes = texto_pos.split("—")
                             nombre_p = partes[-1].strip()
-                            import re
                             nums = re.findall(r'\d+', partes[0])
                             if nums:
                                 p_num = int(nums[0])
                                 grid_salidas[(str(circuito_name).strip(), nombre_p)] = p_num
 
-            # 2. Obtenemos las carreras principales desde df_global
             df_carreras = df_global[
                 ~df_global["Tipo"].astype(str).str.lower().str.contains("sprint|pole|vuelta|vr", na=False)
             ].copy()
@@ -2170,7 +2179,6 @@ elif seccion_menu == "⚔️ Premios Especiales":
                 for circuito_curr, df_circ in df_carreras.groupby("Circuito"):
                     df_c = df_circ.copy()
                     
-                    # Ordenamos por rendimiento real de carrera
                     if "_Tiempo_ms" in df_c.columns:
                         df_c["_tiempo_orden"] = df_c["_Tiempo_ms"].apply(lambda x: float(x) if pd.notnull(x) and float(x) > 0 else float('inf'))
                         if "Vueltas" in df_c.columns:
@@ -2187,14 +2195,10 @@ elif seccion_menu == "⚔️ Premios Especiales":
                         pos_carrera = int(row_c["Posicion_Real_Llegada"])
                         circ_str = str(circuito_curr).strip()
                         
-                        # Podios (Top 3 en carrera)
                         if pos_carrera <= 3:
                             podios_list.append({"Piloto": pil})
                         
-                        # Buscamos su posición de salida en el mapa de clasificación
                         pos_salida = grid_salidas.get((circ_str, pil), None)
-                        
-                        # Si no coincide exactamente, intentamos un matching flexible de nombre de piloto
                         if pos_salida is None:
                             for (c_k, p_k), p_sal_val in grid_salidas.items():
                                 if c_k == circ_str and (p_k.lower() in pil.lower() or pil.lower() in p_k.lower()):
@@ -2224,9 +2228,10 @@ elif seccion_menu == "⚔️ Premios Especiales":
                 conteo_podios = conteo_podios.sort_values(by="Podios", ascending=False).reset_index(drop=True)
 
     except Exception as e:
-        st.caption(f"Error calculando remontadas: {e}")
+        st.caption(f"Error calculando premios especiales: {e}")
+
     # -------------------------------------------------------------
-    # RENDERIZADO EN PANTALLA (Columnas de Streamlit)
+    # RENDERIZADO EN PANTALLA (4 Columnas / Tarjetas Organizadas)
     # -------------------------------------------------------------
     col1, col2 = st.columns(2)
     
@@ -2236,48 +2241,21 @@ elif seccion_menu == "⚔️ Premios Especiales":
         if not kaiser_largada.empty:
             df_k_view = kaiser_largada.copy()
             df_k_view.columns = ["Piloto", "Puestos Netos Ganados"]
-            st.dataframe(df_k_view, use_container_width=True)
+            st.dataframe(df_k_view, use_container_width=True, hide_index=True)
             top_k = kaiser_largada.iloc[0]
             st.success(f"🏆 **{top_k['Piloto']}** lidera con **+{int(top_k['Puestos_Ganados'])}** puestos ganados.")
         else:
             st.info("Sin datos suficientes para calcular largadas.")
 
     with col2:
-            st.markdown("### 👑 El Rey de la Pole")
-            st.caption("Pilotos con mayor cantidad de mejores tiempos en clasificación.")
-            
-            df_poles = pd.DataFrame()
-            try:
-                if 'datos_comparativa_tiempos' in locals() and datos_comparativa_tiempos:
-                    poles_list = []
-                    for circuito_name, circuito_data in datos_comparativa_tiempos.items():
-                        registros_clasif = circuito_data.get("Clasificación", [])
-                        for reg in registros_clasif:
-                            texto_pos = str(reg.get("Pos", ""))
-                            if "—" in texto_pos:
-                                partes = texto_pos.split("—")
-                                nombre_p = partes[-1].strip()
-                                import re
-                                nums = re.findall(r'\d+', partes[0])
-                                if nums:
-                                    p_num = int(nums[0])
-                                    # Si hizo P1 en la clasificación de este circuito, cuenta como Pole
-                                    if p_num == 1:
-                                        poles_list.append({"Piloto": nombre_p})
-                    
-                    if poles_list:
-                        df_p_temp = pd.DataFrame(poles_list)
-                        df_poles = df_p_temp.groupby("Piloto").size().reset_index(name="Poles")
-                        df_poles = df_poles.sort_values(by="Poles", ascending=False).reset_index(drop=True)
-            except Exception:
-                pass
-
-            if not df_poles.empty:
-                st.dataframe(df_poles, use_container_width=True)
-                top_pole = df_poles.iloc[0]
-                st.success(f"🏆 **{top_pole['Piloto']}** manda en los sábados con **{int(top_pole['Poles'])}** pole(s).")
-            else:
-                st.info("No se encontraron registros de poles en la comparativa de tiempos.")
+        st.markdown("### 👑 El Rey de la Pole")
+        st.caption("Pilotos con mayor cantidad de mejores tiempos en clasificación.")
+        if not df_poles.empty:
+            st.dataframe(df_poles, use_container_width=True, hide_index=True)
+            top_pole = df_poles.iloc[0]
+            st.success(f"🏆 **{top_pole['Piloto']}** manda en los sábados con **{int(top_pole['Poles'])}** pole(s).")
+        else:
+            st.info("No se encontraron registros de poles.")
 
     st.markdown("---")
     
@@ -2286,14 +2264,14 @@ elif seccion_menu == "⚔️ Premios Especiales":
         st.markdown("### 🧗 El Rey de la Remontada")
         st.caption("Balance de posiciones (Clasificación vs. Bandera a cuadros en carrera).")
         
-        if 'df_rem_sum' in locals() and not df_rem_sum.empty:
+        if not df_rem_sum.empty:
             st.dataframe(df_rem_sum, use_container_width=True, hide_index=True)
             top_rem = df_rem_sum.iloc[0]
             val_top = int(top_rem['Balance Puestos'])
             simbolo = "+" if val_top > 0 else ""
             st.success(f"🏆 **{top_rem['Piloto']}** lidera el balance con un total de **{simbolo}{val_top}** puestos netos.")
             
-            if 'df_detalle_rem' in locals() and not df_detalle_rem.empty:
+            if not df_detalle_rem.empty:
                 max_single = df_detalle_rem.iloc[0]
                 if max_single['Remontada'] > 0:
                     st.info(f"🔥 **Mayor avance en una sola fecha:** {max_single['Piloto']} en **{max_single['Circuito']}** (Salió P{max_single['Salida']} ➔ Llegó P{max_single['Llegada']} | **+{max_single['Remontada']} puestos**).")
@@ -2303,7 +2281,7 @@ elif seccion_menu == "⚔️ Premios Especiales":
     with col4:
         st.markdown("### 🍾 El Imán de Podios")
         st.caption("Pilotos con mayor cantidad de presencias en el podio (Top 3 de carrera).")
-        if 'conteo_podios' in locals() and not conteo_podios.empty:
+        if not conteo_podios.empty:
             st.dataframe(conteo_podios, use_container_width=True, hide_index=True)
             top_podio = conteo_podios.iloc[0]
             st.success(f"🏆 **{top_podio['Piloto']}** lidera los podios con **{int(top_podio['Podios'])}** visitas al estrado.")
