@@ -459,7 +459,7 @@ if archivos_json:
                 if p_g in lastre_actual_sim:
                     lastre_actual_sim[p_g] = min(50, lastre_actual_sim[p_g] + 10)
 
-# --- LECTURA ROBUSTA DE VUELTAS (INCLUYENDO 9 DE JULIO) ---
+# --- LECTURA ROBUSTA DE VUELTAS (EXTRACTOR RECURSIVO UNIVERSAL) ---
 datos_vueltas_detalle = []
 archivos_vueltas_dir = [f for f in os.listdir(CARPETA_VUELTAS) if f.endswith(".json")]
 
@@ -473,83 +473,87 @@ if archivos_vueltas_dir:
                 with open(ruta_archivo_vueltas, "r", encoding="utf-8") as f:
                     contenido_v = json.load(f)
                 
-                # Rastreador de vueltas extraídas por archivo para control
                 vueltas_agregadas_este_archivo = 0
+                tipo_v_detectado = "Sprint" if "sprint" in archivo_v_name.lower() else "Carrera"
                 
-                # Caso A: Viene como lista directa de vueltas/resultados
-                if isinstance(contenido_v, list):
-                    for v_item in contenido_v:
-                        p_nombre = v_item.get("Piloto") or v_item.get("Driver") or v_item.get("nombre") or v_item.get("DriverName")
-                        if isinstance(p_nombre, dict):
-                            p_nombre = p_nombre.get("Name", "")
-                            
-                        n_vuelta = v_item.get("Vuelta") or v_item.get("LapNumber") or v_item.get("Lap") or v_item.get("vuelta") or v_item.get("Index")
-                        t_milis = v_item.get("TiempoMs") or v_item.get("TimeMs") or v_item.get("LapTime") or v_item.get("tiempo_ms") or v_item.get("Time")
+                # Función recursiva para extraer vueltas de cualquier estructura anidada de JSON
+                def extraer_vueltas_recursivo(obj, piloto_actual=None):
+                    nonlocal vueltas_agregadas_este_archivo
+                    if isinstance(obj, list):
+                        for item in obj:
+                            extraer_vueltas_recursivo(item, piloto_actual)
+                    elif isinstance(obj, dict):
+                        # Detectar si este diccionario define un piloto
+                        p_nombre = piloto_actual
+                        for k_p in ["Piloto", "Driver", "nombre", "DriverName", "Name", "Nick", "Player"]:
+                            val = obj.get(k_p)
+                            if val:
+                                if isinstance(val, dict):
+                                    p_nombre = val.get("Name") or val.get("name") or val.get("Nick")
+                                else:
+                                    p_nombre = val
+                                break
                         
-                        if p_nombre is not None and n_vuelta is not None and t_milis is not None and int(t_milis) > 0:
-                            datos_vueltas_detalle.append({
-                                "Circuito": circuito_vueltas,
-                                "Piloto": str(p_nombre).strip(),
-                                "Vuelta": int(n_vuelta),
-                                "TiempoMs": int(t_milis),
-                                "Tipo": "Carrera"
-                            })
-                            vueltas_agregadas_este_archivo += 1
-                            
-                # Caso B: Viene como diccionario estructurado (objeto JSON)
-                elif isinstance(contenido_v, dict):
-                    tipo_v_detectado = "Sprint" if "sprint" in archivo_v_name.lower() else "Carrera"
-                    vueltas_lista = (
-                        contenido_v.get("laps", []) or 
-                        contenido_v.get("vueltas", []) or 
-                        contenido_v.get("Laps", []) or 
-                        contenido_v.get("LapList", []) or 
-                        contenido_v.get("Result", []) or 
-                        contenido_v.get("Leaderboard", []) or
-                        contenido_v.get("Cars", [])
-                    )
-                    
-                    for v_item in vueltas_lista:
-                        if isinstance(v_item, dict) and ("Laps" in v_item or "vueltas" in v_item or "LapList" in v_item):
-                            driver_info = v_item.get("Driver", {})
-                            p_nombre = driver_info.get("Name") if isinstance(driver_info, dict) else None
-                            if not p_nombre:
-                                p_nombre = v_item.get("DriverName") or v_item.get("Piloto") or "Desconocido"
-                            
-                            sub_laps = v_item.get("Laps") or v_item.get("vueltas") or v_item.get("LapList") or []
-                            for idx_l, lap_val in enumerate(sub_laps):
-                                t_ms = lap_val if isinstance(lap_val, (int, float)) else (lap_val.get("LapTime") or lap_val.get("TiempoMs") or lap_val.get("TimeMs") or lap_val.get("Time") or 0)
-                                if int(t_ms) > 0:
+                        # Detectar número de vuelta
+                        n_vuelta = None
+                        for k_v in ["Vuelta", "LapNumber", "Lap", "vuelta", "Index", "LapIndex", "LapNo"]:
+                            if k_v in obj:
+                                n_vuelta = obj.get(k_v)
+                                break
+                                
+                        # Detectar tiempo de vuelta en milisegundos
+                        t_milis = None
+                        for k_t in ["TiempoMs", "TimeMs", "LapTime", "tiempo_ms", "Time", "LapTimeMs", "ms"]:
+                            if k_t in obj:
+                                t_milis = obj.get(k_t)
+                                break
+                        
+                        # Si encontramos un tiempo válido y un piloto asociado, lo guardamos
+                        if p_nombre and t_milis is not None:
+                            try:
+                                t_int = int(t_milis)
+                                if t_int > 0:
+                                    v_int = int(n_vuelta) if n_vuelta is not None else (vueltas_agregadas_este_archivo + 1)
                                     datos_vueltas_detalle.append({
                                         "Circuito": circuito_vueltas,
                                         "Piloto": str(p_nombre).strip(),
-                                        "Vuelta": idx_l + 1,
-                                        "TiempoMs": int(t_ms),
+                                        "Vuelta": v_int,
+                                        "TiempoMs": t_int,
                                         "Tipo": tipo_v_detectado
                                     })
                                     vueltas_agregadas_este_archivo += 1
-                        elif isinstance(v_item, dict):
-                            driver_info = v_item.get("Driver", {})
-                            p_nombre = driver_info.get("Name") if isinstance(driver_info, dict) else None
-                            if not p_nombre:
-                                p_nombre = v_item.get("Piloto") or v_item.get("Driver") or v_item.get("nombre") or v_item.get("DriverName")
-                                
-                            n_vuelta = v_item.get("Vuelta") or v_item.get("LapNumber") or v_item.get("Lap") or v_item.get("vuelta") or v_item.get("Index")
-                            t_milis = v_item.get("TiempoMs") or v_item.get("TimeMs") or v_item.get("LapTime") or v_item.get("tiempo_ms") or v_item.get("Time")
-                            
-                            if p_nombre is not None and n_vuelta is not None and t_milis is not None and int(t_milis) > 0:
-                                datos_vueltas_detalle.append({
-                                    "Circuito": circuito_vueltas,
-                                    "Piloto": str(p_nombre).strip(),
-                                    "Vuelta": int(n_vuelta),
-                                    "TiempoMs": int(t_milis),
-                                    "Tipo": tipo_v_detectado
-                                })
-                                vueltas_agregadas_este_archivo += 1
+                            except:
+                                pass
+                        
+                        # Seguir buscando dentro de las claves del diccionario
+                        for k, v in obj.items():
+                            if isinstance(v, (list, dict)):
+                                if k.lower() in ["laps", "vueltas", "laplist", "lap_list", "times"]:
+                                    if isinstance(v, list):
+                                        for idx_l, lap_val in enumerate(v):
+                                            t_ms = lap_val if isinstance(lap_val, (int, float)) else (isinstance(lap_val, dict) and (lap_val.get("LapTime") or lap_val.get("TiempoMs") or lap_val.get("TimeMs") or lap_val.get("Time")))
+                                            if t_ms is not None:
+                                                try:
+                                                    t_int = int(t_ms)
+                                                    if t_int > 0:
+                                                        p_usar = p_nombre or "Desconocido"
+                                                        datos_vueltas_detalle.append({
+                                                            "Circuito": circuito_vueltas,
+                                                            "Piloto": str(p_usar).strip(),
+                                                            "Vuelta": idx_l + 1,
+                                                            "TiempoMs": t_int,
+                                                            "Tipo": tipo_v_detectado
+                                                        })
+                                                        vueltas_agregadas_este_archivo += 1
+                                                except:
+                                                    pass
+                                else:
+                                    extraer_vueltas_recursivo(v, p_nombre)
+
+                extraer_vueltas_recursivo(contenido_v)
                 
-                # Si el archivo de 9 de Julio viniera vacío o con claves que no reconoció, avisa en consola
                 if vueltas_agregadas_este_archivo == 0 and "9 de Julio" in circuito_vueltas:
-                    print(f"⚠️ Alerta: El archivo de 9 de Julio ({archivo_v_name}) se leyó pero no se pudieron extraer vueltas válidas. Claves detectadas: list({contenido_v.keys() if isinstance(contenido_v, dict) else 'Es lista'})")
+                    st.sidebar.warning(f"⚠️ Alerta: El archivo de 9 de Julio ({archivo_v_name}) no devolvió vueltas válidas. Verificá su estructura.")
 
             except Exception as e:
                 st.sidebar.error(f"Error al leer archivo de vueltas {archivo_v_name}: {e}")
