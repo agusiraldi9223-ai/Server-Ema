@@ -459,7 +459,7 @@ if archivos_json:
                 if p_g in lastre_actual_sim:
                     lastre_actual_sim[p_g] = min(50, lastre_actual_sim[p_g] + 10)
 
-# --- LECTURA ROBUSTA DE VUELTAS (EXTRACTOR RECURSIVO UNIVERSAL) ---
+# --- LECTURA ROBUSTA DE VUELTAS (EXTRACTOR UNIVERSAL) ---
 datos_vueltas_detalle = []
 archivos_vueltas_dir = [f for f in os.listdir(CARPETA_VUELTAS) if f.endswith(".json")]
 
@@ -473,17 +473,14 @@ if archivos_vueltas_dir:
                 with open(ruta_archivo_vueltas, "r", encoding="utf-8") as f:
                     contenido_v = json.load(f)
                 
-                vueltas_agregadas_este_archivo = 0
+                vueltas_agregadas = [0]  # Usamos lista mutable para el contador
                 tipo_v_detectado = "Sprint" if "sprint" in archivo_v_name.lower() else "Carrera"
                 
-                # Función recursiva para extraer vueltas de cualquier estructura anidada de JSON
                 def extraer_vueltas_recursivo(obj, piloto_actual=None):
-                    nonlocal vueltas_agregadas_este_archivo
                     if isinstance(obj, list):
                         for item in obj:
                             extraer_vueltas_recursivo(item, piloto_actual)
                     elif isinstance(obj, dict):
-                        # Detectar si este diccionario define un piloto
                         p_nombre = piloto_actual
                         for k_p in ["Piloto", "Driver", "nombre", "DriverName", "Name", "Nick", "Player"]:
                             val = obj.get(k_p)
@@ -494,26 +491,23 @@ if archivos_vueltas_dir:
                                     p_nombre = val
                                 break
                         
-                        # Detectar número de vuelta
                         n_vuelta = None
                         for k_v in ["Vuelta", "LapNumber", "Lap", "vuelta", "Index", "LapIndex", "LapNo"]:
                             if k_v in obj:
                                 n_vuelta = obj.get(k_v)
                                 break
                                 
-                        # Detectar tiempo de vuelta en milisegundos
                         t_milis = None
                         for k_t in ["TiempoMs", "TimeMs", "LapTime", "tiempo_ms", "Time", "LapTimeMs", "ms"]:
                             if k_t in obj:
                                 t_milis = obj.get(k_t)
                                 break
                         
-                        # Si encontramos un tiempo válido y un piloto asociado, lo guardamos
                         if p_nombre and t_milis is not None:
                             try:
                                 t_int = int(t_milis)
                                 if t_int > 0:
-                                    v_int = int(n_vuelta) if n_vuelta is not None else (vueltas_agregadas_este_archivo + 1)
+                                    v_int = int(n_vuelta) if n_vuelta is not None else (vueltas_agregadas[0] + 1)
                                     datos_vueltas_detalle.append({
                                         "Circuito": circuito_vueltas,
                                         "Piloto": str(p_nombre).strip(),
@@ -521,11 +515,10 @@ if archivos_vueltas_dir:
                                         "TiempoMs": t_int,
                                         "Tipo": tipo_v_detectado
                                     })
-                                    vueltas_agregadas_este_archivo += 1
+                                    vueltas_agregadas[0] += 1
                             except:
                                 pass
                         
-                        # Seguir buscando dentro de las claves del diccionario
                         for k, v in obj.items():
                             if isinstance(v, (list, dict)):
                                 if k.lower() in ["laps", "vueltas", "laplist", "lap_list", "times"]:
@@ -544,16 +537,13 @@ if archivos_vueltas_dir:
                                                             "TiempoMs": t_int,
                                                             "Tipo": tipo_v_detectado
                                                         })
-                                                        vueltas_agregadas_este_archivo += 1
+                                                        vueltas_agregadas[0] += 1
                                                 except:
                                                     pass
                                 else:
                                     extraer_vueltas_recursivo(v, p_nombre)
 
                 extraer_vueltas_recursivo(contenido_v)
-                
-                if vueltas_agregadas_este_archivo == 0 and "9 de Julio" in circuito_vueltas:
-                    st.sidebar.warning(f"⚠️ Alerta: El archivo de 9 de Julio ({archivo_v_name}) no devolvió vueltas válidas. Verificá su estructura.")
 
             except Exception as e:
                 st.sidebar.error(f"Error al leer archivo de vueltas {archivo_v_name}: {e}")
