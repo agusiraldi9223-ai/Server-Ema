@@ -1523,8 +1523,6 @@ elif seccion_menu == "Estadísticas":
                     st.write("Columnas disponibles:", df_analisis.columns.tolist())
                     st.write("Valores únicos de Vuelta:", sorted(df_analisis["Vuelta"].unique()) if "Vuelta" in df_analisis.columns else "No existe columna Vuelta")
 
-        pilotos_disponibles = sorted(df_analisis["Piloto"].unique()) if not df_analisis.empty and "Piloto" in df_analisis.columns else []
-        
         if len(pilotos_disponibles) >= 1 and "TiempoMs" in df_analisis.columns:
             def convertir_a_min_seg(ms):
                 if pd.isna(ms):
