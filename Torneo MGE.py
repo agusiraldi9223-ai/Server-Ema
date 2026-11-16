@@ -1441,6 +1441,14 @@ elif seccion_menu == "Simulador de Campeonato":
         st.write("Simula futuras fechas o proyecta resultados.")
 
 # --- VISTA: ESTADÍSTICAS ---
+# --- DIAGNÓSTICO TEMPORAL DE DATOS ---
+if st.checkbox("🔍 Ver datos crudos de depuración (Debug)", key="debug_df_vueltas"):
+    st.write("Circuito seleccionado:", circuito_seleccionado)
+    st.write("Registros en df_analisis:", len(df_analisis))
+    if not df_analisis.empty:
+        st.dataframe(df_analisis.head(20))
+        st.write("Columnas disponibles:", df_analisis.columns.tolist())
+        st.write("Valores únicos de Vuelta:", sorted(df_analisis["Vuelta"].unique()) if "Vuelta" in df_analisis.columns else "No existe columna Vuelta")
 elif seccion_menu == "Estadísticas":
     st.subheader("☑️ Live Timing Pro — Análisis de Ritmo y Posiciones")
     
