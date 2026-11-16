@@ -1479,15 +1479,16 @@ elif seccion_menu == "Estadísticas":
         else:
             sesion_elegida_ui = "Carrera"
 
-        # --- OBTENCIÓN Y FILTRADO INTELIGENTE Y TOLERANTE DEL DATAFRAME ---
+        # --- OBTENCIÓN Y FILTRADO DEL DATAFRAME ---
         df_analisis = pd.DataFrame()
         if not df_analisis_global.empty:
-            if "Circuito" in df_analisis_global.columns:
-                c_sel_clean = str(circuito_seleccionado).strip().lower()
-                
-                # 1. Intentamos coincidencia exacta primero
-                df_analisis = df_analisis_global[
-                    df_analisis_global["Circuito"].astype(str).str.strip().str.lower() == c_sel_clean
+            # (Acá hace tu filtro de circuito y sesión normal...)
+            
+            # 🧹 FILTRO MAESTRO CONTRA ANOMALÍAS (Ej: vueltas mayores a 2.5 min o menores a 30s)
+            if not df_analisis.empty and "TiempoMs" in df_analisis.columns:
+                df_analisis = df_analisis[
+                    (df_analisis["TiempoMs"] >= 30000) & 
+                    (df_analisis["TiempoMs"] <= 150000)
                 ].copy()
                 
                 # 2. Si da vacío (por diferencia de nombres como "9 de Julio" vs "Nueve de Julio"), filtramos por aproximación
