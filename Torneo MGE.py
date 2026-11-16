@@ -1652,23 +1652,33 @@ elif seccion_menu == "Estadísticas":
 
             df_grafico["Tiempo_Formateado"] = df_grafico["TiempoMs"].apply(convertir_a_min_seg)
 
-            q_max = df_grafico["TiempoMs"].quantile(0.95) * 1.15 if not df_grafico.empty else 100000
-            q_min = df_grafico["TiempoMs"].min() * 0.95
+if not df_grafico.empty:
+        q_max = float(df_grafico["TiempoMs"].quantile(0.95) * 1.15)
+        q_min = float(df_grafico["TiempoMs"].min() * 0.95)
+        if q_min >= q_max:
+            q_min = q_max - 10000
+    else:
+        q_max = 100000
+        q_min = 0
 
-            fig = px.line(
-                df_grafico, 
-                x="Vuelta", 
-                y="TiempoMs", 
-                color="Piloto",
-                markers=True,
-                hover_data={"TiempoMs": False, "Tiempo_Formateado": True, "Vuelta": True}
-            )
+    fig = px.line(
+        df_grafico, 
+        x="Vuelta", 
+        y="TiempoMs", 
+        color="Piloto",
+        markers=True,
+        hover_data={"TiempoMs": False, "Tiempo_Formateado": True, "Vuelta": True}
+    )
 
-            paso_ms = 5000  
-            inicio_ticks = int((q_min // paso_ms) * paso_ms)
-            fin_ticks = int((q_max // paso_ms + 1) * paso_ms)
-            valores_ticks = list(range(inicio_ticks, fin_ticks + paso_ms, paso_ms))
-            labels_ticks = [f"{t//60000:02d}:{(t%60000)//1000:02d},000" for t in valores_ticks]
+    paso_ms = 5000  
+    try:
+        inicio_ticks = int((q_min // paso_ms) * paso_ms)
+        fin_ticks = int((q_max // paso_ms + 1) * paso_ms)
+        valores_ticks = list(range(inicio_ticks, fin_ticks + paso_ms, paso_ms))
+    except Exception:
+        valores_ticks = [int(q_min), int(q_max)]
+        
+    labels_ticks = [f"{t//60000:02d}:{(t%60000)//1000:02d},000" for t in valores_ticks]
 
             fig.update_layout(
                 xaxis_title="Número de Vuelta",
