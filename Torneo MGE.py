@@ -1480,49 +1480,43 @@ elif seccion_menu == "Estadísticas":
             sesion_elegida_ui = "Carrera"
 
         # --- OBTENCIÓN Y FILTRADO INTELIGENTE Y TOLERANTE DEL DATAFRAME ---
-            df_analisis = pd.DataFrame()
-            if not df_analisis_global.empty:
-                if "Circuito" in df_analisis_global.columns:
-                    c_sel_clean = str(circuito_seleccionado).strip().lower()
-                    
-                    # 1. Intentamos coincidencia exacta primero
-                    df_analisis = df_analisis_global[
-                        df_analisis_global["Circuito"].astype(str).str.strip().str.lower() == c_sel_clean
-                    ].copy()
-                    
-                    # 2. Si da vacío, filtramos por aproximación
-                    if df_analisis.empty:
-                        palabras_clave = [p for p in c_sel_clean.split() if len(p) > 2]
-                        if palabras_clave:
-                            condicion = df_analisis_global["Circuito"].astype(str).str.lower()
-                            for palabra in palabras_clave:
-                                mask = condicion.str.contains(palabra, na=False)
-                                df_temp = df_analisis_global[mask]
-                                if not df_temp.empty:
-                                    df_analisis = df_temp.copy()
-                                    break
-                else:
-                    df_analisis = df_analisis_global.copy()
+        df_analisis = pd.DataFrame()
+        if not df_analisis_global.empty:
+            if "Circuito" in df_analisis_global.columns:
+                c_sel_clean = str(circuito_seleccionado).strip().lower()
                 
-                # FILTRADO EXCLUSIVO PARA CARRERA O SPRINT
-                if "Tipo" in df_analisis.columns and not df_analisis.empty:
-                    if sesion_elegida_ui == "Sprint":
-                        df_filtrado_tipo = df_analisis[df_analisis["Tipo"].astype(str).str.lower().str.contains("sprint", na=False)]
-                    else:
-                        df_filtrado_tipo = df_analisis[~df_analisis["Tipo"].astype(str).str.lower().str.contains("clasif|qualy|q1|q2|q3|sprint", na=False)]
-                    
-                    if not df_filtrado_tipo.empty:
-                        df_analisis = df_filtrado_tipo
+                # 1. Intentamos coincidencia exacta primero
+                df_analisis = df_analisis_global[
+                    df_analisis_global["Circuito"].astype(str).str.strip().str.lower() == c_sel_clean
+                ].copy()
+                
+                # 2. Si da vacío (por diferencia de nombres como "9 de Julio" vs "Nueve de Julio"), filtramos por aproximación
+                if df_analisis.empty:
+                    # Extraemos palabras clave (ej: "julio", "rafaela", "termas")
+                    palabras_clave = [p for p in c_sel_clean.split() if len(p) > 2]
+                    if palabras_clave:
+                        condicion = df_analisis_global["Circuito"].astype(str).str.lower()
+                        for palabra in palabras_clave:
+                            mask = condicion.str.contains(palabra, na=False)
+                            df_temp = df_analisis_global[mask]
+                            if not df_temp.empty:
+                                df_analisis = df_temp.copy()
+                                break
+            else:
+                df_analisis = df_analisis_global.copy()
+            
+            # FILTRADO EXCLUSIVO PARA CARRERA O SPRINT
+            if "Tipo" in df_analisis.columns and not df_analisis.empty:
+                if sesion_elegida_ui == "Sprint":
+                    df_filtrado_tipo = df_analisis[df_analisis["Tipo"].astype(str).str.lower().str.contains("sprint", na=False)]
+                else:
+                    df_filtrado_tipo = df_analisis[~df_analisis["Tipo"].astype(str).str.lower().str.contains("clasif|qualy|q1|q2|q3|sprint", na=False)]
+                
+                if not df_filtrado_tipo.empty:
+                    df_analisis = df_filtrado_tipo
 
-            # --- 🔍 DIAGNÓSTICO VISUAL EN STREAMLIT ---
-            if st.checkbox("🔍 Ver datos crudos de depuración (Debug)", key="debug_df_vueltas"):
-                st.write("Circuito seleccionado:", circuito_seleccionado)
-                st.write("Registros en df_analisis:", len(df_analisis))
-                if not df_analisis.empty:
-                    st.dataframe(df_analisis.head(20))
-                    st.write("Columnas disponibles:", df_analisis.columns.tolist())
-                    st.write("Valores únicos de Vuelta:", sorted(df_analisis["Vuelta"].unique()) if "Vuelta" in df_analisis.columns else "No existe columna Vuelta")
-
+        pilotos_disponibles = sorted(df_analisis["Piloto"].unique()) if not df_analisis.empty and "Piloto" in df_analisis.columns else []
+        
         if len(pilotos_disponibles) >= 1 and "TiempoMs" in df_analisis.columns:
             def convertir_a_min_seg(ms):
                 if pd.isna(ms):
