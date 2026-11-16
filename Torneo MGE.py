@@ -1652,7 +1652,22 @@ elif seccion_menu == "Estadísticas":
 
             df_grafico["Tiempo_Formateado"] = df_grafico["TiempoMs"].apply(convertir_a_min_seg)
 
-if not df_grafico.empty:
+            q_max = df_grafico["TiempoMs"].quantile(0.95) * 1.15 if not df_grafico.empty else 100000
+            q_min = df_grafico["TiempoMs"].min() * 0.95
+
+            fig = px.line(
+                df_grafico, 
+                x="Vuelta", 
+                y="TiempoMs", 
+                color="Piloto",
+                markers=True,
+                hover_data={"TiempoMs": False, "Tiempo_Formateado": True, "Vuelta": True}
+            )
+
+df_grafico["Tiempo_Formateado"] = df_grafico["TiempoMs"].apply(convertir_a_min_seg)
+
+    # --- PROTECCIÓN DE LÍMITES Y TICKS BLINDADA ---
+    if not df_grafico.empty:
         q_max = float(df_grafico["TiempoMs"].quantile(0.95) * 1.15)
         q_min = float(df_grafico["TiempoMs"].min() * 0.95)
         if q_min >= q_max:
@@ -1680,34 +1695,32 @@ if not df_grafico.empty:
         
     labels_ticks = [f"{t//60000:02d}:{(t%60000)//1000:02d},000" for t in valores_ticks]
 
-            fig.update_layout(
-                xaxis_title="Número de Vuelta",
-                yaxis_title="Tiempo de Vuelta",
-                legend_title="Pilotos",
-                hovermode="x unified",
-                template="plotly_dark",
-                height=550,
-                xaxis=dict(dtick=1, showgrid=True, gridcolor='rgba(255, 255, 255, 0.1)'),
-                yaxis=dict(
-                    showgrid=True, 
-                    gridcolor='rgba(255, 255, 255, 0.1)', 
-                    range=[q_min, q_max],
-                    tickmode='array',
-                    tickvals=valores_ticks,
-                    ticktext=labels_ticks
-                )
-            )
-            fig.update_traces(
-                line=dict(width=2.5), 
-                marker=dict(size=6),
-                hovertemplate="<b>%{customdata[1]}</b><br>Vuelta %{x}<br>Tiempo: <b>%{customdata[0]}</b><extra></extra>"
-            )
+    fig.update_layout(
+        xaxis_title="Número de Vuelta",
+        yaxis_title="Tiempo de Vuelta",
+        legend_title="Pilotos",
+        hovermode="x unified",
+        template="plotly_dark",
+        height=550,
+        xaxis=dict(dtick=1, showgrid=True, gridcolor='rgba(255, 255, 255, 0.1)'),
+        yaxis=dict(
+            showgrid=True, 
+            gridcolor='rgba(255, 255, 255, 0.1)', 
+            range=[q_min, q_max],
+            tickmode='array',
+            tickvals=valores_ticks,
+            ticktext=labels_ticks
+        )
+    )
+    fig.update_traces(
+        line=dict(width=2.5), 
+        marker=dict(size=6),
+        hovertemplate="<b>%{customdata[1]}</b><br>Vuelta %{x}<br>Tiempo: <b>%{customdata[0]}</b><extra></extra>"
+    )
 
-            st.plotly_chart(fig, use_container_width=True, key="plotly_evolucion_ritmo_stats")
-        else:
-            st.warning("⚠️ No hay suficientes datos o pilotos cargados para esta sesión en este circuito (o falta la columna 'TiempoMs').")
-    else:
-        st.info("No hay datos de comparativa ni de vueltas cargados.")
+    st.plotly_chart(fig, use_container_width=True, key="plotly_evolucion_ritmo_stats")
+else:
+    st.warning("⚠️ No hay suficientes datos o pilotos cargados para esta sesión en este circuito (o falta la columna 'TiempoMs').")
 
     # =========================================================================
     # 🕸️ PERFIL COMPARATIVO MULTIVARIABLE (GRÁFICO DE ARAÑA)
