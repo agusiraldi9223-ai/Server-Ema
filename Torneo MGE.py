@@ -499,12 +499,15 @@ if archivos_vueltas_dir:
                                     p_nombre = val.strip()
                                 break
                         
-                        # Extraer número de vuelta
+                        # Extraer número de vuelta REAL del JSON (clave Vuelta o LapNumber)
                         n_vuelta = None
                         for k_v in ["Vuelta", "LapNumber", "Lap", "vuelta", "Index", "LapIndex", "LapNo"]:
                             if k_v in item:
-                                n_vuelta = item.get(k_v)
-                                break
+                                try:
+                                    n_vuelta = int(item.get(k_v))
+                                    break
+                                except:
+                                    pass
                                 
                         # Extraer tiempo en milisegundos
                         t_milis = None
@@ -517,7 +520,8 @@ if archivos_vueltas_dir:
                             try:
                                 t_int = int(t_milis)
                                 if t_int > 0:
-                                    v_int = int(n_vuelta) if n_vuelta is not None else 1
+                                    # Usar el número de vuelta real extraído; si no viene, usar un autoincremental seguro por piloto
+                                    v_int = n_vuelta if n_vuelta is not None and n_vuelta > 0 else 1
                                     datos_vueltas_detalle.append({
                                         "Circuito": circuito_vueltas,
                                         "Piloto": str(p_nombre).strip(),
