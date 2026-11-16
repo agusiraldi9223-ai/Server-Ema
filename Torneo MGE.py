@@ -1479,23 +1479,16 @@ elif seccion_menu == "Estadísticas":
         else:
             sesion_elegida_ui = "Carrera"
 
-        # --- OBTENCIÓN Y FILTRADO ESTRICTO POR CIRCUITO Y SESIÓN ---
+        # --- OBTENCIÓN Y FILTRADO INTELIGENTE Y TOLERANTE DEL DATAFRAME ---
         df_analisis = pd.DataFrame()
         if not df_analisis_global.empty:
             if "Circuito" in df_analisis_global.columns:
-                # Filtrado exacto por el circuito seleccionado en el selectbox
+                c_sel_clean = str(circuito_seleccionado).strip().lower()
+                
+                # 1. Intentamos coincidencia exacta primero
                 df_analisis = df_analisis_global[
-                    df_analisis_global["Circuito"].astype(str).str.strip().str.lower() == str(circuito_seleccionado).strip().lower()
+                    df_analisis_global["Circuito"].astype(str).str.strip().str.lower() == c_sel_clean
                 ].copy()
-            else:
-                df_analisis = df_analisis_global.copy()
-            
-            # FILTRADO EXCLUSIVO PARA CARRERA O SPRINT DE ESE CIRCUITO
-            if "Tipo" in df_analisis.columns and not df_analisis.empty:
-                if sesion_elegida_ui == "Sprint":
-                    df_analisis = df_analisis[df_analisis["Tipo"].astype(str).str.lower().str.contains("sprint", na=False)]
-                else:
-                    df_analisis = df_analisis[~df_analisis["Tipo"].astype(str).str.lower().str.contains("clasif|qualy|q1|q2|q3|sprint", na=False)]
                 
                 # 2. Si da vacío (por diferencia de nombres como "9 de Julio" vs "Nueve de Julio"), filtramos por aproximación
                 if df_analisis.empty:
