@@ -1459,7 +1459,7 @@ elif seccion_menu == "Estadísticas":
             
         circuito_seleccionado = st.selectbox("🏁 Seleccionar Circuito:", circuitos_disponibles, key="select_circuito_stats")    
         
-        # --- 2. SELECTOR DE TIPO DE SESIÓN (SOLO CARRERA Y SPRINT) ---
+        # --- 2. SELECTOR DE TIPO DE SESIÓN ---
         tipos_disponibles = []
         if tiene_datos_comp and circuito_seleccionado in datos_comparativa_tiempos:
             eventos_data = datos_comparativa_tiempos[circuito_seleccionado]
@@ -1478,18 +1478,16 @@ elif seccion_menu == "Estadísticas":
         else:
             sesion_elegida_ui = "Carrera"
 
-        # --- OBTENCIÓN Y FILTRADO INTELIGENTE Y TOLERANTE DEL DATAFRAME ---
+        # --- OBTENCIÓN Y FILTRADO DEL DATAFRAME ---
         df_analisis = pd.DataFrame()
         if not df_analisis_global.empty:
             if "Circuito" in df_analisis_global.columns:
                 c_sel_clean = str(circuito_seleccionado).strip().lower()
                 
-                # 1. Intentamos coincidencia exacta primero
                 df_analisis = df_analisis_global[
                     df_analisis_global["Circuito"].astype(str).str.strip().str.lower() == c_sel_clean
                 ].copy()
                 
-                # 2. Si da vacío, filtramos por aproximación
                 if df_analisis.empty:
                     palabras_clave = [p for p in c_sel_clean.split() if len(p) > 2]
                     if palabras_clave:
@@ -1503,7 +1501,6 @@ elif seccion_menu == "Estadísticas":
             else:
                 df_analisis = df_analisis_global.copy()
             
-            # FILTRADO EXCLUSIVO PARA CARRERA O SPRINT
             if "Tipo" in df_analisis.columns and not df_analisis.empty:
                 if sesion_elegida_ui == "Sprint":
                     df_filtrado_tipo = df_analisis[df_analisis["Tipo"].astype(str).str.lower().str.contains("sprint", na=False)]
@@ -1533,23 +1530,18 @@ elif seccion_menu == "Estadísticas":
                 conteo_lentos_por_vuelta = df_analisis[df_analisis["TiempoMs"] > umbral_lento].groupby("Vuelta")["Piloto"].nunique()
                 vueltas_pace_car = conteo_lentos_por_vuelta[conteo_lentos_por_vuelta > (total_pilotos / 2)].index.tolist()
 
-            # --- REGLA DEL 75%: Filtrar pilotos que no completaron la distancia mínima ---
-            vueltas_ganador = df_analisis["Vueltas"].max() if "Vueltas" in df_analisis.columns else (df_analisis["Vuelta"].max() if "Vuelta" in df_analisis.columns else 0)
-            vueltas_minimas_75 = vueltas_ganador * 0.75
-
+            # --- RESUMEN DE PILOTOS ---
             resumen_pilotos = []
             for p in pilotos_disponibles:
                 df_p = df_analisis[df_analisis["Piloto"] == p]
-                vueltas_piloto = df_p["Vueltas"].max() if "Vueltas" in df_p.columns else (df_p["Vuelta"].max() if "Vuelta" in df_p.columns else 0)
-                
-                if vueltas_ganador > 0 and vueltas_piloto < vueltas_minimas_75:
+                if df_p.empty:
                     continue
                     
                 df_reg_p = df_p[(df_p["Vuelta"] > 2) & (~df_p["Vuelta"].isin(vueltas_pace_car))]
                 
-                mejor_p = df_p["TiempoMs"].min() if not df_p.empty else float('inf')
-                prom_p = df_p["TiempoMs"].mean() if not df_p.empty else float('inf')
-                reg_p = df_reg_p["TiempoMs"].std() if not df_reg_p.empty and len(df_reg_p) > 1 else 0.0
+                mejor_p = df_p["TiempoMs"].min()
+                prom_p = df_p["TiempoMs"].mean()
+                reg_p = df_reg_p["TiempoMs"].std() if len(df_reg_p) > 1 else 0.0
                 if pd.isna(reg_p): reg_p = 0.0
                 
                 resumen_pilotos.append({
@@ -1562,9 +1554,7 @@ elif seccion_menu == "Estadísticas":
             df_resumen = pd.DataFrame(resumen_pilotos)
             
             df_resumen_ritmo = df_resumen[df_resumen["PromMs"] != float('inf')].sort_values(by="PromMs", ascending=True).reset_index(drop=True) if not df_resumen.empty else pd.DataFrame()
-            df_resumen_reg = df_resumen[(df_resumen["RegMs"] != float('inf')) & (df_resumen["RegMs"] > 0)].sort_values(by="RegMs", ascending=True).reset_index(drop=True) if not df_resumen.empty else pd.DataFrame()
-            if df_resumen_reg.empty and not df_resumen.empty:
-                df_resumen_reg = df_resumen.sort_values(by="RegMs", ascending=True).reset_index(drop=True)
+            df_resumen_reg = df_resumen[df_resumen["RegMs"] != float('inf')].sort_values(by="RegMs", ascending=True).reset_index(drop=True) if not df_resumen.empty else pd.DataFrame()
 
             ganador_record = df_resumen.loc[df_resumen["MejorMs"].idxmin()] if not df_resumen.empty and df_resumen["MejorMs"].min() != float('inf') else None
             ganador_ritmo = df_resumen_ritmo.iloc[0] if not df_resumen_ritmo.empty else None
@@ -1628,7 +1618,7 @@ elif seccion_menu == "Estadísticas":
                             dif_str = f"+{dif_ms/1000:.3f}s" if idx > 0 else "Líder"
                             st.markdown(f"**{idx+1}. {row['Piloto']}** — {convertir_a_min_seg(row['PromMs'])} <span style='color: #94a3b8; font-size: 12px;'>({dif_str})</span>", unsafe_allow_html=True)
                     else:
-                        st.caption("No hay pilotos que cumplan con el 75% en esta sesión.")
+                        st.caption("No hay datos disponibles en esta sesión.")
                         
             with col_d3:
                 with st.expander("📋 Ver tabla de Regularidad"):
@@ -1636,11 +1626,11 @@ elif seccion_menu == "Estadísticas":
                         for idx, row in df_resumen_reg.iterrows():
                             st.markdown(f"**{idx+1}. {row['Piloto']}** — ±{row['RegMs']/1000:.3f}s <span style='color: #94a3b8; font-size: 12px;'>(Ref: {convertir_a_min_seg(row['PromMs'])})</span>", unsafe_allow_html=True)
                     else:
-                        st.caption("No hay pilotos que cumplan con el 75% en esta sesión.")
+                        st.caption("No hay datos disponibles en esta sesión.")
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # --- GRÁFICO DE EVOLUCIÓN DE RITMO BLINDADO ---
+            # --- GRÁFICO DE EVOLUCIÓN DE RITMO SEGURO ---
             import plotly.express as px
 
             st.markdown("### 📈 Gráfico de Evolución de Ritmo")
@@ -1654,14 +1644,15 @@ elif seccion_menu == "Estadísticas":
 
             df_grafico["Tiempo_Formateado"] = df_grafico["TiempoMs"].apply(convertir_a_min_seg)
 
+            # Uso de min y max reales para que ningún tiempo quede fuera del gráfico
             if not df_grafico.empty:
-                q_max = float(df_grafico["TiempoMs"].quantile(0.95) * 1.15)
+                q_max = float(df_grafico["TiempoMs"].max() * 1.05)
                 q_min = float(df_grafico["TiempoMs"].min() * 0.95)
                 if q_min >= q_max:
                     q_min = q_max - 10000
             else:
-                q_max = 100000
-                q_min = 0
+                q_max = 180000
+                q_min = 60000
 
             fig = px.line(
                 df_grafico, 
