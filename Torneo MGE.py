@@ -1524,10 +1524,6 @@ elif seccion_menu == "Estadísticas":
                 ms_resto = int(ms % 1000)
                 return f"{m:02d}:{s:02d},{ms_resto:03d}"
             
-            # --- FILTRADO DE SEGURIDAD CONTRA ANOMALÍAS EXTREMAS ---
-            if not df_analisis.empty and "TiempoMs" in df_analisis.columns:
-                df_analisis = df_analisis[(df_analisis["TiempoMs"] >= 30000) & (df_analisis["TiempoMs"] <= 180000)].copy()
-
             # --- DETECCIÓN DE PACE CAR ---
             vueltas_pace_car = []
             if not df_analisis.empty:
@@ -1566,7 +1562,9 @@ elif seccion_menu == "Estadísticas":
             df_resumen = pd.DataFrame(resumen_pilotos)
             
             df_resumen_ritmo = df_resumen[df_resumen["PromMs"] != float('inf')].sort_values(by="PromMs", ascending=True).reset_index(drop=True) if not df_resumen.empty else pd.DataFrame()
-            df_resumen_reg = df_resumen[df_resumen["RegMs"] != float('inf')].sort_values(by="RegMs", ascending=True).reset_index(drop=True) if not df_resumen.empty else pd.DataFrame()
+            df_resumen_reg = df_resumen[(df_resumen["RegMs"] != float('inf')) & (df_resumen["RegMs"] > 0)].sort_values(by="RegMs", ascending=True).reset_index(drop=True) if not df_resumen.empty else pd.DataFrame()
+            if df_resumen_reg.empty and not df_resumen.empty:
+                df_resumen_reg = df_resumen.sort_values(by="RegMs", ascending=True).reset_index(drop=True)
 
             ganador_record = df_resumen.loc[df_resumen["MejorMs"].idxmin()] if not df_resumen.empty and df_resumen["MejorMs"].min() != float('inf') else None
             ganador_ritmo = df_resumen_ritmo.iloc[0] if not df_resumen_ritmo.empty else None
