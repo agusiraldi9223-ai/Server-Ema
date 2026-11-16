@@ -1489,8 +1489,9 @@ elif seccion_menu == "Estadísticas":
                     df_analisis_global["Circuito"].astype(str).str.strip().str.lower() == c_sel_clean
                 ].copy()
                 
-                # 2. Si da vacío, filtramos por aproximación
+                # 2. Si da vacío (por diferencia de nombres como "9 de Julio" vs "Nueve de Julio"), filtramos por aproximación
                 if df_analisis.empty:
+                    # Extraemos palabras clave (ej: "julio", "rafaela", "termas")
                     palabras_clave = [p for p in c_sel_clean.split() if len(p) > 2]
                     if palabras_clave:
                         condicion = df_analisis_global["Circuito"].astype(str).str.lower()
@@ -1526,12 +1527,11 @@ elif seccion_menu == "Estadísticas":
             
             # --- DETECCIÓN DE PACE CAR ---
             vueltas_pace_car = []
-            if not df_analisis.empty:
-                mediana_general = df_analisis["TiempoMs"].median()
-                umbral_lento = mediana_general * 1.35  
-                total_pilotos = df_analisis["Piloto"].nunique()
-                conteo_lentos_por_vuelta = df_analisis[df_analisis["TiempoMs"] > umbral_lento].groupby("Vuelta")["Piloto"].nunique()
-                vueltas_pace_car = conteo_lentos_por_vuelta[conteo_lentos_por_vuelta > (total_pilotos / 2)].index.tolist()
+            mediana_general = df_analisis["TiempoMs"].median()
+            umbral_lento = mediana_general * 1.35  
+            total_pilotos = df_analisis["Piloto"].nunique()
+            conteo_lentos_por_vuelta = df_analisis[df_analisis["TiempoMs"] > umbral_lento].groupby("Vuelta")["Piloto"].nunique()
+            vueltas_pace_car = conteo_lentos_por_vuelta[conteo_lentos_por_vuelta > (total_pilotos / 2)].index.tolist()
 
             # --- REGLA DEL 75%: Filtrar pilotos que no completaron la distancia mínima ---
             vueltas_ganador = df_analisis["Vueltas"].max() if "Vueltas" in df_analisis.columns else (df_analisis["Vuelta"].max() if "Vuelta" in df_analisis.columns else 0)
@@ -1562,9 +1562,7 @@ elif seccion_menu == "Estadísticas":
             df_resumen = pd.DataFrame(resumen_pilotos)
             
             df_resumen_ritmo = df_resumen[df_resumen["PromMs"] != float('inf')].sort_values(by="PromMs", ascending=True).reset_index(drop=True) if not df_resumen.empty else pd.DataFrame()
-            df_resumen_reg = df_resumen[(df_resumen["RegMs"] != float('inf')) & (df_resumen["RegMs"] > 0)].sort_values(by="RegMs", ascending=True).reset_index(drop=True) if not df_resumen.empty else pd.DataFrame()
-            if df_resumen_reg.empty and not df_resumen.empty:
-                df_resumen_reg = df_resumen.sort_values(by="RegMs", ascending=True).reset_index(drop=True)
+            df_resumen_reg = df_resumen[df_resumen["RegMs"] != float('inf')].sort_values(by="RegMs", ascending=True).reset_index(drop=True) if not df_resumen.empty else pd.DataFrame()
 
             ganador_record = df_resumen.loc[df_resumen["MejorMs"].idxmin()] if not df_resumen.empty and df_resumen["MejorMs"].min() != float('inf') else None
             ganador_ritmo = df_resumen_ritmo.iloc[0] if not df_resumen_ritmo.empty else None
@@ -1640,7 +1638,7 @@ elif seccion_menu == "Estadísticas":
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # --- GRÁFICO DE EVOLUCIÓN DE RITMO BLINDADO ---
+            # --- GRÁFICO DE EVOLUCIÓN DE RITMO ---
             import plotly.express as px
 
             st.markdown("### 📈 Gráfico de Evolución de Ritmo")
@@ -1654,14 +1652,8 @@ elif seccion_menu == "Estadísticas":
 
             df_grafico["Tiempo_Formateado"] = df_grafico["TiempoMs"].apply(convertir_a_min_seg)
 
-            if not df_grafico.empty:
-                q_max = float(df_grafico["TiempoMs"].quantile(0.95) * 1.15)
-                q_min = float(df_grafico["TiempoMs"].min() * 0.95)
-                if q_min >= q_max:
-                    q_min = q_max - 10000
-            else:
-                q_max = 100000
-                q_min = 0
+            q_max = df_grafico["TiempoMs"].quantile(0.95) * 1.15 if not df_grafico.empty else 100000
+            q_min = df_grafico["TiempoMs"].min() * 0.95
 
             fig = px.line(
                 df_grafico, 
@@ -1673,13 +1665,9 @@ elif seccion_menu == "Estadísticas":
             )
 
             paso_ms = 5000  
-            try:
-                inicio_ticks = int((q_min // paso_ms) * paso_ms)
-                fin_ticks = int((q_max // paso_ms + 1) * paso_ms)
-                valores_ticks = list(range(inicio_ticks, fin_ticks + paso_ms, paso_ms))
-            except Exception:
-                valores_ticks = [int(q_min), int(q_max)]
-                
+            inicio_ticks = int((q_min // paso_ms) * paso_ms)
+            fin_ticks = int((q_max // paso_ms + 1) * paso_ms)
+            valores_ticks = list(range(inicio_ticks, fin_ticks + paso_ms, paso_ms))
             labels_ticks = [f"{t//60000:02d}:{(t%60000)//1000:02d},000" for t in valores_ticks]
 
             fig.update_layout(
