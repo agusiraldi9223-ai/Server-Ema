@@ -1489,9 +1489,8 @@ elif seccion_menu == "Estadísticas":
                     df_analisis_global["Circuito"].astype(str).str.strip().str.lower() == c_sel_clean
                 ].copy()
                 
-                # 2. Si da vacío (por diferencia de nombres como "9 de Julio" vs "Nueve de Julio"), filtramos por aproximación
+                # 2. Si da vacío, filtramos por aproximación
                 if df_analisis.empty:
-                    # Extraemos palabras clave (ej: "julio", "rafaela", "termas")
                     palabras_clave = [p for p in c_sel_clean.split() if len(p) > 2]
                     if palabras_clave:
                         condicion = df_analisis_global["Circuito"].astype(str).str.lower()
@@ -1525,13 +1524,18 @@ elif seccion_menu == "Estadísticas":
                 ms_resto = int(ms % 1000)
                 return f"{m:02d}:{s:02d},{ms_resto:03d}"
             
+            # --- FILTRADO DE SEGURIDAD CONTRA ANOMALÍAS EXTREMAS ---
+            if not df_analisis.empty and "TiempoMs" in df_analisis.columns:
+                df_analisis = df_analisis[(df_analisis["TiempoMs"] >= 30000) & (df_analisis["TiempoMs"] <= 180000)].copy()
+
             # --- DETECCIÓN DE PACE CAR ---
             vueltas_pace_car = []
-            mediana_general = df_analisis["TiempoMs"].median()
-            umbral_lento = mediana_general * 1.35  
-            total_pilotos = df_analisis["Piloto"].nunique()
-            conteo_lentos_por_vuelta = df_analisis[df_analisis["TiempoMs"] > umbral_lento].groupby("Vuelta")["Piloto"].nunique()
-            vueltas_pace_car = conteo_lentos_por_vuelta[conteo_lentos_por_vuelta > (total_pilotos / 2)].index.tolist()
+            if not df_analisis.empty:
+                mediana_general = df_analisis["TiempoMs"].median()
+                umbral_lento = mediana_general * 1.35  
+                total_pilotos = df_analisis["Piloto"].nunique()
+                conteo_lentos_por_vuelta = df_analisis[df_analisis["TiempoMs"] > umbral_lento].groupby("Vuelta")["Piloto"].nunique()
+                vueltas_pace_car = conteo_lentos_por_vuelta[conteo_lentos_por_vuelta > (total_pilotos / 2)].index.tolist()
 
             # --- REGLA DEL 75%: Filtrar pilotos que no completaron la distancia mínima ---
             vueltas_ganador = df_analisis["Vueltas"].max() if "Vueltas" in df_analisis.columns else (df_analisis["Vuelta"].max() if "Vuelta" in df_analisis.columns else 0)
@@ -1638,7 +1642,7 @@ elif seccion_menu == "Estadísticas":
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # --- GRÁFICO DE EVOLUCIÓN DE RITMO ---
+            # --- GRÁFICO DE EVOLUCIÓN DE RITMO BLINDADO ---
             import plotly.express as px
 
             st.markdown("### 📈 Gráfico de Evolución de Ritmo")
@@ -1652,8 +1656,14 @@ elif seccion_menu == "Estadísticas":
 
             df_grafico["Tiempo_Formateado"] = df_grafico["TiempoMs"].apply(convertir_a_min_seg)
 
-            q_max = df_grafico["TiempoMs"].quantile(0.95) * 1.15 if not df_grafico.empty else 100000
-            q_min = df_grafico["TiempoMs"].min() * 0.95
+            if not df_grafico.empty:
+                q_max = float(df_grafico["TiempoMs"].quantile(0.95) * 1.15)
+                q_min = float(df_grafico["TiempoMs"].min() * 0.95)
+                if q_min >= q_max:
+                    q_min = q_max - 10000
+            else:
+                q_max = 100000
+                q_min = 0
 
             fig = px.line(
                 df_grafico, 
@@ -1665,9 +1675,13 @@ elif seccion_menu == "Estadísticas":
             )
 
             paso_ms = 5000  
-            inicio_ticks = int((q_min // paso_ms) * paso_ms)
-            fin_ticks = int((q_max // paso_ms + 1) * paso_ms)
-            valores_ticks = list(range(inicio_ticks, fin_ticks + paso_ms, paso_ms))
+            try:
+                inicio_ticks = int((q_min // paso_ms) * paso_ms)
+                fin_ticks = int((q_max // paso_ms + 1) * paso_ms)
+                valores_ticks = list(range(inicio_ticks, fin_ticks + paso_ms, paso_ms))
+            except Exception:
+                valores_ticks = [int(q_min), int(q_max)]
+                
             labels_ticks = [f"{t//60000:02d}:{(t%60000)//1000:02d},000" for t in valores_ticks]
 
             fig.update_layout(
