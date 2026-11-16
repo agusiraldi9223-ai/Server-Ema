@@ -1479,17 +1479,23 @@ elif seccion_menu == "Estadísticas":
         else:
             sesion_elegida_ui = "Carrera"
 
-        # --- OBTENCIÓN Y FILTRADO DEL DATAFRAME ---
+        # --- OBTENCIÓN Y FILTRADO ESTRICTO POR CIRCUITO Y SESIÓN ---
         df_analisis = pd.DataFrame()
         if not df_analisis_global.empty:
-            # (Acá hace tu filtro de circuito y sesión normal...)
-            
-            # 🧹 FILTRO MAESTRO CONTRA ANOMALÍAS (Ej: vueltas mayores a 2.5 min o menores a 30s)
-            if not df_analisis.empty and "TiempoMs" in df_analisis.columns:
-                df_analisis = df_analisis[
-                    (df_analisis["TiempoMs"] >= 30000) & 
-                    (df_analisis["TiempoMs"] <= 150000)
+            if "Circuito" in df_analisis_global.columns:
+                # Filtrado exacto por el circuito seleccionado en el selectbox
+                df_analisis = df_analisis_global[
+                    df_analisis_global["Circuito"].astype(str).str.strip().str.lower() == str(circuito_seleccionado).strip().lower()
                 ].copy()
+            else:
+                df_analisis = df_analisis_global.copy()
+            
+            # FILTRADO EXCLUSIVO PARA CARRERA O SPRINT DE ESE CIRCUITO
+            if "Tipo" in df_analisis.columns and not df_analisis.empty:
+                if sesion_elegida_ui == "Sprint":
+                    df_analisis = df_analisis[df_analisis["Tipo"].astype(str).str.lower().str.contains("sprint", na=False)]
+                else:
+                    df_analisis = df_analisis[~df_analisis["Tipo"].astype(str).str.lower().str.contains("clasif|qualy|q1|q2|q3|sprint", na=False)]
                 
                 # 2. Si da vacío (por diferencia de nombres como "9 de Julio" vs "Nueve de Julio"), filtramos por aproximación
                 if df_analisis.empty:
