@@ -1665,10 +1665,14 @@ elif seccion_menu == "Estadísticas":
             )
 
             paso_ms = 5000  
-            inicio_ticks = int((q_min // paso_ms) * paso_ms)
-            fin_ticks = int((q_max // paso_ms + 1) * paso_ms)
-            valores_ticks = list(range(inicio_ticks, fin_ticks + paso_ms, paso_ms))
-            labels_ticks = [f"{t//60000:02d}:{(t%60000)//1000:02d},000" for t in valores_ticks]
+                try:
+                    inicio_ticks = int((q_min // paso_ms) * paso_ms)
+                    fin_ticks = int((q_max // paso_ms + 1) * paso_ms)
+                    valores_ticks = list(range(inicio_ticks, fin_ticks + paso_ms, paso_ms))
+                except Exception:
+                    valores_ticks = [int(q_min), int(q_max)]
+                    
+                labels_ticks = [f"{t//60000:02d}:{(t%60000)//1000:02d},000" for t in valores_ticks]
 
             fig.update_layout(
                 xaxis_title="Número de Vuelta",
