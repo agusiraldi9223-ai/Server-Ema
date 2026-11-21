@@ -1896,7 +1896,8 @@ elif seccion_menu == "Perfil de Circuitos":
             "federico oris": "Federico Oris",
             "alan lasserre": "Alan Lasserre",
             "alan245": "Alan Lasserre",
-            "juanchii": "Player",
+            "Player": "juanchii",
+            "Rubdri": "rubdri"
             # Agregá más variantes acá si encontrás otras en tus planillas:
             # "nombre viejo": "Nombre Oficial"
         }
