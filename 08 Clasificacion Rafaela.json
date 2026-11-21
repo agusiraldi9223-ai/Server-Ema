@@ -1,0 +1,1757 @@
+{
+  "Version": 7,
+  "Cars": [
+    {
+      "BallastKG": 0,
+      "CarId": 0,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "24_raptor_pacecar_rabipmods",
+      "Restrictor": 0,
+      "Skin": "MGE ARG",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 1,
+      "Driver": {
+        "Guid": "76561199512809064",
+        "GuidsList": [
+          "76561199512809064"
+        ],
+        "Name": "Exequiel Martinez",
+        "Nation": "ITA",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_bmw_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 17 - Exequiel Martinez",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 30,
+      "MaxPing": 978
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 2,
+      "Driver": {
+        "Guid": "76561199110830252",
+        "GuidsList": [
+          "76561199110830252"
+        ],
+        "Name": "Francisco Stemphelet",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_bmw_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 207 Francisco Stemphelet",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 10,
+      "CarId": 3,
+      "Driver": {
+        "Guid": "76561199086379901",
+        "GuidsList": [
+          "76561199086379901"
+        ],
+        "Name": "Franco Domina",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_bmw_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 92 Franco Domina",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 4,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_bmw_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 68 Santero",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 5,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_bmw_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 116 Candela Monster V1",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 10,
+      "CarId": 6,
+      "Driver": {
+        "Guid": "76561198741668026",
+        "GuidsList": [
+          "76561198741668026"
+        ],
+        "Name": "agus_iraldi92",
+        "Nation": "PLA",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_chevrolet_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 07 Agustin Iraldi",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 12,
+      "MaxPing": 440
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 7,
+      "Driver": {
+        "Guid": "76561198746317397",
+        "GuidsList": [
+          "76561198746317397"
+        ],
+        "Name": "rubdri",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_chevrolet_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 35 Rubdri",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 16,
+      "MaxPing": 27
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 8,
+      "Driver": {
+        "Guid": "76561199577506857",
+        "GuidsList": [
+          "76561199577506857"
+        ],
+        "Name": "Hugo Cabot",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_chevrolet_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 45 Hugo Cabot",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 12,
+      "MaxPing": 23
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 9,
+      "Driver": {
+        "Guid": "76561198978609321",
+        "GuidsList": [
+          "76561198978609321"
+        ],
+        "Name": "lucas echegaray",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_chevrolet_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 77 Lucas Echegaray",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 13,
+      "MaxPing": 1182
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 10,
+      "Driver": {
+        "Guid": "76561199056404582",
+        "GuidsList": [
+          "76561199056404582"
+        ],
+        "Name": "Lucas Horisberger",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_chevrolet_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 98 Lucas Horisberger",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 26,
+      "MaxPing": 384
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 11,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_chevrolet_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 1 Canapino - Copa de Oro",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 12,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_chevrolet_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 95 Landa",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 20,
+      "CarId": 13,
+      "Driver": {
+        "Guid": "76561199122456473",
+        "GuidsList": [
+          "76561199122456473"
+        ],
+        "Name": "Gaspar Celeste",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_dodge_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 24 Gaspar Celeste",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 32,
+      "MaxPing": 11315
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 14,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_dodge_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 147 Dianda",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 15,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_dodge_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 101 Castellano",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 16,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_dodge_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 6 Trucco",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 17,
+      "Driver": {
+        "Guid": "76561199391672713",
+        "GuidsList": [
+          "76561199391672713"
+        ],
+        "Name": "Alan245",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_ford_argsim",
+      "Restrictor": 0,
+      "Skin": "#25 Alan Lasserre",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 17,
+      "MaxPing": 41
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 18,
+      "Driver": {
+        "Guid": "76561199591997903",
+        "GuidsList": [
+          "76561199591997903"
+        ],
+        "Name": "Ivan Lasserre",
+        "Nation": "PLA",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_ford_argsim",
+      "Restrictor": 0,
+      "Skin": "#33 Ivan Lasserre",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 18,
+      "MaxPing": 2030
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 19,
+      "Driver": {
+        "Guid": "76561197960267366",
+        "GuidsList": [
+          "76561197960267366"
+        ],
+        "Name": "Lucas Chev",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_ford_argsim",
+      "Restrictor": 0,
+      "Skin": "#11 M. Werner",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 24,
+      "MaxPing": 222
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 20,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_ford_argsim",
+      "Restrictor": 0,
+      "Skin": "#3 M.Lambiris",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 21,
+      "Driver": {
+        "Guid": "76561198859194921",
+        "GuidsList": [
+          "76561198859194921"
+        ],
+        "Name": "Fede",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_ford_argsim",
+      "Restrictor": 0,
+      "Skin": "# 11 Federico Rezza",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 27,
+      "MaxPing": 39
+    },
+    {
+      "BallastKG": 10,
+      "CarId": 22,
+      "Driver": {
+        "Guid": "76561199549412877",
+        "GuidsList": [
+          "76561199549412877"
+        ],
+        "Name": "Player",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_mercedes_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 10 Juanchi Oustry",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 25,
+      "MaxPing": 608
+    },
+    {
+      "BallastKG": 10,
+      "CarId": 23,
+      "Driver": {
+        "Guid": "76561199481977607",
+        "GuidsList": [
+          "76561199481977607"
+        ],
+        "Name": "Juan Martin Hernandez",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_mercedes_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 33 Juan Martin Hernandez",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 24,
+      "Driver": {
+        "Guid": "76561199574235956",
+        "GuidsList": [
+          "76561199574235956"
+        ],
+        "Name": "ROMAN ALTAMIRANO",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_mercedes_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 44 Roman Altamirano",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 25,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_mercedes_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 256 Fritzler",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 26,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_mercedes_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 231 Urcera",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 27,
+      "Driver": {
+        "Guid": "76561198841536193",
+        "GuidsList": [
+          "76561198841536193"
+        ],
+        "Name": "Fede Oris",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_renault_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 146 Federico Oris",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 28,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_renault_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 79 Chapur",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 29,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_renault_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 86 Fain",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 10,
+      "CarId": 30,
+      "Driver": {
+        "Guid": "76561198293153434",
+        "GuidsList": [
+          "76561198293153434"
+        ],
+        "Name": "Emanuel Grasso",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_toyota_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 11 Emanuel Grasso",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 30,
+      "MaxPing": 870
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 31,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_toyota_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC117",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 32,
+      "Driver": {
+        "Guid": "",
+        "GuidsList": [
+          ""
+        ],
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "Model": "tc2026_toyota_argsim",
+      "Restrictor": 0,
+      "Skin": "#TC 119",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "MinPing": 0,
+      "MaxPing": 0
+    }
+  ],
+  "Events": [
+    {
+      "CarId": 9,
+      "Driver": {
+        "Guid": "76561198978609321",
+        "GuidsList": [
+          "76561198978609321"
+        ],
+        "Name": "lucas echegaray",
+        "Nation": "ARG",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "ImpactSpeed": 2.218191,
+      "OtherCarId": 0,
+      "OtherDriver": {
+        "Guid": "",
+        "GuidsList": null,
+        "Name": "",
+        "Nation": "",
+        "Team": "",
+        "ClassID": "00000000-0000-0000-0000-000000000000"
+      },
+      "RelPosition": {
+        "X": -1.054486,
+        "Y": -0.2915264,
+        "Z": -1.2630427
+      },
+      "Type": "COLLISION_WITH_ENV",
+      "WorldPosition": {
+        "X": 596.6686,
+        "Y": -1.4218299,
+        "Z": 311.07953
+      },
+      "Timestamp": 1795226832,
+      "AfterSessionEnd": false,
+      "ReplayURL": ""
+    }
+  ],
+  "Laps": [
+    {
+      "BallastKG": 0,
+      "CarId": 7,
+      "CarModel": "tc2026_chevrolet_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561198746317397",
+      "DriverName": "rubdri",
+      "LapTime": 140440,
+      "Restrictor": 0,
+      "Sectors": [
+        61127,
+        26334,
+        27824,
+        25155
+      ],
+      "Timestamp": 1795226596,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 10,
+      "CarModel": "tc2026_chevrolet_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561199056404582",
+      "DriverName": "Lucas Horisberger",
+      "LapTime": 179668,
+      "Restrictor": 0,
+      "Sectors": [
+        106440,
+        23701,
+        25011,
+        24516
+      ],
+      "Timestamp": 1795226635,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 7,
+      "CarModel": "tc2026_chevrolet_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561198746317397",
+      "DriverName": "rubdri",
+      "LapTime": 100392,
+      "Restrictor": 0,
+      "Sectors": [
+        14342,
+        30933,
+        25452,
+        29665
+      ],
+      "Timestamp": 1795226696,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 18,
+      "CarModel": "tc2026_ford_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561199591997903",
+      "DriverName": "Ivan Lasserre",
+      "LapTime": 241699,
+      "Restrictor": 0,
+      "Sectors": [
+        160555,
+        25074,
+        30429,
+        25641
+      ],
+      "Timestamp": 1795226699,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 19,
+      "CarModel": "tc2026_ford_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561197960267366",
+      "DriverName": "Lucas Chev",
+      "LapTime": 258311,
+      "Restrictor": 0,
+      "Sectors": [
+        183580,
+        24269,
+        25285,
+        25177
+      ],
+      "Timestamp": 1795226714,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 10,
+      "CarModel": "tc2026_chevrolet_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561199056404582",
+      "DriverName": "Lucas Horisberger",
+      "LapTime": 86055,
+      "Restrictor": 0,
+      "Sectors": [
+        14136,
+        23841,
+        23948,
+        24130
+      ],
+      "Timestamp": 1795226721,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 9,
+      "CarModel": "tc2026_chevrolet_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561198978609321",
+      "DriverName": "lucas echegaray",
+      "LapTime": 309919,
+      "Restrictor": 0,
+      "Sectors": [
+        235502,
+        24093,
+        24777,
+        25547
+      ],
+      "Timestamp": 1795226767,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 10,
+      "CarId": 30,
+      "CarModel": "tc2026_toyota_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561198293153434",
+      "DriverName": "Emanuel Grasso",
+      "LapTime": 317054,
+      "Restrictor": 0,
+      "Sectors": [
+        244627,
+        23765,
+        24435,
+        24227
+      ],
+      "Timestamp": 1795226774,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 21,
+      "CarModel": "tc2026_ford_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561198859194921",
+      "DriverName": "Fede",
+      "LapTime": 322328,
+      "Restrictor": 0,
+      "Sectors": [
+        249168,
+        24209,
+        24233,
+        24718
+      ],
+      "Timestamp": 1795226778,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 18,
+      "CarModel": "tc2026_ford_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561199591997903",
+      "DriverName": "Ivan Lasserre",
+      "LapTime": 87368,
+      "Restrictor": 0,
+      "Sectors": [
+        14298,
+        23976,
+        24470,
+        24624
+      ],
+      "Timestamp": 1795226787,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 19,
+      "CarModel": "tc2026_ford_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561197960267366",
+      "DriverName": "Lucas Chev",
+      "LapTime": 89183,
+      "Restrictor": 0,
+      "Sectors": [
+        14439,
+        24660,
+        25164,
+        24920
+      ],
+      "Timestamp": 1795226803,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 10,
+      "CarId": 22,
+      "CarModel": "tc2026_mercedes_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561199549412877",
+      "DriverName": "Player",
+      "LapTime": 174093,
+      "Restrictor": 0,
+      "Sectors": [
+        102146,
+        24048,
+        23923,
+        23976
+      ],
+      "Timestamp": 1795226827,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 9,
+      "CarModel": "tc2026_chevrolet_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561198978609321",
+      "DriverName": "lucas echegaray",
+      "LapTime": 87391,
+      "Restrictor": 0,
+      "Sectors": [
+        14275,
+        23890,
+        24593,
+        24633
+      ],
+      "Timestamp": 1795226854,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 10,
+      "CarId": 30,
+      "CarModel": "tc2026_toyota_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561198293153434",
+      "DriverName": "Emanuel Grasso",
+      "LapTime": 85646,
+      "Restrictor": 0,
+      "Sectors": [
+        14070,
+        23890,
+        24003,
+        23683
+      ],
+      "Timestamp": 1795226859,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 21,
+      "CarModel": "tc2026_ford_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561198859194921",
+      "DriverName": "Fede",
+      "LapTime": 86483,
+      "Restrictor": 0,
+      "Sectors": [
+        14119,
+        23764,
+        24426,
+        24174
+      ],
+      "Timestamp": 1795226864,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 20,
+      "CarId": 13,
+      "CarModel": "tc2026_dodge_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561199122456473",
+      "DriverName": "Gaspar Celeste",
+      "LapTime": 423175,
+      "Restrictor": 0,
+      "Sectors": [
+        339691,
+        27310,
+        30803,
+        25371
+      ],
+      "Timestamp": 1795226891,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 10,
+      "CarId": 22,
+      "CarModel": "tc2026_mercedes_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561199549412877",
+      "DriverName": "Player",
+      "LapTime": 86525,
+      "Restrictor": 0,
+      "Sectors": [
+        14093,
+        23567,
+        24921,
+        23944
+      ],
+      "Timestamp": 1795226913,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 10,
+      "CarId": 6,
+      "CarModel": "tc2026_chevrolet_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561198741668026",
+      "DriverName": "agus_iraldi92",
+      "LapTime": 458789,
+      "Restrictor": 0,
+      "Sectors": [
+        382991,
+        27315,
+        24350,
+        24133
+      ],
+      "Timestamp": 1795226914,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 20,
+      "CarId": 13,
+      "CarModel": "tc2026_dodge_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561199122456473",
+      "DriverName": "Gaspar Celeste",
+      "LapTime": 86028,
+      "Restrictor": 0,
+      "Sectors": [
+        14064,
+        24034,
+        23990,
+        23940
+      ],
+      "Timestamp": 1795226977,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 1,
+      "CarModel": "tc2026_bmw_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561199512809064",
+      "DriverName": "Exequiel Martinez",
+      "LapTime": 524096,
+      "Restrictor": 0,
+      "Sectors": [
+        444149,
+        24701,
+        29867,
+        25379
+      ],
+      "Timestamp": 1795226981,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 10,
+      "CarId": 6,
+      "CarModel": "tc2026_chevrolet_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561198741668026",
+      "DriverName": "agus_iraldi92",
+      "LapTime": 86024,
+      "Restrictor": 0,
+      "Sectors": [
+        14222,
+        23774,
+        24075,
+        23953
+      ],
+      "Timestamp": 1795227000,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 8,
+      "CarModel": "tc2026_chevrolet_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561199577506857",
+      "DriverName": "Hugo Cabot",
+      "LapTime": 112919,
+      "Restrictor": 0,
+      "Sectors": [
+        39119,
+        24435,
+        25038,
+        24327
+      ],
+      "Timestamp": 1795227030,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 17,
+      "CarModel": "tc2026_ford_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561199391672713",
+      "DriverName": "Alan245",
+      "LapTime": 589166,
+      "Restrictor": 0,
+      "Sectors": [
+        495094,
+        37345,
+        31019,
+        25708
+      ],
+      "Timestamp": 1795227044,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": false,
+      "SpeedTrapHits": null,
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 1,
+      "CarModel": "tc2026_bmw_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561199512809064",
+      "DriverName": "Exequiel Martinez",
+      "LapTime": 85386,
+      "Restrictor": 0,
+      "Sectors": [
+        13971,
+        23687,
+        23868,
+        23860
+      ],
+      "Timestamp": 1795227066,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 8,
+      "CarModel": "tc2026_chevrolet_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561199577506857",
+      "DriverName": "Hugo Cabot",
+      "LapTime": 87159,
+      "Restrictor": 0,
+      "Sectors": [
+        14366,
+        23945,
+        24701,
+        24147
+      ],
+      "Timestamp": 1795227117,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    },
+    {
+      "BallastKG": 0,
+      "CarId": 17,
+      "CarModel": "tc2026_ford_argsim",
+      "Cuts": 0,
+      "DriverGuid": "76561199391672713",
+      "DriverName": "Alan245",
+      "LapTime": 86834,
+      "Restrictor": 0,
+      "Sectors": [
+        14294,
+        23976,
+        24134,
+        24430
+      ],
+      "Timestamp": 1795227131,
+      "Tyre": "NA",
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "ContributedToFastestLap": true,
+      "SpeedTrapHits": [],
+      "Conditions": {
+        "Ambient": 12,
+        "Road": 22,
+        "Grip": 1,
+        "WindSpeed": 6,
+        "WindDirection": 27,
+        "RainIntensity": 0,
+        "RainWetness": 0,
+        "RainWater": 0
+      }
+    }
+  ],
+  "Result": [
+    {
+      "BallastKG": 0,
+      "BestLap": 85386,
+      "CarId": 1,
+      "CarModel": "tc2026_bmw_argsim",
+      "DriverGuid": "76561199512809064",
+      "DriverName": "Exequiel Martinez",
+      "Restrictor": 0,
+      "TotalTime": 610770,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 2
+    },
+    {
+      "BallastKG": 10,
+      "BestLap": 85646,
+      "CarId": 30,
+      "CarModel": "tc2026_toyota_argsim",
+      "DriverGuid": "76561198293153434",
+      "DriverName": "Emanuel Grasso",
+      "Restrictor": 0,
+      "TotalTime": 404118,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 1
+    },
+    {
+      "BallastKG": 10,
+      "BestLap": 86024,
+      "CarId": 6,
+      "CarModel": "tc2026_chevrolet_argsim",
+      "DriverGuid": "76561198741668026",
+      "DriverName": "agus_iraldi92",
+      "Restrictor": 0,
+      "TotalTime": 544799,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 8
+    },
+    {
+      "BallastKG": 20,
+      "BestLap": 86028,
+      "CarId": 13,
+      "CarModel": "tc2026_dodge_argsim",
+      "DriverGuid": "76561199122456473",
+      "DriverName": "Gaspar Celeste",
+      "Restrictor": 0,
+      "TotalTime": 521430,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 7
+    },
+    {
+      "BallastKG": 0,
+      "BestLap": 86055,
+      "CarId": 10,
+      "CarModel": "tc2026_chevrolet_argsim",
+      "DriverGuid": "76561199056404582",
+      "DriverName": "Lucas Horisberger",
+      "Restrictor": 0,
+      "TotalTime": 265745,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 5
+    },
+    {
+      "BallastKG": 0,
+      "BestLap": 86483,
+      "CarId": 21,
+      "CarModel": "tc2026_ford_argsim",
+      "DriverGuid": "76561198859194921",
+      "DriverName": "Fede",
+      "Restrictor": 0,
+      "TotalTime": 408854,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 10
+    },
+    {
+      "BallastKG": 10,
+      "BestLap": 86525,
+      "CarId": 22,
+      "CarModel": "tc2026_mercedes_argsim",
+      "DriverGuid": "76561199549412877",
+      "DriverName": "Player",
+      "Restrictor": 0,
+      "TotalTime": 457982,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 4
+    },
+    {
+      "BallastKG": 0,
+      "BestLap": 86834,
+      "CarId": 17,
+      "CarModel": "tc2026_ford_argsim",
+      "DriverGuid": "76561199391672713",
+      "DriverName": "Alan245",
+      "Restrictor": 0,
+      "TotalTime": 676028,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 6
+    },
+    {
+      "BallastKG": 0,
+      "BestLap": 87159,
+      "CarId": 8,
+      "CarModel": "tc2026_chevrolet_argsim",
+      "DriverGuid": "76561199577506857",
+      "DriverName": "Hugo Cabot",
+      "Restrictor": 0,
+      "TotalTime": 661968,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 13
+    },
+    {
+      "BallastKG": 0,
+      "BestLap": 87368,
+      "CarId": 18,
+      "CarModel": "tc2026_ford_argsim",
+      "DriverGuid": "76561199591997903",
+      "DriverName": "Ivan Lasserre",
+      "Restrictor": 0,
+      "TotalTime": 331596,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 3
+    },
+    {
+      "BallastKG": 0,
+      "BestLap": 87391,
+      "CarId": 9,
+      "CarModel": "tc2026_chevrolet_argsim",
+      "DriverGuid": "76561198978609321",
+      "DriverName": "lucas echegaray",
+      "Restrictor": 0,
+      "TotalTime": 398752,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 9
+    },
+    {
+      "BallastKG": 0,
+      "BestLap": 89183,
+      "CarId": 19,
+      "CarModel": "tc2026_ford_argsim",
+      "DriverGuid": "76561197960267366",
+      "DriverName": "Lucas Chev",
+      "Restrictor": 0,
+      "TotalTime": 347519,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 11
+    },
+    {
+      "BallastKG": 0,
+      "BestLap": 100392,
+      "CarId": 7,
+      "CarModel": "tc2026_chevrolet_argsim",
+      "DriverGuid": "76561198746317397",
+      "DriverName": "rubdri",
+      "Restrictor": 0,
+      "TotalTime": 240852,
+      "NumLaps": 2,
+      "HasPenalty": false,
+      "PenaltyTime": 0,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 12
+    }
+  ],
+  "Penalties": null,
+  "TrackConfig": "t3",
+  "TrackName": "apvs_rafaela",
+  "Type": "QUALIFY",
+  "Date": "2026-11-20T23:14:00-03:00",
+  "SessionFile": "2026_11_20_23_14_QUALIFY",
+  "SessionConfig": {
+    "session_type": 2,
+    "name": "Qualifying",
+    "time": 10,
+    "laps": 0,
+    "is_open": 1,
+    "wait_time": 0,
+    "visibility_mode": 0,
+    "qualifying_type": 3,
+    "qualifying_number_of_laps_to_average": 0,
+    "count_out_lap": false,
+    "disable_push_to_pass": false
+  },
+  "ChampionshipID": "",
+  "RaceWeekendID": "",
+  "EventName": "TC26"
+}
