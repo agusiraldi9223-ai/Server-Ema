@@ -1138,7 +1138,7 @@ elif seccion_menu == "Comparativa de Tiempos":
         
         # Diccionario para unificar nombres duplicados
         equivalencias_nombres = {
-            "Fede Oris": "Federico Oris", "Alan Lasserre": "Alan245","rubdri": "Rubdri",
+            "Fede Oris": "Federico Oris", "Alan Lasserre": "Alan245","rubdri": "Rubdri", "Player": "juanchii"
         }
         
         def normalizar_nombre(nombre):
@@ -1896,6 +1896,7 @@ elif seccion_menu == "Perfil de Circuitos":
             "federico oris": "Federico Oris",
             "alan lasserre": "Alan Lasserre",
             "alan245": "Alan Lasserre",
+            "juanchii": "Player",
             # Agregá más variantes acá si encontrás otras en tus planillas:
             # "nombre viejo": "Nombre Oficial"
         }
