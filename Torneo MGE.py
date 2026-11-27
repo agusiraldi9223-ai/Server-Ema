@@ -1490,17 +1490,19 @@ elif seccion_menu == "Simulador de Campeonato":
             with col_s_tit:
                 st.markdown("### ⚙️ Configuración de la Proyección Futura")
             with col_s_btn:
-                tipo_btn_sim = "primary" if st.session_state.sim_descontar_peor else "secondary"
-                label_btn_sim = "🔄 Descontar Peor Fecha" if st.session_state.sim_descontar_peor else "📉 Descontar Peor Fecha"
-                if st.button(label_btn_sim, type=tipo_btn_sim, use_container_width=True, key="btn_descarte_simulador"):
-                    st.session_state.sim_descontar_peor = not st.session_state.sim_descontar_peor
-                    st.rerun()
+                st.write("")
+                aplicar_descarte_sim = st.checkbox(
+                    "Descontar peor fecha",
+                    value=st.session_state.sim_descontar_peor,
+                    key="chk_descarte_simulador",
+                    help="Descuenta la peor fecha elegible por piloto (Fecha 10 protegida y abandonos <75% con 0 pts protegidos)."
+                )
+                st.session_state.sim_descontar_peor = aplicar_descarte_sim
 
-            aplicar_descarte_sim = st.session_state.sim_descontar_peor
             if aplicar_descarte_sim:
-                st.caption("📉 **Modo con descarte activo:** se descuenta la peor fecha elegible (Fecha 10 protegida y <75% con 0 pts protegido).")
+                st.caption("📉 **Descarte aplicado:** se descuenta la peor fecha elegible (Fecha 10 protegida y <75% con 0 pts protegido).")
             else:
-                st.caption("📊 **Modo sin descarte:** se suman todos los puntos acumulados sin quitar la peor fecha.")
+                st.caption("📊 **Descarte no aplicado:** se suman todos los puntos acumulados sin quitar la peor fecha.")
 
             # --- 1. RECALCULAR LASTRE REAL ACTUAL (IDÉNTICO A PESTAÑA LASTRE) ---
             lastre_base_actuales = {p: 0.0 for p in todos_pilotos}
