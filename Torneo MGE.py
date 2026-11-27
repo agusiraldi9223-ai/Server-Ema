@@ -1483,18 +1483,24 @@ elif seccion_menu == "Simulador de Campeonato":
         if fechas_restantes_max <= 0:
             st.success("🏁 El campeonato ya completó las 10 fechas.")
         else:
-            # --- PUNTOS Y LASTRE BASE ACTUALES ---
+            # --- 1. RECALCULAR LASTRE REAL ACTUAL (IDÉNTICO A PESTAÑA LASTRE) ---
+            lastre_base_actuales = {p: 0.0 for p in todos_pilotos}
+            for f_real in fechas_reales:
+                df_f = df_global[(df_global["Fecha"] == f_real) & (df_global["Tipo"] == "Carrera")]
+                if not df_f.empty and "Posición" in df_f.columns:
+                    ganadores = df_f[df_f["Posición"] == 1]
+                    for _, g_row in ganadores.iterrows():
+                        p_g = g_row["Piloto"]
+                        if p_g in lastre_base_actuales:
+                            lastre_base_actuales[p_g] = min(float(TOPE_LASTRE_KG), lastre_base_actuales[p_g] + KG_GANADOR_CARRERA)
+
+            # --- 2. PUNTOS BASE ACTUALES ---
             puntos_base_actuales = {}
             for p in todos_pilotos:
                 pts_p = float(df_global[df_global["Piloto"] == p]["Puntos"].sum()) if "Puntos" in df_global.columns else 0.0
                 puntos_base_actuales[p] = pts_p
 
-            lastre_base_actuales = {
-                p: float(lastre_actual_sim.get(p, 0)) if 'lastre_actual_sim' in locals() else 0.0
-                for p in todos_pilotos
-            }
-
-            # --- CONFIGURACIÓN DE PROYECCIÓN ---
+            # --- 3. CONFIGURACIÓN DE PROYECCIÓN ---
             st.markdown("### ⚙️ Configuración de la Proyección Futura")
             col_cfg1, col_cfg2, col_cfg3 = st.columns([1.2, 1.2, 1.4])
 
@@ -1532,7 +1538,7 @@ elif seccion_menu == "Simulador de Campeonato":
                 max_pts_sprint = max(PUNTOS_SPRINT.values()) if (incluir_sprint_sim and PUNTOS_SPRINT) else 0
                 total_max = 0.0
                 for f_num in fechas_futuras_nums:
-                    pts_fecha = max_pts_carrera + max_pts_sprint + PTS_POLE + PTS_FL
+                    pts_fecha = max_pts_por_carrera + max_pts_sprint + PTS_POLE + PTS_FL
                     if f_num == FECHA_ESPECIAL:
                         pts_fecha *= mult_especial
                     total_max += pts_fecha
@@ -1554,13 +1560,41 @@ elif seccion_menu == "Simulador de Campeonato":
                     en_pelea = [sorted(pts_dict.items(), key=lambda x: x[1], reverse=True)[0][0]]
                 return en_pelea, sin_chances
 
+            # --- 4. FILTRO INICIAL DE CONTENDIENTES ANTES DE SIMULAR ---
+            todas_fechas_restantes = list(range(cant_fechas_actuales + 1, TOTAL_FECHAS_TORNEO + 1))
+            candidatos_iniciales, eliminados_iniciales = evaluar_chances_matematicas(
+                puntos_base_actuales, todas_fechas_restantes, MULTIPLICADOR_FECHA_ESPECIAL
+            )
+            max_pts_torneo_restante = calcular_max_puntos_restantes(todas_fechas_restantes, MULTIPLICADOR_FECHA_ESPECIAL)
+            lider_real_actual = max(puntos_base_actuales.items(), key=lambda x: x[1])[0]
+
+            with st.expander(
+                f"🎯 Contendientes habilitados al inicio de Fecha {cant_fechas_actuales + 1}: "
+                f"{len(candidatos_iniciales)} con chances · {len(eliminados_iniciales)} sin chances matemáticas",
+                expanded=True
+            ):
+                col_ini1, col_ini2 = st.columns(2)
+                with col_ini1:
+                    st.markdown("🟢 **Entran al simulador (con chances):**")
+                    for p_c in candidatos_iniciales:
+                        brecha_i = puntos_base_actuales[lider_real_actual] - puntos_base_actuales[p_c]
+                        txt_b = "Líder actual" if brecha_i == 0 else f"-{brecha_i:.2f} pts"
+                        st.markdown(f"- 🏎️ **{p_c}** — `{puntos_base_actuales[p_c]:.2f} pts` ({txt_b}) · ⚖️ `{lastre_base_actuales[p_c]:.0f} Kg`")
+                with col_ini2:
+                    st.markdown(f"🔴 **Ya sin posibilidades (máx. en juego: {max_pts_torneo_restante:.2f} pts):**")
+                    if eliminados_iniciales:
+                        for p_e in eliminados_iniciales:
+                            st.markdown(f"- ❌ **{p_e}** — `{puntos_base_actuales[p_e]:.2f} pts` (máx. posible: `{puntos_base_actuales[p_e] + max_pts_torneo_restante:.2f} pts`)")
+                    else:
+                        st.caption("Todos mantienen chances matemáticas.")
+
             puntos_sim = puntos_base_actuales.copy()
             lastre_sim = lastre_base_actuales.copy()
             puntos_sumados_sim = {p: 0.0 for p in todos_pilotos}
-            candidatos_activos = list(todos_pilotos)
+            candidatos_activos = list(candidatos_iniciales)
             fechas_simuladas_nums = [cant_fechas_actuales + i for i in range(1, int(fechas_a_proyectar) + 1)]
 
-            # --- SIMULACIÓN FECHA POR FECHA ---
+            # --- 5. SIMULACIÓN FECHA POR FECHA ---
             for idx_step, num_fecha_sim in enumerate(fechas_simuladas_nums):
                 st.markdown("---")
                 es_especial = (num_fecha_sim == FECHA_ESPECIAL)
@@ -1569,8 +1603,8 @@ elif seccion_menu == "Simulador de Campeonato":
                 st.markdown(f"### 📅 Simular Fecha {num_fecha_sim}{etiqueta_especial}")
 
                 if idx_step > 0:
-                    fechas_posteriores = fechas_simuladas_nums[idx_step:]
-                    candidatos_filtrados, eliminados_paso = evaluar_chances_matematicas(
+                    fechas_posteriores = list(range(num_fecha_sim, TOTAL_FECHAS_TORNEO + 1))
+                    candidatos_filtrados, _ = evaluar_chances_matematicas(
                         puntos_sim, fechas_posteriores, MULTIPLICADOR_FECHA_ESPECIAL
                     )
                     if len(candidatos_filtrados) < len(candidatos_activos):
@@ -1674,7 +1708,7 @@ elif seccion_menu == "Simulador de Campeonato":
                     if p_car == 1:
                         lastre_sim[pil] = min(float(TOPE_LASTRE_KG), float(lastre_sim.get(pil, 0.0)) + KG_GANADOR_CARRERA)
 
-            # --- RESULTADO DE LA PROYECCIÓN GENERAL ---
+            # --- 6. RESULTADO DE LA PROYECCIÓN GENERAL ---
             st.markdown("---")
             st.markdown(f"### 🏆 Resultado de la Proyección General (Luego de {int(fechas_a_proyectar)} Fecha(s) Simulada(s))")
 
@@ -1689,7 +1723,7 @@ elif seccion_menu == "Simulador de Campeonato":
                 f"(+{puntos_sumados_sim[lider_proy]:.2f} pts en simulación)."
             )
 
-            # --- ANÁLISIS DE DEFINICIÓN DE CAMPEONATO ---
+            # --- 7. ANÁLISIS DE DEFINICIÓN DE CAMPEONATO ---
             st.markdown("### 🎯 Análisis de Definición de Campeonato")
             fechas_aun_por_correr = [
                 f for f in range(cant_fechas_actuales + int(fechas_a_proyectar) + 1, TOTAL_FECHAS_TORNEO + 1)
@@ -1734,7 +1768,7 @@ elif seccion_menu == "Simulador de Campeonato":
             else:
                 st.success(f"🏅 Con las fechas proyectadas se completa el torneo: **{lider_proy}** sería el campeón proyectado con **{puntos_sim[lider_proy]:.2f} pts**.")
 
-            # --- POSICIONES FINALES PROYECTADAS ---
+            # --- 8. POSICIONES FINALES PROYECTADAS ---
             st.markdown("### 📊 Posiciones Finales Proyectadas")
             filas_sim_html = ""
             for idx_r, pil in enumerate(ranking_proyectado):
@@ -1768,7 +1802,7 @@ elif seccion_menu == "Simulador de Campeonato":
 </table>
 </div>"""
             st.markdown(html_sim, unsafe_allow_html=True)
-
+            
 # --- VISTA: ESTADÍSTICAS ---
 
 elif seccion_menu == "Estadísticas":
