@@ -1462,7 +1462,7 @@ elif seccion_menu == "Simulador de Campeonato":
     TOTAL_FECHAS_TORNEO = 10
     FECHA_HABILITACION_SIM = 8
     FECHA_ESPECIAL = 10
-    MULTIPLICADOR_FECHA_ESPECIAL = 1.5  # Cambiar a 2.0 si se define x2 para la última fecha
+    MULTIPLICADOR_FECHA_ESPECIAL = 2.0  # Multiplicador activo para la última fecha
     TOPE_LASTRE_KG = 50
     KG_GANADOR_CARRERA = 10
 
@@ -1483,6 +1483,25 @@ elif seccion_menu == "Simulador de Campeonato":
         if fechas_restantes_max <= 0:
             st.success("🏁 El campeonato ya completó las 10 fechas.")
         else:
+            if "sim_descontar_peor" not in st.session_state:
+                st.session_state.sim_descontar_peor = False
+
+            col_s_tit, col_s_btn = st.columns([0.72, 0.28])
+            with col_s_tit:
+                st.markdown("### ⚙️ Configuración de la Proyección Futura")
+            with col_s_btn:
+                tipo_btn_sim = "primary" if st.session_state.sim_descontar_peor else "secondary"
+                label_btn_sim = "🔄 Descontar Peor Fecha" if st.session_state.sim_descontar_peor else "📉 Descontar Peor Fecha"
+                if st.button(label_btn_sim, type=tipo_btn_sim, use_container_width=True, key="btn_descarte_simulador"):
+                    st.session_state.sim_descontar_peor = not st.session_state.sim_descontar_peor
+                    st.rerun()
+
+            aplicar_descarte_sim = st.session_state.sim_descontar_peor
+            if aplicar_descarte_sim:
+                st.caption("📉 **Modo con descarte activo:** se descuenta la peor fecha elegible (Fecha 10 protegida y <75% con 0 pts protegido).")
+            else:
+                st.caption("📊 **Modo sin descarte:** se suman todos los puntos acumulados sin quitar la peor fecha.")
+
             # --- 1. RECALCULAR LASTRE REAL ACTUAL (IDÉNTICO A PESTAÑA LASTRE) ---
             lastre_base_actuales = {p: 0.0 for p in todos_pilotos}
             for f_real in fechas_reales:
@@ -1494,14 +1513,56 @@ elif seccion_menu == "Simulador de Campeonato":
                         if p_g in lastre_base_actuales:
                             lastre_base_actuales[p_g] = min(float(TOPE_LASTRE_KG), lastre_base_actuales[p_g] + KG_GANADOR_CARRERA)
 
-            # --- 2. PUNTOS BASE ACTUALES ---
-            puntos_base_actuales = {}
-            for p in todos_pilotos:
-                pts_p = float(df_global[df_global["Piloto"] == p]["Puntos"].sum()) if "Puntos" in df_global.columns else 0.0
-                puntos_base_actuales[p] = pts_p
+            # --- 2. PUNTOS POR FECHA REAL Y PUNTOS BASE ACTUALES ---
+            historial_fechas_piloto = {p: [] for p in todos_pilotos}
+            for f_idx, f_real in enumerate(fechas_reales):
+                num_fecha = f_idx + 1
+                df_f = df_global[df_global["Fecha"] == f_real] if "Fecha" in df_global.columns else pd.DataFrame()
+                df_carrera_f = df_f[df_f["Tipo"] == "Carrera"] if not df_f.empty and "Tipo" in df_f.columns else pd.DataFrame()
+                ganador_f = df_carrera_f[df_carrera_f["Posición"] == 1] if not df_carrera_f.empty and "Posición" in df_carrera_f.columns else pd.DataFrame()
+                vueltas_ganador_f = ganador_f["Vueltas"].values[0] if not ganador_f.empty and "Vueltas" in ganador_f.columns else 0
+                vueltas_min_f = vueltas_ganador_f * 0.75
 
-            # --- 3. CONFIGURACIÓN DE PROYECCIÓN ---
-            st.markdown("### ⚙️ Configuración de la Proyección Futura")
+                for pil in todos_pilotos:
+                    df_piloto_f = df_f[df_f["Piloto"] == pil] if not df_f.empty and "Piloto" in df_f.columns else pd.DataFrame()
+                    pts_f = float(df_piloto_f["Puntos"].sum()) if not df_piloto_f.empty and "Puntos" in df_piloto_f.columns else 0.0
+
+                    if num_fecha == FECHA_ESPECIAL:
+                        descartable = False
+                    elif df_piloto_f.empty:
+                        descartable = True
+                    else:
+                        df_carrera_p = df_piloto_f[df_piloto_f["Tipo"] == "Carrera"] if "Tipo" in df_piloto_f.columns else pd.DataFrame()
+                        if df_carrera_p.empty:
+                            descartable = True
+                        else:
+                            vueltas_p = df_carrera_p["Vueltas"].values[0] if "Vueltas" in df_carrera_p.columns else 0
+                            if pts_f == 0 and vueltas_p > 0 and vueltas_p < vueltas_min_f:
+                                descartable = False
+                            else:
+                                descartable = True
+
+                    historial_fechas_piloto[pil].append({
+                        "num_fecha": num_fecha,
+                        "puntos": pts_f,
+                        "descartable": descartable
+                    })
+
+            def calcular_total_con_regla(lista_fechas, usar_descarte):
+                suma_total = sum(item["puntos"] for item in lista_fechas)
+                if usar_descarte and len(lista_fechas) >= 2:
+                    elegibles = [item for item in lista_fechas if item.get("descartable", True)]
+                    if elegibles:
+                        peor_val = min(item["puntos"] for item in elegibles)
+                        return suma_total - peor_val
+                return suma_total
+
+            puntos_base_actuales = {
+                p: calcular_total_con_regla(historial_fechas_piloto[p], aplicar_descarte_sim)
+                for p in todos_pilotos
+            }
+
+            # --- 3. OPCIONES DE PROYECCIÓN ---
             col_cfg1, col_cfg2, col_cfg3 = st.columns([1.2, 1.2, 1.4])
 
             with col_cfg1:
@@ -1588,9 +1649,8 @@ elif seccion_menu == "Simulador de Campeonato":
                     else:
                         st.caption("Todos mantienen chances matemáticas.")
 
-            puntos_sim = puntos_base_actuales.copy()
+            historial_sim = {p: list(historial_fechas_piloto[p]) for p in todos_pilotos}
             lastre_sim = lastre_base_actuales.copy()
-            puntos_sumados_sim = {p: 0.0 for p in todos_pilotos}
             candidatos_activos = list(candidatos_iniciales)
             fechas_simuladas_nums = [cant_fechas_actuales + i for i in range(1, int(fechas_a_proyectar) + 1)]
 
@@ -1602,10 +1662,15 @@ elif seccion_menu == "Simulador de Campeonato":
                 etiqueta_especial = f" · 🌟 Puntaje Especial x{mult_fecha}" if es_especial else ""
                 st.markdown(f"### 📅 Simular Fecha {num_fecha_sim}{etiqueta_especial}")
 
+                puntos_antes_fecha = {
+                    p: calcular_total_con_regla(historial_sim[p], aplicar_descarte_sim)
+                    for p in todos_pilotos
+                }
+
                 if idx_step > 0:
                     fechas_posteriores = list(range(num_fecha_sim, TOTAL_FECHAS_TORNEO + 1))
                     candidatos_filtrados, _ = evaluar_chances_matematicas(
-                        puntos_sim, fechas_posteriores, MULTIPLICADOR_FECHA_ESPECIAL
+                        puntos_antes_fecha, fechas_posteriores, MULTIPLICADOR_FECHA_ESPECIAL
                     )
                     if len(candidatos_filtrados) < len(candidatos_activos):
                         candidatos_activos = candidatos_filtrados
@@ -1625,7 +1690,7 @@ elif seccion_menu == "Simulador de Campeonato":
                         st.metric(
                             label=f"Auto de {pil}",
                             value=f"{lastre_sim.get(pil, 0.0):.1f} Kg",
-                            delta=f"{puntos_sim.get(pil, 0.0):.2f} pts iniciales"
+                            delta=f"{puntos_antes_fecha.get(pil, 0.0):.2f} pts iniciales"
                         )
 
                 n_cand = len(candidatos_activos)
@@ -1687,28 +1752,43 @@ elif seccion_menu == "Simulador de Campeonato":
                             )
 
                 # --- APLICAR PUNTOS Y LASTRE DE LA FECHA SIMULADA ---
-                for pil in candidatos_activos:
-                    pts_ganados = 0.0
-                    p_car = pos_carrera_sim.get(pil)
-                    pts_ganados += float(PUNTOS_CARRERA.get(p_car, 0))
+                for pil in todos_pilotos:
+                    if pil in candidatos_activos:
+                        pts_ganados = 0.0
+                        p_car = pos_carrera_sim.get(pil)
+                        pts_ganados += float(PUNTOS_CARRERA.get(p_car, 0))
 
-                    if incluir_sprint_sim:
-                        p_sp = pos_sprint_sim.get(pil)
-                        pts_ganados += float(PUNTOS_SPRINT.get(p_sp, 0))
+                        if incluir_sprint_sim:
+                            p_sp = pos_sprint_sim.get(pil)
+                            pts_ganados += float(PUNTOS_SPRINT.get(p_sp, 0))
 
-                    if pil == pole_sim:
-                        pts_ganados += float(PTS_POLE)
-                    if pil == fl_sim:
-                        pts_ganados += float(PTS_FL)
+                        if pil == pole_sim:
+                            pts_ganados += float(PTS_POLE)
+                        if pil == fl_sim:
+                            pts_ganados += float(PTS_FL)
 
-                    pts_final_fecha = pts_ganados * mult_fecha
-                    puntos_sim[pil] = puntos_sim.get(pil, 0.0) + pts_final_fecha
-                    puntos_sumados_sim[pil] = puntos_sumados_sim.get(pil, 0.0) + pts_final_fecha
+                        pts_final_fecha = pts_ganados * mult_fecha
+                        if p_car == 1:
+                            lastre_sim[pil] = min(float(TOPE_LASTRE_KG), float(lastre_sim.get(pil, 0.0)) + KG_GANADOR_CARRERA)
+                    else:
+                        pts_final_fecha = 0.0
 
-                    if p_car == 1:
-                        lastre_sim[pil] = min(float(TOPE_LASTRE_KG), float(lastre_sim.get(pil, 0.0)) + KG_GANADOR_CARRERA)
+                    historial_sim[pil].append({
+                        "num_fecha": num_fecha_sim,
+                        "puntos": pts_final_fecha,
+                        "descartable": False if num_fecha_sim == FECHA_ESPECIAL else True
+                    })
 
             # --- 6. RESULTADO DE LA PROYECCIÓN GENERAL ---
+            puntos_sim = {
+                p: calcular_total_con_regla(historial_sim[p], aplicar_descarte_sim)
+                for p in todos_pilotos
+            }
+            puntos_sumados_sim = {
+                p: puntos_sim[p] - puntos_base_actuales[p]
+                for p in todos_pilotos
+            }
+
             st.markdown("---")
             st.markdown(f"### 🏆 Resultado de la Proyección General (Luego de {int(fechas_a_proyectar)} Fecha(s) Simulada(s))")
 
@@ -1720,7 +1800,7 @@ elif seccion_menu == "Simulador de Campeonato":
             lider_proy = ranking_proyectado[0]
             st.success(
                 f"👑 Proyección actual: **{lider_proy}** lidera con un total proyectado de **{puntos_sim[lider_proy]:.2f} pts** "
-                f"(+{puntos_sumados_sim[lider_proy]:.2f} pts en simulación)."
+                f"(+{puntos_sumados_sim[lider_proy]:.2f} pts netos en simulación)."
             )
 
             # --- 7. ANÁLISIS DE DEFINICIÓN DE CAMPEONATO ---
@@ -1802,7 +1882,6 @@ elif seccion_menu == "Simulador de Campeonato":
 </table>
 </div>"""
             st.markdown(html_sim, unsafe_allow_html=True)
-            
 # --- VISTA: ESTADÍSTICAS ---
 
 elif seccion_menu == "Estadísticas":
