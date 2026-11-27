@@ -1451,10 +1451,323 @@ elif seccion_menu == "Duelo H2H":
         else:
             st.info("Se necesitan al menos 2 pilotos para realizar el duelo H2H.")
 
-    # --- VISTA: SIMULADOR DE CAMPEONATO ---
+# --- VISTA: SIMULADOR DE CAMPEONATO ---
 elif seccion_menu == "Simulador de Campeonato":
-        st.subheader("🎮 Simulador de Campeonato")
-        st.write("Simula futuras fechas o proyecta resultados.")
+    st.subheader("🔮 Simulador y Proyecciones del Campeonato")
+    st.caption("Calculadora matemática de título multi-fecha y evolución del lastre en vivo.")
+
+    # =====================================================================
+    # CONFIGURACIÓN DEL TORNEO Y MULTIPLICADOR (EDITABLE FÁCILMENTE)
+    # =====================================================================
+    TOTAL_FECHAS_TORNEO = 10
+    FECHA_HABILITACION_SIM = 8
+    FECHA_ESPECIAL = 10
+    MULTIPLICADOR_FECHA_ESPECIAL = 1.5  # Cambiar a 2.0 si se define x2 para la última fecha
+    TOPE_LASTRE_KG = 50
+    KG_GANADOR_CARRERA = 10
+
+    cant_fechas_actuales = len(fechas_reales) if 'fechas_reales' in locals() and fechas_reales else 0
+
+    if cant_fechas_actuales < FECHA_HABILITACION_SIM or 'df_global' not in locals() or df_global.empty or not todos_pilotos:
+        st.info(
+            f"🔒 El **Simulador de Campeonato** se habilita recién cuando estén cargados los datos de la **Fecha {FECHA_HABILITACION_SIM}** "
+            f"(actualmente hay **{cant_fechas_actuales}** fecha(s) cargada(s) de {TOTAL_FECHAS_TORNEO})."
+        )
+    else:
+        fechas_restantes_max = max(0, TOTAL_FECHAS_TORNEO - cant_fechas_actuales)
+        st.info(
+            f"📌 Campeonato procesado hasta la **Fecha {cant_fechas_actuales}** · "
+            f"Multiplicador Fecha {FECHA_ESPECIAL}: **`x{MULTIPLICADOR_FECHA_ESPECIAL}`**"
+        )
+
+        if fechas_restantes_max <= 0:
+            st.success("🏁 El campeonato ya completó las 10 fechas.")
+        else:
+            # --- PUNTOS Y LASTRE BASE ACTUALES ---
+            puntos_base_actuales = {}
+            for p in todos_pilotos:
+                pts_p = float(df_global[df_global["Piloto"] == p]["Puntos"].sum()) if "Puntos" in df_global.columns else 0.0
+                puntos_base_actuales[p] = pts_p
+
+            lastre_base_actuales = {
+                p: float(lastre_actual_sim.get(p, 0)) if 'lastre_actual_sim' in locals() else 0.0
+                for p in todos_pilotos
+            }
+
+            # --- CONFIGURACIÓN DE PROYECCIÓN ---
+            st.markdown("### ⚙️ Configuración de la Proyección Futura")
+            col_cfg1, col_cfg2, col_cfg3 = st.columns([1.2, 1.2, 1.4])
+
+            with col_cfg1:
+                if fechas_restantes_max == 1:
+                    fechas_a_proyectar = 1
+                    st.caption("Queda **1 fecha** por disputar (Fecha 10).")
+                else:
+                    fechas_a_proyectar = st.number_input(
+                        f"¿Cuántas fechas querés proyectar hacia adelante? (Quedan {fechas_restantes_max} para llegar a la {TOTAL_FECHAS_TORNEO})",
+                        min_value=1,
+                        max_value=fechas_restantes_max,
+                        value=fechas_restantes_max,
+                        step=1,
+                        key="sim_cant_fechas"
+                    )
+
+            with col_cfg2:
+                incluir_sprint_sim = st.checkbox(
+                    "Incluir sesión Sprint en simulación",
+                    value=False,
+                    key="sim_incluir_sprint",
+                    help="Dejalo desactivado si en este torneo solo hay Clasificación y Carrera; activalo si querés sumar puntos de Sprint."
+                )
+
+            with col_cfg3:
+                reset_lastre_final = st.checkbox(
+                    f"Resetear lastre a 0 Kg en Fecha {FECHA_ESPECIAL}",
+                    value=False,
+                    key="sim_reset_lastre_final"
+                )
+
+            def calcular_max_puntos_restantes(fechas_futuras_nums, mult_especial):
+                max_pts_por_carrera = max(PUNTOS_CARRERA.values()) if PUNTOS_CARRERA else 0
+                max_pts_sprint = max(PUNTOS_SPRINT.values()) if (incluir_sprint_sim and PUNTOS_SPRINT) else 0
+                total_max = 0.0
+                for f_num in fechas_futuras_nums:
+                    pts_fecha = max_pts_carrera + max_pts_sprint + PTS_POLE + PTS_FL
+                    if f_num == FECHA_ESPECIAL:
+                        pts_fecha *= mult_especial
+                    total_max += pts_fecha
+                return total_max
+
+            def evaluar_chances_matematicas(pts_dict, fechas_futuras_nums, mult_especial):
+                if not pts_dict:
+                    return [], []
+                max_pts_actual = max(pts_dict.values())
+                max_restante = calcular_max_puntos_restantes(fechas_futuras_nums, mult_especial)
+                en_pelea = []
+                sin_chances = []
+                for p, pts_p in sorted(pts_dict.items(), key=lambda x: x[1], reverse=True):
+                    if pts_p + max_restante >= max_pts_actual:
+                        en_pelea.append(p)
+                    else:
+                        sin_chances.append(p)
+                if not en_pelea:
+                    en_pelea = [sorted(pts_dict.items(), key=lambda x: x[1], reverse=True)[0][0]]
+                return en_pelea, sin_chances
+
+            puntos_sim = puntos_base_actuales.copy()
+            lastre_sim = lastre_base_actuales.copy()
+            puntos_sumados_sim = {p: 0.0 for p in todos_pilotos}
+            candidatos_activos = list(todos_pilotos)
+            fechas_simuladas_nums = [cant_fechas_actuales + i for i in range(1, int(fechas_a_proyectar) + 1)]
+
+            # --- SIMULACIÓN FECHA POR FECHA ---
+            for idx_step, num_fecha_sim in enumerate(fechas_simuladas_nums):
+                st.markdown("---")
+                es_especial = (num_fecha_sim == FECHA_ESPECIAL)
+                mult_fecha = MULTIPLICADOR_FECHA_ESPECIAL if es_especial else 1.0
+                etiqueta_especial = f" · 🌟 Puntaje Especial x{mult_fecha}" if es_especial else ""
+                st.markdown(f"### 📅 Simular Fecha {num_fecha_sim}{etiqueta_especial}")
+
+                if idx_step > 0:
+                    fechas_posteriores = fechas_simuladas_nums[idx_step:]
+                    candidatos_filtrados, eliminados_paso = evaluar_chances_matematicas(
+                        puntos_sim, fechas_posteriores, MULTIPLICADOR_FECHA_ESPECIAL
+                    )
+                    if len(candidatos_filtrados) < len(candidatos_activos):
+                        candidatos_activos = candidatos_filtrados
+                        st.caption(
+                            f"🎯 Filtro matemático aplicado para Fecha {num_fecha_sim}: solo entran quienes mantienen chances "
+                            f"({', '.join(candidatos_activos)})."
+                        )
+
+                if num_fecha_sim == FECHA_ESPECIAL and reset_lastre_final:
+                    for p in candidatos_activos:
+                        lastre_sim[p] = 0.0
+
+                st.caption("⚖️ Lastre inicial y puntos acumulados antes de esta fecha:")
+                cols_tele = st.columns(min(4, max(1, len(candidatos_activos))))
+                for i_p, pil in enumerate(candidatos_activos):
+                    with cols_tele[i_p % len(cols_tele)]:
+                        st.metric(
+                            label=f"Auto de {pil}",
+                            value=f"{lastre_sim.get(pil, 0.0):.1f} Kg",
+                            delta=f"{puntos_sim.get(pil, 0.0):.2f} pts iniciales"
+                        )
+
+                n_cand = len(candidatos_activos)
+                opciones_pos = list(range(1, n_cand + 1))
+
+                col_p1, col_p2, col_p3 = st.columns(3)
+                with col_p1:
+                    pole_sim = st.selectbox(
+                        f"🥇 Poleman Fecha {num_fecha_sim} (+{PTS_POLE * mult_fecha:g} pts):",
+                        options=candidatos_activos,
+                        key=f"sim_pole_f{num_fecha_sim}"
+                    )
+                with col_p2:
+                    fl_sim = st.selectbox(
+                        f"⚡ Vuelta Rápida Fecha {num_fecha_sim} (+{PTS_FL * mult_fecha:g} pts):",
+                        options=candidatos_activos,
+                        key=f"sim_fl_f{num_fecha_sim}"
+                    )
+                with col_p3:
+                    st.write("")
+                    st.caption(f"Multiplicador aplicado: **x{mult_fecha}**")
+
+                pos_carrera_sim = {}
+                pos_sprint_sim = {}
+
+                if incluir_sprint_sim:
+                    c_sp, c_ca = st.columns(2)
+                    with c_sp:
+                        st.markdown(f"#### ⚡ Sprint - Fecha {num_fecha_sim}")
+                        for idx_c, pil in enumerate(candidatos_activos):
+                            default_idx = min(idx_c, len(opciones_pos) - 1)
+                            pos_sprint_sim[pil] = st.selectbox(
+                                f"{pil} - Puesto Sprint:",
+                                options=opciones_pos,
+                                index=default_idx,
+                                key=f"sim_sp_f{num_fecha_sim}_{pil}"
+                            )
+                    with c_ca:
+                        st.markdown(f"#### 🏎️ Carrera - Fecha {num_fecha_sim}")
+                        for idx_c, pil in enumerate(candidatos_activos):
+                            default_idx = min(idx_c, len(opciones_pos) - 1)
+                            pos_carrera_sim[pil] = st.selectbox(
+                                f"{pil} - Puesto Carrera:",
+                                options=opciones_pos,
+                                index=default_idx,
+                                key=f"sim_ca_f{num_fecha_sim}_{pil}"
+                            )
+                else:
+                    st.markdown(f"#### 🏎️ Carrera - Fecha {num_fecha_sim}")
+                    cols_pos = st.columns(2)
+                    for idx_c, pil in enumerate(candidatos_activos):
+                        default_idx = min(idx_c, len(opciones_pos) - 1)
+                        with cols_pos[idx_c % 2]:
+                            pos_carrera_sim[pil] = st.selectbox(
+                                f"{pil} - Puesto Carrera:",
+                                options=opciones_pos,
+                                index=default_idx,
+                                key=f"sim_ca_f{num_fecha_sim}_{pil}"
+                            )
+
+                # --- APLICAR PUNTOS Y LASTRE DE LA FECHA SIMULADA ---
+                for pil in candidatos_activos:
+                    pts_ganados = 0.0
+                    p_car = pos_carrera_sim.get(pil)
+                    pts_ganados += float(PUNTOS_CARRERA.get(p_car, 0))
+
+                    if incluir_sprint_sim:
+                        p_sp = pos_sprint_sim.get(pil)
+                        pts_ganados += float(PUNTOS_SPRINT.get(p_sp, 0))
+
+                    if pil == pole_sim:
+                        pts_ganados += float(PTS_POLE)
+                    if pil == fl_sim:
+                        pts_ganados += float(PTS_FL)
+
+                    pts_final_fecha = pts_ganados * mult_fecha
+                    puntos_sim[pil] = puntos_sim.get(pil, 0.0) + pts_final_fecha
+                    puntos_sumados_sim[pil] = puntos_sumados_sim.get(pil, 0.0) + pts_final_fecha
+
+                    if p_car == 1:
+                        lastre_sim[pil] = min(float(TOPE_LASTRE_KG), float(lastre_sim.get(pil, 0.0)) + KG_GANADOR_CARRERA)
+
+            # --- RESULTADO DE LA PROYECCIÓN GENERAL ---
+            st.markdown("---")
+            st.markdown(f"### 🏆 Resultado de la Proyección General (Luego de {int(fechas_a_proyectar)} Fecha(s) Simulada(s))")
+
+            ranking_proyectado = sorted(
+                todos_pilotos,
+                key=lambda p: (puntos_sim.get(p, 0.0), puntos_base_actuales.get(p, 0.0)),
+                reverse=True
+            )
+            lider_proy = ranking_proyectado[0]
+            st.success(
+                f"👑 Proyección actual: **{lider_proy}** lidera con un total proyectado de **{puntos_sim[lider_proy]:.2f} pts** "
+                f"(+{puntos_sumados_sim[lider_proy]:.2f} pts en simulación)."
+            )
+
+            # --- ANÁLISIS DE DEFINICIÓN DE CAMPEONATO ---
+            st.markdown("### 🎯 Análisis de Definición de Campeonato")
+            fechas_aun_por_correr = [
+                f for f in range(cant_fechas_actuales + int(fechas_a_proyectar) + 1, TOTAL_FECHAS_TORNEO + 1)
+            ]
+
+            if fechas_aun_por_correr:
+                max_pts_en_juego = calcular_max_puntos_restantes(fechas_aun_por_correr, MULTIPLICADOR_FECHA_ESPECIAL)
+                en_pelea, sin_chances = evaluar_chances_matematicas(
+                    puntos_sim, fechas_aun_por_correr, MULTIPLICADOR_FECHA_ESPECIAL
+                )
+                pts_lider_actual = puntos_sim[lider_proy]
+
+                col_ch1, col_ch2 = st.columns(2)
+                with col_ch1:
+                    st.markdown("🟢 **Siguen en la Pelea Matemática:**")
+                    for p_en in en_pelea:
+                        dif_lider = pts_lider_actual - puntos_sim[p_en]
+                        etiqueta_dif = "(Líder proyectado)" if dif_lider == 0 else f"(A {dif_lider:.2f} pts del líder)"
+                        st.markdown(f"- 🏎️ **{p_en}** {etiqueta_dif}")
+                with col_ch2:
+                    st.markdown("🔴 **Matemáticamente Sin Chances:**")
+                    if sin_chances:
+                        for p_sin in sin_chances:
+                            st.markdown(f"- ❌ {p_sin}")
+                    else:
+                        st.caption("Todos los pilotos mantienen chances matemáticas.")
+
+                st.info(
+                    f"ℹ️ Fechas restantes tras la simulación: **{fechas_aun_por_correr}** · "
+                    f"Máximo a repartir en lo que queda: **{max_pts_en_juego:.2f} pts** (Multiplicador Fecha {FECHA_ESPECIAL}: x{MULTIPLICADOR_FECHA_ESPECIAL})."
+                )
+
+                for pil in ranking_proyectado:
+                    pts_p = puntos_sim[pil]
+                    brecha_p = pts_lider_actual - pts_p
+                    tiene_chance = pil in en_pelea
+                    estado_txt = "CON CHANCES" if tiene_chance else "SIN CHANCES MATEMÁTICAS"
+                    with st.expander(f"📋 Situación de {pil} — {estado_txt}"):
+                        st.write(f"- **Puntos proyectados:** {pts_p:.2f} pts")
+                        st.write(f"- **Diferencia vs. líder proyectado:** {brecha_p:.2f} pts")
+                        st.write(f"- **Máximo alcanzable en fechas restantes:** {pts_p + max_pts_en_juego:.2f} pts")
+            else:
+                st.success(f"🏅 Con las fechas proyectadas se completa el torneo: **{lider_proy}** sería el campeón proyectado con **{puntos_sim[lider_proy]:.2f} pts**.")
+
+            # --- POSICIONES FINALES PROYECTADAS ---
+            st.markdown("### 📊 Posiciones Finales Proyectadas")
+            filas_sim_html = ""
+            for idx_r, pil in enumerate(ranking_proyectado):
+                pos_r = idx_r + 1
+                bg_r = "#111827" if idx_r % 2 == 0 else "#1a2332"
+                borde_izq = "4px solid #10b981" if pos_r == 1 else ("4px solid #3b82f6" if pos_r <= 3 else "4px solid #374151")
+                sumado_p = puntos_sumados_sim.get(pil, 0.0)
+                total_p = puntos_sim.get(pil, 0.0)
+                lastre_p = lastre_sim.get(pil, 0.0)
+                filas_sim_html += f"""<tr style="border-bottom: 1px solid #1f2937; background-color: {bg_r}; border-left: {borde_izq};">
+<td style="padding: 12px; font-weight: bold;">#{pos_r}</td>
+<td style="padding: 12px;">
+  <div style="font-weight: 600; font-size: 15px;">{pil}</div>
+  <div style="color: #94a3b8; font-size: 12px;">+{sumado_p:.2f} pts en simulación</div>
+</td>
+<td style="padding: 12px; text-align: right;">
+  <div style="color: #94a3b8; font-size: 11px;">PUNTAJE FINAL</div>
+  <div style="font-weight: bold; color: #3b82f6; font-size: 15px;">{total_p:.2f} pts</div>
+</td>
+<td style="padding: 12px; text-align: right;">
+  <div style="color: #94a3b8; font-size: 11px;">PRÓXIMO LASTRE</div>
+  <div style="font-weight: bold; color: #f59e0b; font-size: 15px;">{lastre_p:.1f} Kg</div>
+</td>
+</tr>"""
+
+            html_sim = f"""<div style="overflow-x: auto; background-color: #111827; padding: 20px; border-radius: 12px; border: 1px solid #1f2937;">
+<table style="width: 100%; border-collapse: collapse; color: #ffffff; font-family: sans-serif; font-size: 14px;">
+<tbody>
+{filas_sim_html}
+</tbody>
+</table>
+</div>"""
+            st.markdown(html_sim, unsafe_allow_html=True)
 
 # --- VISTA: ESTADÍSTICAS ---
 
