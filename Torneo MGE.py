@@ -1695,8 +1695,10 @@ elif seccion_menu == "Simulador de Campeonato":
                             delta=f"{puntos_antes_fecha.get(pil, 0.0):.2f} pts iniciales"
                         )
 
-                n_cand = len(candidatos_activos)
-                opciones_pos = list(range(1, n_cand + 1))
+                max_pos_carrera = max(PUNTOS_CARRERA.keys()) if PUNTOS_CARRERA else 12
+                max_pos_sprint = max(PUNTOS_SPRINT.keys()) if PUNTOS_SPRINT else 8
+                opciones_pos_carrera = list(range(1, max_pos_carrera + 1))
+                opciones_pos_sprint = list(range(1, max_pos_sprint + 1))
 
                 col_p1, col_p2, col_p3 = st.columns(3)
                 with col_p1:
