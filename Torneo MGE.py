@@ -1697,8 +1697,8 @@ elif seccion_menu == "Simulador de Campeonato":
 
                 max_pos_carrera = max(PUNTOS_CARRERA.keys()) if PUNTOS_CARRERA else 12
                 max_pos_sprint = max(PUNTOS_SPRINT.keys()) if PUNTOS_SPRINT else 8
-                opciones_pos_carrera = list(range(1, max_pos_carrera + 1))
-                opciones_pos_sprint = list(range(1, max_pos_sprint + 1))
+                opciones_pos_carrera = list(range(1, max_pos_carrera + 1)) + ["Sin puntos (0 pts)"]
+                opciones_pos_sprint = list(range(1, max_pos_sprint + 1)) + ["Sin puntos (0 pts)"]
 
                 col_p1, col_p2, col_p3 = st.columns(3)
                 with col_p1:
@@ -1725,20 +1725,20 @@ elif seccion_menu == "Simulador de Campeonato":
                     with c_sp:
                         st.markdown(f"#### ⚡ Sprint - Fecha {num_fecha_sim}")
                         for idx_c, pil in enumerate(candidatos_activos):
-                            default_idx = min(idx_c, len(opciones_pos) - 1)
+                            default_idx = min(idx_c, len(opciones_pos_sprint) - 1)
                             pos_sprint_sim[pil] = st.selectbox(
                                 f"{pil} - Puesto Sprint:",
-                                options=opciones_pos,
+                                options=opciones_pos_sprint,
                                 index=default_idx,
                                 key=f"sim_sp_f{num_fecha_sim}_{pil}"
                             )
                     with c_ca:
                         st.markdown(f"#### 🏎️ Carrera - Fecha {num_fecha_sim}")
                         for idx_c, pil in enumerate(candidatos_activos):
-                            default_idx = min(idx_c, len(opciones_pos) - 1)
+                            default_idx = min(idx_c, len(opciones_pos_carrera) - 1)
                             pos_carrera_sim[pil] = st.selectbox(
                                 f"{pil} - Puesto Carrera:",
-                                options=opciones_pos,
+                                options=opciones_pos_carrera,
                                 index=default_idx,
                                 key=f"sim_ca_f{num_fecha_sim}_{pil}"
                             )
@@ -1746,11 +1746,11 @@ elif seccion_menu == "Simulador de Campeonato":
                     st.markdown(f"#### 🏎️ Carrera - Fecha {num_fecha_sim}")
                     cols_pos = st.columns(2)
                     for idx_c, pil in enumerate(candidatos_activos):
-                        default_idx = min(idx_c, len(opciones_pos) - 1)
+                        default_idx = min(idx_c, len(opciones_pos_carrera) - 1)
                         with cols_pos[idx_c % 2]:
                             pos_carrera_sim[pil] = st.selectbox(
                                 f"{pil} - Puesto Carrera:",
-                                options=opciones_pos,
+                                options=opciones_pos_carrera,
                                 index=default_idx,
                                 key=f"sim_ca_f{num_fecha_sim}_{pil}"
                             )
@@ -1760,11 +1760,13 @@ elif seccion_menu == "Simulador de Campeonato":
                     if pil in candidatos_activos:
                         pts_ganados = 0.0
                         p_car = pos_carrera_sim.get(pil)
-                        pts_ganados += float(PUNTOS_CARRERA.get(p_car, 0))
+                        if isinstance(p_car, int):
+                            pts_ganados += float(PUNTOS_CARRERA.get(p_car, 0))
 
                         if incluir_sprint_sim:
                             p_sp = pos_sprint_sim.get(pil)
-                            pts_ganados += float(PUNTOS_SPRINT.get(p_sp, 0))
+                            if isinstance(p_sp, int):
+                                pts_ganados += float(PUNTOS_SPRINT.get(p_sp, 0))
 
                         if pil == pole_sim:
                             pts_ganados += float(PTS_POLE)
